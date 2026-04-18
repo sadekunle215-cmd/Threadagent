@@ -255,7 +255,7 @@
       </div>
       <div class="hero-right">
         <div class="pricing-pill">
-          <span>₦75</span> / tweet<br>
+          <span>₦40</span> / tweet<br>
           <span>₦200</span> / infographic
         </div>
       </div>
@@ -263,7 +263,7 @@
     <div class="hero-divider"></div>
     <div class="hero-stats">
       <div class="hero-stat">
-        <div class="hero-stat-val"><em>75</em></div>
+        <div class="hero-stat-val"><em>40</em></div>
         <div class="hero-stat-lbl">Naira per tweet</div>
       </div>
       <div class="hero-stat">
@@ -1023,7 +1023,7 @@ async function generateThread(){
   const topic=document.getElementById("topic").value.trim();const context=document.getElementById("context").value.trim();const tone=document.getElementById("tone").value;const length=document.getElementById("length").value;
   if(!topic){showError("Drop a topic first.");return;}
   setLoading(true);clearError();hideThread();
-  try{const res=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic,context,tone,length})});const data=await res.json();if(!res.ok)throw new Error(data.error||"Something went wrong");renderThread(data.tweets);}
+  try{const res=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic,context,tone,length})});const data=await res.json();if(!res.ok)throw new Error(data.error||"Something went wrong");renderThread(data.tweets);autoGenerateImages(data.tweets);}
   catch(err){showError(err.message);}finally{setLoading(false);}
 }
 
@@ -1075,7 +1075,7 @@ document.getElementById("gigUrl").addEventListener("keydown",e=>{if(e.key==="Ent
 document.getElementById("topic").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey)handleGenerateClick();});
 
 // ─── PAYMENT STATE ────────────────────────────────────────────────────────────
-const PRICE_TWEET = 75;   // ₦75 per tweet
+const PRICE_TWEET = 40;   // ₦40 per tweet
 const PRICE_IMAGE = 200;  // ₦200 per image
 let paymentState = {
   paid: false,
@@ -1165,12 +1165,16 @@ function initiatePayment() {
   }
   paymentState.email = emailInput;
 
+  // Save intent so we can restore after bank redirect (OPay/3DS)
+  savePaymentIntent(tc, ic, emailInput);
+
   const handler = PaystackPop.setup({
     key: "pk_live_6c1cdedbdf2881240c8c6bebe10d846d8019f6e4",
     email: emailInput,
     amount: total,
     currency: "NGN",
     ref: "TC-" + Date.now(),
+    redirect_url: window.location.href.split("?")[0],
     metadata: {
       custom_fields: [
         { display_name: "Tweets", variable_name: "tweets", value: tc },
@@ -1200,28 +1204,54 @@ function unlockGenerate() {
   document.getElementById("paidBadge").classList.add("visible");
 }
 
-// Override renderThread to auto-generate images for paid image slots
-const _origRenderThread = renderThread;
-function renderThread(tweets) {
-  _origRenderThread(tweets);
-  // After render, auto-trigger infographic for paid image slots
-  if (paymentState.paid && paymentState.imageCount > 0) {
-    const count = paymentState.allImages ? tweets.length : paymentState.imageCount;
-    setTimeout(() => {
-      for (let i = 0; i < Math.min(count, tweets.length); i++) {
-        const btn = document.querySelector(`#imgwrap-${i}`)?.previousElementSibling?.previousElementSibling?.querySelector(".btn-ai-graphic");
-        // find the infographic button for this tweet card
-        const cards = document.querySelectorAll(".tweet-card");
-        if (cards[i]) {
-          const graphicBtn = cards[i].querySelector(".btn-ai-graphic");
-          if (graphicBtn && !graphicBtn.disabled) {
-            setTimeout(() => generateGraphic(graphicBtn, i), i * 800);
-          }
+// Auto-generate images for paid slots (called after renderThread)
+function autoGenerateImages(tweets) {
+  if (!paymentState.paid || paymentState.imageCount <= 0) return;
+  const count = paymentState.allImages ? tweets.length : paymentState.imageCount;
+  setTimeout(() => {
+    const cards = document.querySelectorAll(".tweet-card");
+    for (let i = 0; i < Math.min(count, tweets.length); i++) {
+      if (cards[i]) {
+        const graphicBtn = cards[i].querySelector(".btn-ai-graphic");
+        if (graphicBtn && !graphicBtn.disabled) {
+          setTimeout(() => generateGraphic(graphicBtn, i), i * 800);
         }
       }
-    }, 500);
-  }
+    }
+  }, 500);
 }
+
+// ─── PAYMENT REDIRECT RECOVERY ────────────────────────────────────────────────
+// Save payment intent before Paystack opens (handles OPay/3DS bank redirects)
+function savePaymentIntent(tc, ic, email) {
+  sessionStorage.setItem("tc_payment_intent", JSON.stringify({
+    tweetCount: tc, imageCount: ic, allImages: ic === tc, email, ts: Date.now()
+  }));
+}
+
+// On page load: check if we're returning from a bank redirect with a Paystack ref
+(function checkPaymentReturn() {
+  const params = new URLSearchParams(window.location.search);
+  const ref = params.get("reference") || params.get("trxref");
+  const intent = sessionStorage.getItem("tc_payment_intent");
+  if (ref && intent) {
+    try {
+      const p = JSON.parse(intent);
+      if (Date.now() - p.ts < 30 * 60 * 1000) { // within 30 mins
+        paymentState.paid = true;
+        paymentState.tweetCount = p.tweetCount;
+        paymentState.imageCount = p.imageCount;
+        paymentState.allImages = p.allImages;
+        paymentState.email = p.email;
+        sessionStorage.removeItem("tc_payment_intent");
+        // Clean URL
+        window.history.replaceState({}, "", window.location.pathname);
+        // Unlock generate
+        setTimeout(unlockGenerate, 300);
+      }
+    } catch(e) {}
+  }
+})();
 
 </script>
 </body>
