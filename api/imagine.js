@@ -1,11 +1,48 @@
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { tweet, topic, brandColor, handle, tweetNum, tweetTotal, isHook, isCTA } = req.body;
-  if (!tweet) return res.status(400).json({ error: "Tweet text is required" });
-
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
   if (!OPENAI_API_KEY) return res.status(500).json({ error: "OpenAI API key not configured" });
+
+  // ── MODE: DALL-E image generation (when request contains a "prompt" field) ──
+  if (req.body.prompt) {
+    const { prompt, size = "1024x1024" } = req.body;
+    try {
+      const imgRes = await fetch("https://api.openai.com/v1/images/generations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "dall-e-3",
+          prompt,
+          n: 1,
+          size,
+          quality: "standard",
+          response_format: "url",
+        }),
+      });
+
+      if (!imgRes.ok) {
+        const err = await imgRes.json();
+        return res.status(500).json({ error: err.error?.message || "DALL-E error" });
+      }
+
+      const imgData = await imgRes.json();
+      const url = imgData.data?.[0]?.url;
+      if (!url) return res.status(500).json({ error: "No image URL returned from DALL-E" });
+
+      return res.status(200).json({ url });
+
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
+  // ── MODE: Layout JSON extraction (when request contains a "tweet" field) ──
+  const { tweet, topic, brandColor, handle, tweetNum, tweetTotal, isHook, isCTA } = req.body;
+  if (!tweet) return res.status(400).json({ error: "Tweet text or prompt is required" });
 
   const systemPrompt = `You are a professional infographic data extractor for Twitter/X thread graphics.
 Given a tweet, extract its key visual content for a clean, editorial infographic card rendered on a 1600x900px canvas with a gradient background.
@@ -47,9 +84,12 @@ Do NOT include pct for raw number grids.`;
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Tweet: "${tweet}"\nTopic: ${topic || "general"}\nBrand color: ${brandColor || "#6366f1"}\nHandle: ${handle || ""}\nTweet ${tweetNum || 1} of ${tweetTotal || 1}. Is hook: ${isHook || false}. Is CTA: ${isCTA || false}` }
-        ]
-      })
+          {
+            role: "user",
+            content: `Tweet: "${tweet}"\nTopic: ${topic || "general"}\nBrand color: ${brandColor || "#6366f1"}\nHandle: ${handle || ""}\nTweet ${tweetNum || 1} of ${tweetTotal || 1}. Is hook: ${isHook || false}. Is CTA: ${isCTA || false}`,
+          },
+        ],
+      }),
     });
 
     if (!extractRes.ok) {
