@@ -1,7 +1,5 @@
 module.exports = async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const { tweet, topic, brandColor, handle, tweetNum, tweetTotal, isHook, isCTA } = req.body;
   if (!tweet) return res.status(400).json({ error: "Tweet text is required" });
@@ -10,84 +8,80 @@ module.exports = async function handler(req, res) {
   if (!OPENAI_API_KEY) return res.status(500).json({ error: "OpenAI API key not configured" });
 
   const systemPrompt = `You are a professional infographic data extractor for Twitter/X thread graphics.
-Given a tweet, extract its key visual content for a clean, editorial infographic card.
+Given a tweet, extract its key visual content for a clean, editorial infographic card rendered on a 1600x900px canvas with a gradient background.
 
-The card will be 1600x900px (Twitter landscape). Your job is to identify the BEST layout for this tweet's content.
-
-Return ONLY valid JSON, no markdown, no preamble, no backticks:
+Return ONLY valid JSON, no markdown, no backticks:
 
 {
-  "layout": "stat" | "list" | "quote" | "comparison" | "tip",
-  "headline": "Short punchy headline (4-8 words max)",
-  "accentLabel": "2-3 word category label (e.g. DID YOU KNOW, KEY INSIGHT, FAST FACT)",
-  "stat": null or { "value": "65,000", "unit": "TPS", "label": "transactions per second" },
-  "points": [] or array of 3-4 short bullet strings (for list layout, max 8 words each),
-  "leftCol": null or { "label": "Option A", "points": ["point1","point2","point3"] },
-  "rightCol": null or { "label": "Option B", "points": ["point1","point2","point3"] },
-  "quoteText": null or "The key quote or stat statement from the tweet (under 20 words)",
+  "layout": "stat" | "list" | "data" | "comparison" | "quote",
+  "headline": "Short punchy headline (4-8 words)",
+  "accentLabel": "2-3 word category label (e.g. KEY INSIGHT, FAST FACT, PRO TIP)",
   "subtext": "Supporting line (max 10 words)",
-  "tweetNum": ${tweetNum || 1},
-  "tweetTotal": ${tweetTotal || 1}
+  "stat": null or { "value": "65,000", "unit": "TPS", "label": "transactions per second", "pct": 78 },
+  "points": [],
+  "leftCol": null or { "label": "Before", "points": ["point1","point2","point3"] },
+  "rightCol": null or { "label": "After", "points": ["point1","point2","point3"] },
+  "quoteText": null or "Key quote from tweet (under 20 words)",
+  "chartType": null or "bar" | "numbers" | "donut",
+  "chartData": null or array of { "label": "...", "value": "...", "pct": 0-100 }
 }
 
-Layout selection guide:
-- "stat": tweet contains a key number, metric, or percentage — show it HUGE
-- "list": tweet has 3-4 tips, steps, reasons, or items
-- "quote": tweet has a strong statement, insight, or opinion to highlight
-- "comparison": tweet contrasts two things — before/after, right/wrong, A vs B
-- "tip": tweet is a single actionable piece of advice with supporting context`;
+Layout guide:
+- "stat": tweet has ONE key number/metric — make it the hero. Include stat object. Set pct (0-100) if it's a percentage or can be expressed as progress.
+- "list": tweet has 3-4 distinct tips, steps, or reasons — fill points array (3-4 items, max 10 words each).
+- "data": tweet has MULTIPLE numbers, a comparison of values, or a breakdown — use chartData array (3-5 items). Set chartType: "bar" if items have percentages/rankings, "numbers" if just raw values, "donut" if single percentage.
+- "comparison": tweet contrasts two things (before/after, wrong/right, old/new) — fill leftCol and rightCol (2-4 points each).
+- "quote": tweet is a strong opinion, insight, or standalone statement — use quoteText.
+
+For chartData items: always include a numeric "value" string (e.g. "65K", "$2.4B", "3x") and "label". Add "pct" (0-100) only for bar charts where relative size makes sense.
+Do NOT include pct for raw number grids.`;
 
   try {
     const extractRes = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${OPENAI_API_KEY}` },
       body: JSON.stringify({
         model: "gpt-4o",
-        max_tokens: 600,
+        max_tokens: 700,
         temperature: 0.3,
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: `Tweet: "${tweet}"\nTopic: ${topic || "general"}\nBrand color: ${brandColor || "#e8ff47"}\nHandle: ${handle || ""}\nIs hook tweet: ${isHook || false}\nIs CTA tweet: ${isCTA || false}`
-          }
+          { role: "user", content: `Tweet: "${tweet}"\nTopic: ${topic || "general"}\nBrand color: ${brandColor || "#6366f1"}\nHandle: ${handle || ""}\nTweet ${tweetNum || 1} of ${tweetTotal || 1}. Is hook: ${isHook || false}. Is CTA: ${isCTA || false}` }
         ]
       })
     });
 
     if (!extractRes.ok) {
       const err = await extractRes.json();
-      return res.status(500).json({ error: err.error?.message || "GPT-4o extraction error" });
+      return res.status(500).json({ error: err.error?.message || "GPT-4o error" });
     }
 
     const extractData = await extractRes.json();
-    let extracted;
-
+    let d;
     try {
       const raw = extractData.choices[0].message.content.trim().replace(/```json|```/g, "").trim();
-      extracted = JSON.parse(raw);
+      d = JSON.parse(raw);
     } catch {
-      return res.status(500).json({ error: "Failed to parse GPT-4o response as JSON" });
+      return res.status(500).json({ error: "Failed to parse GPT-4o response" });
     }
 
-    // Ensure required fields always present
-    extracted.tweetNum = tweetNum || 1;
-    extracted.tweetTotal = tweetTotal || 1;
-    extracted.layout = extracted.layout || "quote";
-    extracted.headline = extracted.headline || "";
-    extracted.accentLabel = extracted.accentLabel || "KEY INSIGHT";
-    extracted.subtext = extracted.subtext || "";
-    extracted.points = extracted.points || [];
-    extracted.stat = extracted.stat || null;
-    extracted.leftCol = extracted.leftCol || null;
-    extracted.rightCol = extracted.rightCol || null;
-    extracted.quoteText = extracted.quoteText || null;
+    // Ensure required fields
+    d.tweetNum = tweetNum || 1;
+    d.tweetTotal = tweetTotal || 1;
+    d.layout = d.layout || "quote";
+    d.headline = d.headline || "";
+    d.accentLabel = d.accentLabel || "KEY INSIGHT";
+    d.subtext = d.subtext || "";
+    d.points = d.points || [];
+    d.stat = d.stat || null;
+    d.leftCol = d.leftCol || null;
+    d.rightCol = d.rightCol || null;
+    d.quoteText = d.quoteText || null;
+    d.chartType = d.chartType || null;
+    d.chartData = d.chartData || null;
 
-    return res.status(200).json(extracted);
+    return res.status(200).json(d);
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
