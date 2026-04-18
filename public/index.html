@@ -1023,8 +1023,11 @@ function autofillFromBrief(b){
   if(b.topic||b.title)document.getElementById("topic").value=b.topic||b.title;
   const parts=[];if(b.task)parts.push(`Task: ${b.task}`);if(b.requirements)parts.push(`Requirements: ${b.requirements}`);if(b.audience)parts.push(`Target audience: ${b.audience}`);
   if(parts.length)document.getElementById("context").value=parts.join("\n\n");
-  // Detect thin brief: task/requirements missing or placeholder "—"
-  const isThin = (!b.task || b.task==="—" || b.task.length < 20) && (!b.requirements || b.requirements==="—" || b.requirements.length < 20);
+  // Detect thin brief: task/requirements are missing, too short, or boilerplate
+  const boilerplate = ["create and submit","content creation skills","content creation","skills needed","—",""];
+  const taskThin = !b.task || b.task.length < 40 || boilerplate.some(p => b.task.toLowerCase().trim() === p);
+  const reqThin  = !b.requirements || b.requirements.length < 30 || boilerplate.some(p => b.requirements.toLowerCase().trim() === p);
+  const isThin   = taskThin || reqThin;
   document.getElementById("thinBriefWarning").style.display = isThin ? "block" : "none";
 }
 
