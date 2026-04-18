@@ -109,7 +109,6 @@
       background: var(--border);
     }
 
-    /* URL input */
     .url-block { margin-bottom: 32px; }
 
     .url-input-row {
@@ -152,7 +151,6 @@
     .btn-fetch:hover:not(:disabled) { background: #6dcfff; }
     .btn-fetch:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* Brief card */
     .brief-card {
       display: none;
       background: var(--surface2);
@@ -239,7 +237,6 @@
       font-size: 14px;
     }
 
-    /* Fetch status */
     .fetch-status {
       font-family: var(--mono);
       font-size: 12px;
@@ -266,7 +263,6 @@
       50% { opacity: 0.2; }
     }
 
-    /* Divider */
     .or-divider {
       display: flex;
       align-items: center;
@@ -289,7 +285,6 @@
       background: var(--border);
     }
 
-    /* Form */
     .form-section { margin-bottom: 40px; }
     .field { margin-bottom: 20px; }
 
@@ -409,7 +404,6 @@
 
     .error-box.visible { display: block; }
 
-    /* Thread output */
     .thread-section {
       display: none;
       animation: fadeUp 0.4s ease forwards;
@@ -429,7 +423,11 @@
       margin-bottom: 24px;
       padding-bottom: 16px;
       border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 12px;
     }
+
+    .thread-header-left { display: flex; flex-direction: column; gap: 4px; }
 
     .thread-title {
       font-family: var(--mono);
@@ -446,7 +444,9 @@
       line-height: 1;
     }
 
-    .btn-copy-all {
+    .thread-header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .btn-copy-all, .btn-dl-all {
       background: transparent;
       border: 1px solid var(--border);
       color: var(--muted2);
@@ -460,8 +460,10 @@
     }
 
     .btn-copy-all:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-dl-all { border-color: var(--border2); }
+    .btn-dl-all:hover { border-color: var(--accent2); color: var(--accent2); }
 
-    .tweet-list { display: flex; flex-direction: column; }
+    .tweet-list { display: flex; flex-direction: column; gap: 0; }
 
     .tweet-card {
       background: var(--surface);
@@ -520,11 +522,13 @@
       margin-top: 14px;
     }
 
+    .tweet-footer-right { display: flex; align-items: center; gap: 4px; }
+
     .char-count { font-family: var(--mono); font-size: 11px; color: var(--muted); }
     .char-count.warn { color: #ff9500; }
     .char-count.over { color: #ff4444; }
 
-    .btn-copy-tweet {
+    .btn-copy-tweet, .btn-dl-card {
       background: transparent;
       border: none;
       color: var(--muted);
@@ -538,6 +542,24 @@
 
     .btn-copy-tweet:hover { color: var(--accent); }
     .btn-copy-tweet.copied { color: var(--accent); }
+    .btn-dl-card:hover { color: var(--accent2); }
+
+    /* Tweet visual card */
+    .tweet-visual {
+      margin-top: 14px;
+      border-top: 1px solid var(--border2);
+      padding-top: 14px;
+      display: none;
+    }
+
+    .tweet-visual.visible { display: block; }
+
+    .tweet-visual canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      border: 1px solid var(--border2);
+    }
 
     footer {
       margin-top: 80px;
@@ -673,11 +695,14 @@
 
     <div class="thread-section" id="threadSection">
       <div class="thread-header">
-        <div>
+        <div class="thread-header-left">
           <div class="thread-title">Generated Thread</div>
           <div class="thread-count" id="tweetCountLabel">0 tweets</div>
         </div>
-        <button class="btn-copy-all" onclick="copyAll()">Copy All</button>
+        <div class="thread-header-actions">
+          <button class="btn-copy-all" onclick="copyAll()">Copy All</button>
+          <button class="btn-dl-all" onclick="downloadAllCards()">↓ All Graphics</button>
+        </div>
       </div>
       <div class="tweet-list" id="tweetList"></div>
     </div>
@@ -690,23 +715,21 @@
   <script>
     let currentBrief = null;
 
+    // ─── BRIEF / SCRAPE ───────────────────────────────────────────────────────
+
     async function fetchBrief() {
       const url = document.getElementById("gigUrl").value.trim();
       if (!url) { showError("Paste a gig URL first."); return; }
-
       clearError();
       setFetchLoading(true);
-
       try {
         const res = await fetch("/api/scrape", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ url }),
         });
-
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed to analyse URL");
-
         currentBrief = data.brief;
         renderBrief(data.brief);
         autofillFromBrief(data.brief);
@@ -729,9 +752,7 @@
     }
 
     function autofillFromBrief(brief) {
-      if (brief.topic || brief.title) {
-        document.getElementById("topic").value = brief.topic || brief.title;
-      }
+      if (brief.topic || brief.title) document.getElementById("topic").value = brief.topic || brief.title;
       const parts = [];
       if (brief.task) parts.push(`Task: ${brief.task}`);
       if (brief.requirements) parts.push(`Requirements: ${brief.requirements}`);
@@ -755,25 +776,23 @@
       status.classList.toggle("visible", active);
     }
 
+    // ─── GENERATE ─────────────────────────────────────────────────────────────
+
     async function generateThread() {
       const topic = document.getElementById("topic").value.trim();
       const context = document.getElementById("context").value.trim();
       const tone = document.getElementById("tone").value;
       const length = document.getElementById("length").value;
-
       if (!topic) { showError("Drop a topic first — or paste a gig link above."); return; }
-
       setLoading(true);
       clearError();
       hideThread();
-
       try {
         const res = await fetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ topic, context, tone, length }),
         });
-
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Something went wrong");
         renderThread(data.tweets);
@@ -784,10 +803,11 @@
       }
     }
 
+    // ─── RENDER THREAD ────────────────────────────────────────────────────────
+
     function renderThread(tweets) {
       const list = document.getElementById("tweetList");
       const section = document.getElementById("threadSection");
-
       list.innerHTML = "";
       document.getElementById("tweetCountLabel").textContent = `${tweets.length} tweets`;
 
@@ -809,7 +829,13 @@
           <div class="tweet-text">${escapeHtml(text)}</div>
           <div class="tweet-footer">
             <span class="char-count ${charClass}">${charCount}/280</span>
-            <button class="btn-copy-tweet" onclick="copyTweet(this, ${i})">copy</button>
+            <div class="tweet-footer-right">
+              <button class="btn-copy-tweet" onclick="copyTweet(this, ${i})">copy</button>
+              <button class="btn-dl-card" onclick="toggleCard(this, ${i})">↓ graphic</button>
+            </div>
+          </div>
+          <div class="tweet-visual" id="visual-${i}">
+            <canvas id="canvas-${i}" width="1080" height="1080"></canvas>
           </div>
         `;
 
@@ -820,6 +846,198 @@
       section.scrollIntoView({ behavior: "smooth", block: "start" });
       window._currentTweets = tweets;
     }
+
+    // ─── CANVAS CARD GENERATION ───────────────────────────────────────────────
+
+    function drawTweetCard(canvasId, text, index, total, isHook, isCTA) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const W = 1080, H = 1080;
+
+      // Background
+      ctx.fillStyle = "#0a0a0a";
+      ctx.fillRect(0, 0, W, H);
+
+      // Subtle grid pattern
+      ctx.strokeStyle = "rgba(255,255,255,0.025)";
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= W; x += 60) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      }
+      for (let y = 0; y <= H; y += 60) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+
+      // Top accent bar
+      const accentColor = isHook ? "#e8ff47" : isCTA ? "#ff6b35" : "#e8ff47";
+      ctx.fillStyle = accentColor;
+      ctx.fillRect(0, 0, W, 6);
+
+      // Left accent stripe
+      ctx.fillStyle = accentColor + "33";
+      ctx.fillRect(0, 0, 6, H);
+
+      // Inner card
+      const pad = 80;
+      ctx.fillStyle = "#111111";
+      ctx.fillRect(pad, pad, W - pad * 2, H - pad * 2);
+      ctx.strokeStyle = "#222222";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(pad, pad, W - pad * 2, H - pad * 2);
+
+      // Left accent inside card
+      ctx.fillStyle = accentColor;
+      ctx.fillRect(pad, pad, 4, H - pad * 2);
+
+      // Tweet number
+      ctx.font = "500 28px 'DM Mono', monospace";
+      ctx.fillStyle = "#444444";
+      ctx.fillText(`${String(index + 1).padStart(2, "0")} / ${total}`, pad + 40, pad + 56);
+
+      // Badge
+      if (isHook || isCTA) {
+        const label = isHook ? "HOOK" : "CTA";
+        const badgeColor = isHook ? "#e8ff47" : "#ff6b35";
+        ctx.font = "500 20px 'DM Mono', monospace";
+        const bw = ctx.measureText(label).width + 28;
+        const bx = W - pad - 40 - bw;
+        const by = pad + 36;
+        ctx.strokeStyle = badgeColor;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(bx, by, bw, 34);
+        ctx.fillStyle = badgeColor;
+        ctx.fillText(label, bx + 14, by + 23);
+      }
+
+      // Divider line
+      ctx.strokeStyle = "#222222";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad + 40, pad + 74);
+      ctx.lineTo(W - pad - 40, pad + 74);
+      ctx.stroke();
+
+      // Tweet text — wrapped
+      ctx.fillStyle = "#f0f0f0";
+      const fontSize = text.length > 180 ? 34 : text.length > 120 ? 38 : text.length > 80 ? 42 : 46;
+      ctx.font = `300 ${fontSize}px 'DM Sans', sans-serif`;
+      ctx.textBaseline = "top";
+
+      const textX = pad + 40;
+      const textY = pad + 110;
+      const maxWidth = W - pad * 2 - 80;
+      const lineHeight = fontSize * 1.6;
+
+      wrapText(ctx, text, textX, textY, maxWidth, lineHeight);
+
+      // Bottom branding bar
+      const barY = H - pad - 60;
+      ctx.strokeStyle = "#222222";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad + 40, barY); ctx.lineTo(W - pad - 40, barY); ctx.stroke();
+
+      // ThreadCraft logo text
+      ctx.font = "400 26px 'Bebas Neue', sans-serif";
+      ctx.fillStyle = accentColor;
+      ctx.letterSpacing = "2px";
+      ctx.fillText("THREADCRAFT", pad + 40, barY + 20);
+
+      // X / Twitter handle area
+      ctx.font = "400 22px 'DM Mono', monospace";
+      ctx.fillStyle = "#444444";
+      const xLabel = "// AI Thread Agent";
+      const xw = ctx.measureText(xLabel).width;
+      ctx.fillText(xLabel, W - pad - 40 - xw, barY + 22);
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const paragraphs = text.split("\n");
+      let currentY = y;
+      const maxY = 1080 - 80 - 80; // don't overflow into branding
+
+      for (const para of paragraphs) {
+        if (currentY > maxY) break;
+        if (para.trim() === "") { currentY += lineHeight * 0.5; continue; }
+        const words = para.split(" ");
+        let line = "";
+        for (const word of words) {
+          const test = line ? line + " " + word : word;
+          if (ctx.measureText(test).width > maxWidth && line) {
+            if (currentY + lineHeight > maxY) { ctx.fillText(line + "…", x, currentY); return; }
+            ctx.fillText(line, x, currentY);
+            currentY += lineHeight;
+            line = word;
+          } else {
+            line = test;
+          }
+        }
+        if (line) {
+          if (currentY + lineHeight <= maxY + lineHeight) {
+            ctx.fillText(line, x, currentY);
+            currentY += lineHeight;
+          }
+        }
+      }
+    }
+
+    // ─── TOGGLE + DOWNLOAD ────────────────────────────────────────────────────
+
+    function toggleCard(btn, index) {
+      const visual = document.getElementById(`visual-${index}`);
+      const tweets = window._currentTweets;
+      if (!tweets) return;
+
+      const isVisible = visual.classList.contains("visible");
+
+      if (!isVisible) {
+        visual.classList.add("visible");
+        const text = tweets[index];
+        const isHook = index === 0;
+        const isCTA = index === tweets.length - 1;
+        drawTweetCard(`canvas-${index}`, text, index, tweets.length, isHook, isCTA);
+        btn.textContent = "↓ save";
+        btn.onclick = () => downloadCard(index);
+      } else {
+        visual.classList.remove("visible");
+        btn.textContent = "↓ graphic";
+        btn.onclick = () => toggleCard(btn, index);
+      }
+    }
+
+    function downloadCard(index) {
+      const canvas = document.getElementById(`canvas-${index}`);
+      if (!canvas) return;
+      const link = document.createElement("a");
+      link.download = `threadcraft-tweet-${String(index + 1).padStart(2, "0")}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+
+    async function downloadAllCards() {
+      const tweets = window._currentTweets;
+      if (!tweets) return;
+
+      const btn = document.querySelector(".btn-dl-all");
+      btn.textContent = "Generating...";
+      btn.disabled = true;
+
+      // Render all cards to hidden canvases then download sequentially
+      for (let i = 0; i < tweets.length; i++) {
+        const visual = document.getElementById(`visual-${i}`);
+        visual.classList.add("visible");
+        drawTweetCard(`canvas-${i}`, tweets[i], i, tweets.length, i === 0, i === tweets.length - 1);
+        await new Promise(r => setTimeout(r, 80)); // small delay between downloads
+        downloadCard(i);
+        await new Promise(r => setTimeout(r, 300));
+      }
+
+      btn.textContent = "↓ All Graphics";
+      btn.disabled = false;
+    }
+
+    // ─── HELPERS ──────────────────────────────────────────────────────────────
 
     function copyTweet(btn, index) {
       navigator.clipboard.writeText(window._currentTweets[index]).then(() => {
