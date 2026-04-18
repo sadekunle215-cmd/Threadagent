@@ -544,6 +544,56 @@
     .btn-copy-tweet.copied { color: var(--accent); }
     .btn-dl-card:hover { color: var(--accent2); }
 
+    /* Brand color row */
+    .brand-color-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      margin-bottom: 20px;
+    }
+
+    .brand-color-row label {
+      margin: 0;
+      flex-shrink: 0;
+    }
+
+    .color-picker-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+
+    input[type="color"] {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border2);
+      background: none;
+      padding: 2px;
+      cursor: pointer;
+      border-radius: 0;
+      flex-shrink: 0;
+    }
+
+    .color-hex-input {
+      width: 110px !important;
+      font-family: var(--mono) !important;
+      font-size: 13px !important;
+      padding: 8px 12px !important;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .color-preview-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      flex: 1;
+    }
+
     /* Tweet visual card */
     .tweet-visual {
       margin-top: 14px;
@@ -560,6 +610,71 @@
       display: block;
       border: 1px solid var(--border2);
     }
+
+    /* AI image */
+    .ai-image-wrap {
+      margin-top: 12px;
+      position: relative;
+    }
+
+    .ai-image-wrap img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border: 1px solid var(--border2);
+    }
+
+    .ai-image-loading {
+      display: none;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      padding: 28px 20px;
+      text-align: center;
+    }
+
+    .ai-image-loading.visible { display: block; }
+
+    .ai-image-loading-text {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted2);
+      letter-spacing: 1px;
+    }
+
+    .ai-image-loading-bar {
+      height: 2px;
+      background: var(--border);
+      margin-top: 14px;
+      overflow: hidden;
+    }
+
+    .ai-image-loading-bar::after {
+      content: '';
+      display: block;
+      height: 100%;
+      width: 40%;
+      background: var(--accent2);
+      animation: slide 1.5s ease-in-out infinite;
+    }
+
+    .btn-dl-img {
+      display: block;
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--muted2);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 8px;
+      cursor: pointer;
+      margin-top: 8px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .btn-dl-img:hover { border-color: var(--accent2); color: var(--accent2); }
 
     footer {
       margin-top: 80px;
@@ -657,6 +772,15 @@
         <textarea id="context" placeholder="Add details, talking points, or notes for the AI..."></textarea>
       </div>
 
+      <div class="brand-color-row">
+        <label>Brand Color</label>
+        <div class="color-picker-wrap">
+          <input type="color" id="brandColorPicker" value="#e8ff47" oninput="syncColorHex(this.value)" />
+          <input type="text" id="brandColorHex" class="color-hex-input" value="#E8FF47" placeholder="#E8FF47" oninput="syncColorPicker(this.value)" maxlength="7" />
+          <span class="color-preview-label">Used for AI-generated visuals</span>
+        </div>
+      </div>
+
       <div class="controls-row">
         <div class="field" style="margin-bottom:0">
           <label>Tone</label>
@@ -714,6 +838,82 @@
 
   <script>
     let currentBrief = null;
+
+    // ─── COLOR SYNC ───────────────────────────────────────────────────────────
+
+    function syncColorHex(val) {
+      document.getElementById("brandColorHex").value = val.toUpperCase();
+    }
+
+    function syncColorPicker(val) {
+      if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+        document.getElementById("brandColorPicker").value = val;
+      }
+    }
+
+    function getBrandColor() {
+      const hex = document.getElementById("brandColorHex").value.trim();
+      return /^#[0-9A-Fa-f]{6}$/.test(hex) ? hex : "#e8ff47";
+    }
+
+    // ─── AI IMAGE GENERATION ──────────────────────────────────────────────────
+
+    async function generateImage(btn, index) {
+      const tweets = window._currentTweets;
+      if (!tweets) return;
+
+      const topic = document.getElementById("topic").value.trim();
+      const brandColor = getBrandColor();
+      const tweet = tweets[index];
+
+      const loading = document.getElementById(`imgloading-${index}`);
+      const wrap = document.getElementById(`imgwrap-${index}`);
+
+      btn.disabled = true;
+      btn.textContent = "generating...";
+      loading.classList.add("visible");
+      wrap.style.display = "none";
+
+      try {
+        const res = await fetch("/api/imagine", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tweet, topic, brandColor }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Image generation failed");
+
+        loading.classList.remove("visible");
+        wrap.style.display = "block";
+        wrap.innerHTML = `
+          <img src="${data.image}" alt="AI visual for tweet ${index + 1}" />
+          <button class="btn-dl-img" onclick="downloadAiImage(${index})">↓ Download Image</button>
+        `;
+
+        // Store image data for download
+        if (!window._tweetImages) window._tweetImages = {};
+        window._tweetImages[index] = data.image;
+
+        btn.textContent = "✦ regenerate";
+        btn.disabled = false;
+
+      } catch (err) {
+        loading.classList.remove("visible");
+        btn.textContent = "✦ AI image";
+        btn.disabled = false;
+        showError(`Image ${index + 1}: ${err.message}`);
+      }
+    }
+
+    function downloadAiImage(index) {
+      const imgData = window._tweetImages?.[index];
+      if (!imgData) return;
+      const link = document.createElement("a");
+      link.download = `threadcraft-visual-${String(index + 1).padStart(2, "0")}.png`;
+      link.href = imgData;
+      link.click();
+    }
 
     // ─── BRIEF / SCRAPE ───────────────────────────────────────────────────────
 
@@ -832,11 +1032,17 @@
             <div class="tweet-footer-right">
               <button class="btn-copy-tweet" onclick="copyTweet(this, ${i})">copy</button>
               <button class="btn-dl-card" onclick="toggleCard(this, ${i})">↓ graphic</button>
+              <button class="btn-ai-img" onclick="generateImage(this, ${i})" style="background:transparent;border:none;color:var(--muted2);font-family:var(--mono);font-size:11px;cursor:pointer;padding:4px 8px;transition:color 0.2s;letter-spacing:1px;" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--muted2)'">✦ AI image</button>
             </div>
           </div>
           <div class="tweet-visual" id="visual-${i}">
             <canvas id="canvas-${i}" width="1080" height="1080"></canvas>
           </div>
+          <div class="ai-image-loading" id="imgloading-${i}">
+            <div class="ai-image-loading-text">// Generating visual for tweet ${i + 1}...</div>
+            <div class="ai-image-loading-bar"></div>
+          </div>
+          <div class="ai-image-wrap" id="imgwrap-${i}" style="display:none;"></div>
         `;
 
         list.appendChild(card);
