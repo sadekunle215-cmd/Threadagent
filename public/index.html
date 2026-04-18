@@ -8,10 +8,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --black:#0a0a0a;--surface:#111;--surface2:#181818;
-      --border:#222;--border2:#2a2a2a;
-      --accent:#6366f1;--accent2:#ff6b35;--accent3:#47b8ff;
-      --text:#f0f0f0;--muted:#555;--muted2:#888;
+      --black:#080808;--surface:#0f0f0f;--surface2:#141414;
+      --border:#1e1e1e;--border2:#272727;
+      --accent:#c0392b;--accent2:#e74c3c;--accent3:#ff4d4d;
+      --text:#f0f0f0;--muted:#444;--muted2:#777;
       --mono:"DM Mono",monospace;--sans:"DM Sans",sans-serif;--display:"Bebas Neue",sans-serif;
     }
     *{box-sizing:border-box;margin:0;padding:0}
@@ -20,7 +20,7 @@
     .container{max-width:780px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
     header{padding:48px 0 32px;border-bottom:1px solid var(--border);margin-bottom:48px}
     .logo-row{display:flex;align-items:baseline;gap:12px;margin-bottom:8px}
-    .logo{font-family:var(--display);font-size:52px;letter-spacing:2px;color:#a5b4fc;line-height:1}
+    .logo{font-family:var(--display);font-size:52px;letter-spacing:2px;color:#e74c3c;line-height:1}
     .logo-tag{font-family:var(--mono);font-size:11px;color:var(--muted2);letter-spacing:3px;text-transform:uppercase;border:1px solid var(--border2);padding:3px 8px}
     .tagline{font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:.5px}
     .step-label{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:20px;display:flex;align-items:center;gap:10px}
@@ -30,8 +30,8 @@
     .url-input-row input{flex:1;background:var(--surface);border:1px solid var(--border);border-right:none;color:var(--text);font-family:var(--mono);font-size:13px;padding:14px 16px;outline:none;transition:border-color .2s;min-width:0}
     .url-input-row input:focus{border-color:var(--accent3)}
     .url-input-row input::placeholder{color:var(--muted)}
-    .btn-fetch{background:var(--accent3);color:var(--black);border:none;font-family:var(--mono);font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:14px 20px;cursor:pointer;white-space:nowrap;transition:all .15s;font-weight:500}
-    .btn-fetch:hover:not(:disabled){background:#6dcfff}
+    .btn-fetch{background:var(--accent3);color:#fff;border:none;font-family:var(--mono);font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:14px 20px;cursor:pointer;white-space:nowrap;transition:all .15s;font-weight:500}
+    .btn-fetch:hover:not(:disabled){background:#ff3333}
     .btn-fetch:disabled{opacity:.5;cursor:not-allowed}
     .brief-card{display:none;background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--accent3);padding:20px;margin-top:16px}
     .brief-card.visible{display:block}
@@ -57,20 +57,20 @@
     .field{margin-bottom:20px}
     label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
     input[type="text"],textarea{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--sans);font-size:15px;padding:14px 16px;outline:none;transition:border-color .2s;resize:vertical}
-    input[type="text"]:focus,textarea:focus{border-color:#6366f1}
+    input[type="text"]:focus,textarea:focus{border-color:var(--accent)}
     input[type="text"]::placeholder,textarea::placeholder{color:var(--muted);font-size:14px}
     textarea{min-height:90px}
     .controls-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
     .select-wrap{position:relative}
     select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:12px 16px;outline:none;appearance:none;cursor:pointer;transition:border-color .2s}
-    select:focus{border-color:#6366f1}
+    select:focus{border-color:var(--accent)}
     .select-arrow{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:10px;pointer-events:none}
-    .btn-generate{width:100%;background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;border:none;font-family:var(--display);font-size:22px;letter-spacing:3px;padding:18px;cursor:pointer;transition:all .15s}
+    .btn-generate{width:100%;background:linear-gradient(135deg,#c0392b,#e74c3c);color:#fff;border:none;font-family:var(--display);font-size:22px;letter-spacing:3px;padding:18px;cursor:pointer;transition:all .15s}
     .btn-generate:hover:not(:disabled){opacity:.9;transform:translateY(-1px)}
     .btn-generate:disabled{opacity:.5;cursor:not-allowed}
     .loading-bar{height:2px;background:var(--border);margin-top:16px;overflow:hidden;display:none}
     .loading-bar.active{display:block}
-    .loading-bar::after{content:'';display:block;height:100%;width:40%;background:linear-gradient(90deg,#6366f1,#a855f7);animation:slide 1.2s ease-in-out infinite}
+    .loading-bar::after{content:'';display:block;height:100%;width:40%;background:linear-gradient(90deg,#c0392b,#e74c3c);animation:slide 1.2s ease-in-out infinite}
     @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
     .error-box{background:#1a0a0a;border:1px solid #ff3b3b44;color:#ff6b6b;font-family:var(--mono);font-size:13px;padding:14px 16px;margin-top:16px;display:none}
     .error-box.visible{display:block}
@@ -80,21 +80,21 @@
     .thread-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px}
     .thread-header-left{display:flex;flex-direction:column;gap:4px}
     .thread-title{font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
-    .thread-count{font-family:var(--display);font-size:28px;color:#a5b4fc;line-height:1}
+    .thread-count{font-family:var(--display);font-size:28px;color:#e74c3c;line-height:1}
     .thread-header-actions{display:flex;gap:8px;flex-wrap:wrap}
     .btn-copy-all,.btn-dl-all{background:transparent;border:1px solid var(--border);color:var(--muted2);font-family:var(--mono);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 14px;cursor:pointer;transition:all .2s}
-    .btn-copy-all:hover{border-color:#6366f1;color:#a5b4fc}
+    .btn-copy-all:hover{border-color:var(--accent);color:#e74c3c}
     .btn-dl-all:hover{border-color:var(--accent2);color:var(--accent2)}
     .tweet-list{display:flex;flex-direction:column}
     .tweet-card{background:var(--surface);border:1px solid var(--border);border-top:none;padding:20px;transition:background .15s;animation:fadeUp .3s ease forwards;animation-delay:calc(var(--i)*.04s);opacity:0}
     .tweet-card:first-child{border-top:1px solid var(--border)}
     .tweet-card:hover{background:#131313}
-    .tweet-card.hook{border-left:3px solid #6366f1}
+    .tweet-card.hook{border-left:3px solid var(--accent)}
     .tweet-card.cta{border-left:3px solid var(--accent2)}
     .tweet-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
     .tweet-num{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:1px}
     .tweet-badge{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:2px 7px;border:1px solid}
-    .tweet-badge.hook-badge{color:#a5b4fc;border-color:#6366f1}
+    .tweet-badge.hook-badge{color:#e74c3c;border-color:#c0392b}
     .tweet-badge.cta-badge{color:var(--accent2);border-color:var(--accent2)}
     .tweet-text{font-size:15px;line-height:1.7;color:var(--text);white-space:pre-wrap;word-break:break-word}
     .tweet-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
@@ -103,11 +103,11 @@
     .char-count.warn{color:#ff9500}
     .char-count.over{color:#ff4444}
     .btn-copy-tweet,.btn-dl-card{background:transparent;border:none;color:var(--muted);font-family:var(--mono);font-size:11px;cursor:pointer;padding:4px 8px;transition:color .2s;letter-spacing:1px}
-    .btn-copy-tweet:hover{color:#a5b4fc}
-    .btn-copy-tweet.copied{color:#a5b4fc}
+    .btn-copy-tweet:hover{color:#e74c3c}
+    .btn-copy-tweet.copied{color:#e74c3c}
     .btn-dl-card:hover{color:var(--accent2)}
     .btn-ai-graphic{background:transparent;border:none;color:var(--muted2);font-family:var(--mono);font-size:11px;cursor:pointer;padding:4px 8px;transition:color .2s;letter-spacing:1px}
-    .btn-ai-graphic:hover{color:#a5b4fc}
+    .btn-ai-graphic:hover{color:#e74c3c}
     .btn-ai-graphic:disabled{opacity:.4;cursor:not-allowed}
 
     /* ── Gradient Style Picker ── */
@@ -116,14 +116,17 @@
     .gradient-presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
     .preset{display:flex;align-items:center;gap:7px;background:transparent;border:1px solid var(--border2);color:var(--muted2);font-family:var(--mono);font-size:11px;padding:6px 10px;cursor:pointer;transition:all .15s;letter-spacing:.5px}
     .preset span{width:20px;height:20px;border-radius:3px;flex-shrink:0;display:block}
-    .preset:hover{border-color:#6366f1;color:#a5b4fc}
-    .preset.active{border-color:#6366f1;color:#a5b4fc;background:rgba(99,102,241,.1)}
+    .preset:hover{border-color:var(--accent);color:#e74c3c}
+    .preset.active{border-color:var(--accent);color:#e74c3c;background:rgba(192,57,43,.12)}
     .custom-colors{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
     .custom-color-field{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--muted)}
     .custom-color-field input[type="color"]{width:32px;height:32px;border:1px solid var(--border2);background:none;padding:2px;cursor:pointer}
-    .custom-color-field input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:#6366f1}
+    .custom-color-field input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:#c0392b}
 
-    /* ── Canvas visual ── */
+    /* ── Card Preview ── */
+    .card-preview-wrap{margin-top:16px;border-top:1px solid var(--border2);padding-top:14px}
+    .card-preview-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    #cardPreviewCanvas{width:100%;height:auto;display:block;border:1px solid var(--border2)}
     .tweet-visual{margin-top:14px;border-top:1px solid var(--border2);padding-top:14px;display:none}
     .tweet-visual.visible{display:block}
     .tweet-visual canvas,.ai-graphic-wrap canvas{width:100%;height:auto;display:block;border:1px solid var(--border2)}
@@ -132,9 +135,9 @@
     .ai-image-loading.visible{display:block}
     .ai-image-loading-text{font-family:var(--mono);font-size:12px;color:var(--muted2);letter-spacing:1px}
     .ai-image-loading-bar{height:2px;background:var(--border);margin-top:14px;overflow:hidden}
-    .ai-image-loading-bar::after{content:'';display:block;height:100%;width:40%;background:linear-gradient(90deg,#6366f1,#a855f7);animation:slide 1.5s ease-in-out infinite}
+    .ai-image-loading-bar::after{content:'';display:block;height:100%;width:40%;background:linear-gradient(90deg,#c0392b,#e74c3c);animation:slide 1.5s ease-in-out infinite}
     .btn-dl-img{display:block;width:100%;background:transparent;border:1px solid var(--border2);color:var(--muted2);font-family:var(--mono);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:8px;cursor:pointer;margin-top:8px;text-align:center;transition:all .2s}
-    .btn-dl-img:hover{border-color:#6366f1;color:#a5b4fc}
+    .btn-dl-img:hover{border-color:var(--accent);color:#e74c3c}
     footer{margin-top:80px;padding:32px 0;border-top:1px solid var(--border);text-align:center}
     footer p{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:1px}
     @media(max-width:560px){.logo{font-size:38px}.controls-row{grid-template-columns:1fr}.brief-grid{grid-template-columns:1fr}.brief-field.full{grid-column:1}.custom-colors{flex-wrap:wrap}}
@@ -194,41 +197,45 @@
     <div class="brand-color-row">
       <label>Card Style</label>
       <div class="gradient-presets" id="gradientPresets">
-        <button class="preset active" data-c1="#6366f1" data-c2="#a855f7" data-dark="false" onclick="selectPreset(this)">
-          <span style="background:linear-gradient(135deg,#6366f1,#a855f7)"></span>Violet
+        <button class="preset active" data-c1="#c0392b" data-c2="#1a0000" data-dark="false" onclick="selectPreset(this)">
+          <span style="background:linear-gradient(135deg,#c0392b,#1a0000)"></span>Crimson
         </button>
-        <button class="preset" data-c1="#0ea5e9" data-c2="#6366f1" data-dark="false" onclick="selectPreset(this)">
-          <span style="background:linear-gradient(135deg,#0ea5e9,#6366f1)"></span>Ocean
+        <button class="preset" data-c1="#e74c3c" data-c2="#8b0000" data-dark="false" onclick="selectPreset(this)">
+          <span style="background:linear-gradient(135deg,#e74c3c,#8b0000)"></span>Blood
         </button>
-        <button class="preset" data-c1="#f97316" data-c2="#ef4444" data-dark="false" onclick="selectPreset(this)">
-          <span style="background:linear-gradient(135deg,#f97316,#ef4444)"></span>Fire
+        <button class="preset" data-c1="#ff4d4d" data-c2="#c0392b" data-dark="false" onclick="selectPreset(this)">
+          <span style="background:linear-gradient(135deg,#ff4d4d,#c0392b)"></span>Fire
         </button>
-        <button class="preset" data-c1="#10b981" data-c2="#0ea5e9" data-dark="false" onclick="selectPreset(this)">
-          <span style="background:linear-gradient(135deg,#10b981,#0ea5e9)"></span>Mint
+        <button class="preset" data-c1="#0f0f0f" data-c2="#1a0000" data-dark="false" onclick="selectPreset(this)">
+          <span style="background:linear-gradient(135deg,#0f0f0f,#1a0000)"></span>Void
         </button>
-        <button class="preset" data-c1="#f59e0b" data-c2="#f97316" data-dark="false" onclick="selectPreset(this)">
-          <span style="background:linear-gradient(135deg,#f59e0b,#f97316)"></span>Sunset
+        <button class="preset" data-c1="#1a0000" data-c2="#4a0000" data-dark="false" onclick="selectPreset(this)">
+          <span style="background:linear-gradient(135deg,#1a0000,#4a0000)"></span>Dark Red
         </button>
-        <button class="preset" data-c1="#f8fafc" data-c2="#dbeafe" data-dark="true" onclick="selectPreset(this)">
-          <span style="background:linear-gradient(135deg,#f8fafc,#dbeafe);outline:1px solid #cbd5e1"></span>Clean
+        <button class="preset" data-c1="#f5f5f5" data-c2="#ffd5d5" data-dark="true" onclick="selectPreset(this)">
+          <span style="background:linear-gradient(135deg,#f5f5f5,#ffd5d5);outline:1px solid #ccc"></span>Clean
         </button>
-        <button class="preset" data-c1="#0f172a" data-c2="#1e293b" data-dark="false" onclick="selectPreset(this)">
-          <span style="background:linear-gradient(135deg,#0f172a,#1e293b)"></span>Slate
+        <button class="preset" data-c1="#0a0a0a" data-c2="#111111" data-dark="false" onclick="selectPreset(this)">
+          <span style="background:linear-gradient(135deg,#0a0a0a,#111111);outline:1px solid #333"></span>Slate
         </button>
       </div>
       <div class="custom-colors">
         <div class="custom-color-field">
           <span>Color A</span>
-          <input type="color" id="color1" value="#6366f1" oninput="onCustomColor()" />
+          <input type="color" id="color1" value="#c0392b" oninput="onCustomColor()" />
         </div>
         <div class="custom-color-field">
           <span>Color B</span>
-          <input type="color" id="color2" value="#a855f7" oninput="onCustomColor()" />
+          <input type="color" id="color2" value="#1a0000" oninput="onCustomColor()" />
         </div>
         <div class="custom-color-field">
           <span>Dark text</span>
           <input type="checkbox" id="darkTextMode" onchange="onCustomColor()" />
         </div>
+      </div>
+      <div class="card-preview-wrap">
+        <div class="card-preview-label">// Live preview — selecting "Crimson" style</div>
+        <canvas id="cardPreviewCanvas" width="1600" height="900"></canvas>
       </div>
     </div>
 
@@ -288,7 +295,112 @@
 
 <script>
 // ─── CARD STYLE STATE ─────────────────────────────────────────────────────────
-let cardStyle = { c1:"#6366f1", c2:"#a855f7", darkText:false };
+let cardStyle = { c1:"#c0392b", c2:"#1a0000", darkText:false };
+
+function drawPreviewCard() {
+  const canvas = document.getElementById("cardPreviewCanvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const W = 1600, H = 900;
+  const {c1, c2, darkText} = cardStyle;
+  const TEXT = darkText ? "#1e293b" : "#ffffff";
+  const TEXT_MED = darkText ? "#475569" : "rgba(255,255,255,0.72)";
+  const TEXT_LOW = darkText ? "#94a3b8" : "rgba(255,255,255,0.35)";
+  const ACCENT = darkText ? c1 : "#ffffff";
+
+  // Background
+  ctx.fillStyle = makeGrad(ctx, W, H, c1, c2);
+  ctx.fillRect(0, 0, W, H);
+
+  // Noise dots
+  const orig = ctx.globalAlpha;
+  ctx.fillStyle = darkText ? "rgba(0,0,0,0.025)" : "rgba(255,255,255,0.025)";
+  for (let x=20;x<W;x+=28) for (let y=20;y<H;y+=28) if (Math.random()>.65){ctx.beginPath();ctx.arc(x,y,1,0,Math.PI*2);ctx.fill();}
+  ctx.globalAlpha = orig;
+
+  // Header bar
+  ctx.fillStyle = darkText ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.22)";
+  ctx.fillRect(0, 0, W, 72);
+  ctx.font = "500 14px 'DM Mono',monospace";
+  ctx.fillStyle = TEXT_MED; ctx.textBaseline = "middle";
+  ctx.fillText("01 / 08", 40, 36);
+
+  // Hook pill
+  const lbl = "HOOK";
+  ctx.font = "500 11px 'DM Mono',monospace";
+  const lw = ctx.measureText(lbl).width;
+  ctx.fillStyle = "rgba(255,255,255,0.22)";
+  ctx.beginPath(); ctx.roundRect(W-40-lw-22, 20, lw+22, 30, 4); ctx.fill();
+  ctx.fillStyle = ACCENT; ctx.fillText(lbl, W-40-lw-11, 36);
+  ctx.textBaseline = "alphabetic";
+
+  // ── Color picker UI overlay to show "selecting" ──
+  // This is the "example" of color selection in action
+  const panelX = 80, panelY = 120, panelW = 680, panelH = 300;
+  ctx.fillStyle = darkText ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.35)";
+  ctx.beginPath(); ctx.roundRect(panelX, panelY, panelW, panelH, 14); ctx.fill();
+  ctx.strokeStyle = darkText ? "rgba(0,0,0,0.12)" : "rgba(255,255,255,0.18)";
+  ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(panelX, panelY, panelW, panelH, 14); ctx.stroke();
+
+  ctx.font = "500 18px 'DM Mono',monospace"; ctx.fillStyle = TEXT_LOW; ctx.textBaseline = "alphabetic";
+  ctx.fillText("CARD STYLE", panelX+28, panelY+44);
+
+  // Draw mini preset swatches inside panel — show one "active" (current)
+  const presets = [
+    {c:"linear-gradient(135deg,#c0392b,#1a0000)", hex1:"#c0392b", hex2:"#1a0000", label:"Crimson"},
+    {c:"linear-gradient(135deg,#e74c3c,#8b0000)", hex1:"#e74c3c", hex2:"#8b0000", label:"Blood"},
+    {c:"linear-gradient(135deg,#ff4d4d,#c0392b)", hex1:"#ff4d4d", hex2:"#c0392b", label:"Fire"},
+    {c:"linear-gradient(135deg,#0f0f0f,#1a0000)", hex1:"#0f0f0f", hex2:"#1a0000", label:"Void"},
+  ];
+  const swatchY = panelY + 72, swatchSize = 44, swatchGap = 20;
+  presets.forEach((p, i) => {
+    const sx = panelX + 28 + i * (swatchSize + swatchGap + 70);
+    const isActive = (p.hex1 === c1);
+    // swatch box
+    const sg = ctx.createLinearGradient(sx, swatchY, sx+swatchSize, swatchY+swatchSize);
+    sg.addColorStop(0, p.hex1); sg.addColorStop(1, p.hex2);
+    ctx.fillStyle = sg;
+    ctx.beginPath(); ctx.roundRect(sx, swatchY, swatchSize, swatchSize, 6); ctx.fill();
+    if (isActive) {
+      ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.roundRect(sx-3, swatchY-3, swatchSize+6, swatchSize+6, 8); ctx.stroke();
+      // checkmark
+      ctx.fillStyle = "#fff"; ctx.font = "bold 22px sans-serif"; ctx.textBaseline="middle"; ctx.textAlign="center";
+      ctx.fillText("✓", sx+swatchSize/2, swatchY+swatchSize/2);
+      ctx.textAlign="left"; ctx.textBaseline="alphabetic";
+    }
+    ctx.font = "400 16px 'DM Mono',monospace"; ctx.fillStyle = isActive ? TEXT : TEXT_LOW;
+    ctx.fillText(p.label, sx, swatchY + swatchSize + 22);
+  });
+
+  // Color A / Color B pickers with cursor arrow showing "selecting"
+  const pickerY = panelY + 178;
+  ctx.font = "400 16px 'DM Mono',monospace"; ctx.fillStyle = TEXT_LOW;
+  ctx.fillText("Color A", panelX+28, pickerY);
+  ctx.fillStyle = c1; ctx.strokeStyle = darkText?"rgba(0,0,0,0.2)":"rgba(255,255,255,0.3)"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.roundRect(panelX+28, pickerY+10, 48, 48, 6); ctx.fill(); ctx.stroke();
+  ctx.fillText("Color B", panelX+110, pickerY);
+  ctx.fillStyle = c2;
+  ctx.beginPath(); ctx.roundRect(panelX+110, pickerY+10, 48, 48, 6); ctx.fill(); ctx.stroke();
+  // cursor arrow over Color A picker
+  ctx.font = "28px sans-serif"; ctx.textBaseline="alphabetic";
+  ctx.fillStyle = "#fff"; ctx.fillText("↖", panelX+62, pickerY+22);
+
+  // Right side: tweet text preview
+  const txtX = panelX + panelW + 60, txtMaxW = W - txtX - 80;
+  const sampleText = "Most people never build in public because they're afraid of judgment.\n\nBut the builders shipping in public every day? They're compounding reputation while others stay silent.";
+  const fs = 44;
+  ctx.font = `300 ${fs}px 'DM Sans',sans-serif`; ctx.fillStyle = TEXT; ctx.textBaseline = "alphabetic";
+  wrapText(ctx, sampleText, txtX, 190, txtMaxW, fs*1.55, H-100);
+
+  // Footer
+  ctx.fillStyle = darkText ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.22)";
+  ctx.fillRect(0, H-72, W, 72);
+  ctx.font = "400 13px 'DM Mono',monospace"; ctx.fillStyle = TEXT_LOW; ctx.textBaseline = "middle";
+  const ftw = ctx.measureText("// AI Thread Agent").width;
+  ctx.fillText("// AI Thread Agent", W-40-ftw, H-36);
+  ctx.textBaseline = "alphabetic";
+}
 
 function selectPreset(btn) {
   document.querySelectorAll(".preset").forEach(b => b.classList.remove("active"));
@@ -299,12 +411,19 @@ function selectPreset(btn) {
   document.getElementById("color1").value = cardStyle.c1;
   document.getElementById("color2").value = cardStyle.c2;
   document.getElementById("darkTextMode").checked = cardStyle.darkText;
+  // Update preview label
+  const lbl = document.querySelector(".card-preview-label");
+  if (lbl) lbl.textContent = `// Live preview — "${btn.textContent.trim()}" style selected`;
+  drawPreviewCard();
 }
 function onCustomColor() {
   document.querySelectorAll(".preset").forEach(b => b.classList.remove("active"));
   cardStyle.c1 = document.getElementById("color1").value;
   cardStyle.c2 = document.getElementById("color2").value;
   cardStyle.darkText = document.getElementById("darkTextMode").checked;
+  const lbl = document.querySelector(".card-preview-label");
+  if (lbl) lbl.textContent = `// Live preview — custom colors`;
+  drawPreviewCard();
 }
 
 // ─── COLOUR UTILS ─────────────────────────────────────────────────────────────
@@ -492,11 +611,9 @@ function drawInfographic(canvas, d, style, handle, isHook, isCTA) {
   }
 
   // ── Footer ──
-  ctx.fillStyle=darkText?"rgba(255,255,255,0.6)":"rgba(0,0,0,0.2)";
+  ctx.fillStyle=darkText?"rgba(255,255,255,0.6)":"rgba(0,0,0,0.25)";
   ctx.fillRect(0,H-72,W,72);
-  ctx.font="400 28px 'Bebas Neue',sans-serif"; ctx.fillStyle=ACCENT; ctx.textBaseline="middle";
-  ctx.fillText("THREADCRAFT",40,H-36);
-  ctx.font="400 13px 'DM Mono',monospace"; ctx.fillStyle=TEXT_LOW;
+  ctx.font="400 13px 'DM Mono',monospace"; ctx.fillStyle=TEXT_LOW; ctx.textBaseline="middle";
   const tw=ctx.measureText("// AI Thread Agent").width;
   ctx.fillText("// AI Thread Agent",W-40-tw,H-36);
   ctx.textBaseline="alphabetic";
@@ -666,10 +783,8 @@ function drawTextCard(id, text, idx, total, isHook, isCTA) {
   const pX=80, fs=text.length>200?34:text.length>140?42:text.length>80?52:62;
   ctx.font=`300 ${fs}px 'DM Sans',sans-serif`; ctx.fillStyle=TEXT;
   wrapText(ctx,text,pX,140,W-pX*2,fs*1.55,H-90);
-  ctx.fillStyle=darkText?"rgba(255,255,255,0.6)":"rgba(0,0,0,0.2)"; ctx.fillRect(0,H-72,W,72);
-  ctx.font="400 28px 'Bebas Neue',sans-serif"; ctx.fillStyle=ACCENT; ctx.textBaseline="middle";
-  ctx.fillText("THREADCRAFT",40,H-36);
-  ctx.font="400 13px 'DM Mono',monospace"; ctx.fillStyle=TEXT_LOW;
+  ctx.fillStyle=darkText?"rgba(255,255,255,0.6)":"rgba(0,0,0,0.25)"; ctx.fillRect(0,H-72,W,72);
+  ctx.font="400 13px 'DM Mono',monospace"; ctx.fillStyle=TEXT_LOW; ctx.textBaseline="middle";
   const tw=ctx.measureText("// AI Thread Agent").width;
   ctx.fillText("// AI Thread Agent",W-40-tw,H-36); ctx.textBaseline="alphabetic";
 }
@@ -810,6 +925,9 @@ function escapeHtml(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").repla
 
 document.getElementById("gigUrl").addEventListener("keydown",e=>{if(e.key==="Enter")fetchBrief();});
 document.getElementById("topic").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey)generateThread();});
+
+// Draw the card style preview on load
+window.addEventListener("load", () => { drawPreviewCard(); });
 </script>
 </body>
 </html>
