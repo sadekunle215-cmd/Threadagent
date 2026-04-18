@@ -544,7 +544,6 @@
     .btn-copy-tweet.copied { color: var(--accent); }
     .btn-dl-card:hover { color: var(--accent2); }
 
-    /* Brand color row */
     .brand-color-row {
       display: flex;
       align-items: center;
@@ -594,7 +593,7 @@
       flex: 1;
     }
 
-    /* Tweet visual card */
+    /* Tweet visual card — 16:9 aspect ratio */
     .tweet-visual {
       margin-top: 14px;
       border-top: 1px solid var(--border2);
@@ -611,13 +610,13 @@
       border: 1px solid var(--border2);
     }
 
-    /* AI image */
-    .ai-image-wrap {
+    /* AI graphic */
+    .ai-graphic-wrap {
       margin-top: 12px;
       position: relative;
     }
 
-    .ai-image-wrap img {
+    .ai-graphic-wrap canvas {
       width: 100%;
       height: auto;
       display: block;
@@ -689,6 +688,21 @@
       color: var(--muted);
       letter-spacing: 1px;
     }
+
+    .btn-ai-graphic {
+      background: transparent;
+      border: none;
+      color: var(--muted2);
+      font-family: var(--mono);
+      font-size: 11px;
+      cursor: pointer;
+      padding: 4px 8px;
+      transition: color 0.2s;
+      letter-spacing: 1px;
+    }
+
+    .btn-ai-graphic:hover { color: var(--accent2); }
+    .btn-ai-graphic:disabled { opacity: 0.4; cursor: not-allowed; }
 
     @media (max-width: 560px) {
       .logo { font-size: 38px; }
@@ -837,7 +851,7 @@
     </div>
 
     <footer>
-      <p>ThreadCraft — Built for Superteam Earn // Powered by GPT-4o</p>
+      <p>ThreadCraft — AI Thread Agent // Powered by Claude</p>
     </footer>
   </div>
 
@@ -861,9 +875,9 @@
       return /^#[0-9A-Fa-f]{6}$/.test(hex) ? hex : "#e8ff47";
     }
 
-    // ─── AI IMAGE GENERATION ──────────────────────────────────────────────────
+    // ─── CLAUDE-POWERED INFOGRAPHIC GENERATION ────────────────────────────────
 
-    async function generateImage(btn, index) {
+    async function generateGraphic(btn, index) {
       const tweets = window._currentTweets;
       if (!tweets) return;
 
@@ -871,46 +885,71 @@
       const brandColor = getBrandColor();
       const handle = document.getElementById("xHandle")?.value.trim() || "";
       const tweet = tweets[index];
+      const total = tweets.length;
+      const isHook = index === 0;
+      const isCTA = index === total - 1;
 
       const loading = document.getElementById(`imgloading-${index}`);
       const wrap = document.getElementById(`imgwrap-${index}`);
 
       btn.disabled = true;
-      btn.textContent = "generating...";
+      btn.textContent = "designing...";
       loading.classList.add("visible");
       wrap.style.display = "none";
+      wrap.innerHTML = "";
 
       try {
-        const res = await fetch("/api/imagine", {
+        // Call /api/imagine (GPT-4o) to extract structured infographic layout data
+        const response = await fetch("/api/imagine", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tweet, topic, brandColor, handle }),
+          body: JSON.stringify({
+            tweet,
+            topic: topic || "general",
+            brandColor,
+            handle,
+            tweetNum: index + 1,
+            tweetTotal: total,
+            isHook,
+            isCTA
+          })
         });
 
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Image generation failed");
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Graphic generation failed");
+
+        let extracted;
+        try {
+          // If server returns raw JSON string, parse it; if already object, use directly
+          extracted = typeof data === "string" ? JSON.parse(data) : data;
+        } catch {
+          throw new Error("Could not parse graphic data");
+        }
+
+        // Ensure tweetNum/tweetTotal are set
+        extracted.tweetNum = index + 1;
+        extracted.tweetTotal = total;
+
+        // Draw infographic canvas
+        const canvas = document.createElement("canvas");
+        canvas.width = 1600;
+        canvas.height = 900;
+
+        await drawInfographic(canvas, extracted, brandColor, handle, isHook, isCTA);
 
         loading.classList.remove("visible");
         wrap.style.display = "block";
-
-        // Composite on canvas
-        const canvas = document.createElement("canvas");
-        canvas.width = 1080;
-        canvas.height = 1080;
-        wrap.innerHTML = "";
+        wrap.className = "ai-graphic-wrap";
         wrap.appendChild(canvas);
 
-        await compositeCard(canvas, data, brandColor);
-
-        const finalImg = canvas.toDataURL("image/png");
+        // Store for download
         if (!window._tweetImages) window._tweetImages = {};
-        window._tweetImages[index] = finalImg;
+        window._tweetImages[index] = canvas.toDataURL("image/png");
 
-        // Show download button
         const dlBtn = document.createElement("button");
         dlBtn.className = "btn-dl-img";
-        dlBtn.textContent = "↓ Download Image";
-        dlBtn.onclick = () => downloadAiImage(index);
+        dlBtn.textContent = "↓ Download Graphic (1600×900)";
+        dlBtn.onclick = () => downloadGraphic(index);
         wrap.appendChild(dlBtn);
 
         btn.textContent = "✦ regenerate";
@@ -918,129 +957,593 @@
 
       } catch (err) {
         loading.classList.remove("visible");
-        btn.textContent = "✦ AI image";
+        btn.textContent = "✦ graphic";
         btn.disabled = false;
-        showError(`Image ${index + 1}: ${err.message}`);
+        showError(`Graphic ${index + 1}: ${err.message}`);
       }
     }
 
-    async function compositeCard(canvas, data, brandColor) {
+    // ─── INFOGRAPHIC CANVAS RENDERER ─────────────────────────────────────────
+
+    function hexToRgb(hex) {
+      const r = parseInt(hex.slice(1,3), 16);
+      const g = parseInt(hex.slice(3,5), 16);
+      const b = parseInt(hex.slice(5,7), 16);
+      return { r, g, b };
+    }
+
+    function drawInfographic(canvas, d, brandColor, handle, isHook, isCTA) {
       const ctx = canvas.getContext("2d");
-      const W = 1080, H = 1080;
+      const W = 1600, H = 900;
+      const rgb = hexToRgb(brandColor);
+      const accent = brandColor;
+      const accentRgba = (a) => `rgba(${rgb.r},${rgb.g},${rgb.b},${a})`;
 
-      // Draw background image
-      await new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => {
-          ctx.drawImage(img, 0, 0, W, H);
-          resolve();
-        };
-        img.onerror = () => resolve(); // fallback if image fails
-        img.src = data.bg;
-      });
-
-      // Dark gradient overlay — heavier at bottom for text legibility
-      const grad = ctx.createLinearGradient(0, 0, 0, H);
-      grad.addColorStop(0, "rgba(0,0,0,0.35)");
-      grad.addColorStop(0.4, "rgba(0,0,0,0.55)");
-      grad.addColorStop(1, "rgba(0,0,0,0.88)");
-      ctx.fillStyle = grad;
+      // ── Background ──
+      ctx.fillStyle = "#0a0a0a";
       ctx.fillRect(0, 0, W, H);
 
-      // Left brand stripe
-      ctx.fillStyle = brandColor;
-      ctx.fillRect(0, 0, 7, H);
-
-      // Top handle bar
-      if (data.handle) {
-        ctx.fillStyle = "rgba(0,0,0,0.6)";
-        ctx.fillRect(28, 28, 320, 48);
-        ctx.font = "500 20px 'DM Mono', monospace";
-        ctx.fillStyle = "#cccccc";
-        ctx.fillText(data.handle, 44, 58);
+      // Subtle dot grid
+      ctx.fillStyle = "rgba(255,255,255,0.022)";
+      for (let x = 40; x < W; x += 48) {
+        for (let y = 40; y < H; y += 48) {
+          ctx.beginPath();
+          ctx.arc(x, y, 1, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
-      // --- Main text area (lower 55% of card) ---
-      const textStartY = H * 0.42;
+      // Large faint accent glow blob top-right
+      const grd = ctx.createRadialGradient(W * 0.85, H * 0.15, 0, W * 0.85, H * 0.15, 420);
+      grd.addColorStop(0, accentRgba(0.07));
+      grd.addColorStop(1, "transparent");
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, W, H);
 
-      // Subtext label
-      if (data.subtext) {
-        ctx.font = "300 26px 'DM Sans', sans-serif";
-        ctx.fillStyle = "rgba(255,255,255,0.6)";
-        ctx.fillText(data.subtext.toUpperCase(), 60, textStartY);
+      // ── Left accent bar ──
+      ctx.fillStyle = accent;
+      ctx.fillRect(0, 0, 6, H);
+
+      // Horizontal rule at top
+      ctx.fillStyle = "#181818";
+      ctx.fillRect(6, 0, W - 6, 72);
+      ctx.fillStyle = "#222";
+      ctx.fillRect(6, 72, W - 6, 1);
+
+      // ── Top bar: tweet counter + label ──
+      ctx.font = "500 13px 'DM Mono', monospace";
+      ctx.fillStyle = "#444";
+      ctx.textBaseline = "middle";
+      ctx.fillText(`${String(d.tweetNum).padStart(2,"0")} / ${String(d.tweetTotal).padStart(2,"0")}`, 40, 36);
+
+      // Accent label badge
+      if (d.accentLabel) {
+        const label = d.accentLabel.toUpperCase();
+        ctx.font = "500 11px 'DM Mono', monospace";
+        const lw = ctx.measureText(label).width;
+        const bx = 110, by = 22, bw = lw + 24, bh = 28;
+        ctx.fillStyle = accentRgba(0.12);
+        ctx.fillRect(bx, by, bw, bh);
+        ctx.strokeStyle = accentRgba(0.5);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(bx, by, bw, bh);
+        ctx.fillStyle = accent;
+        ctx.fillText(label, bx + 12, by + bh/2);
       }
 
-      // STAT — huge number if present
-      if (data.stat) {
-        const statSize = data.stat.length > 8 ? 110 : 140;
-        ctx.font = `700 ${statSize}px 'DM Sans', sans-serif`;
-        ctx.fillStyle = brandColor;
-        ctx.shadowColor = brandColor + "88";
-        ctx.shadowBlur = 40;
-        ctx.fillText(data.stat, 60, textStartY + (data.subtext ? 100 : 80));
-        ctx.shadowBlur = 0;
+      // Handle
+      if (handle) {
+        ctx.font = "400 13px 'DM Mono', monospace";
+        ctx.fillStyle = "#444";
+        const hw = ctx.measureText(handle).width;
+        ctx.fillText(handle, W - 40 - hw, 36);
       }
 
-      // HEADLINE — large editorial text
-      const headlineY = data.stat
-        ? textStartY + (data.subtext ? 100 : 80) + (data.stat.length > 8 ? 130 : 160)
-        : textStartY + (data.subtext ? 90 : 60);
+      // Badge for hook/CTA
+      if (isHook || isCTA) {
+        const badgeLabel = isHook ? "HOOK" : "CTA";
+        const badgeColor = isHook ? accent : "#ff6b35";
+        ctx.font = "500 11px 'DM Mono', monospace";
+        const bw2 = ctx.measureText(badgeLabel).width + 20;
+        const bx2 = W - 40 - bw2 - (handle ? ctx.measureText(handle).width + 30 : 0);
+        ctx.strokeStyle = badgeColor;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(bx2, 22, bw2, 28);
+        ctx.fillStyle = badgeColor;
+        ctx.fillText(badgeLabel, bx2 + 10, 36);
+      }
 
-      const headlineSize = data.headline.length > 30 ? 52 : data.headline.length > 20 ? 62 : 72;
-      ctx.font = `700 ${headlineSize}px 'DM Sans', sans-serif`;
-      ctx.fillStyle = "#ffffff";
+      ctx.textBaseline = "alphabetic";
 
-      // Wrap headline
-      wrapCanvasText(ctx, data.headline, 60, headlineY, W - 120, headlineSize * 1.25);
+      // ── Main content area ──
+      const contentY = 72 + 60; // start below top bar
+      const contentH = H - contentY - 80; // leave room for footer
+      const padX = 80;
 
-      // Bottom branding bar
-      const barY = H - 70;
-      ctx.fillStyle = "rgba(0,0,0,0.5)";
-      ctx.fillRect(0, barY - 10, W, 80);
+      switch (d.layout) {
+        case "stat":    drawStatLayout(ctx, d, accent, accentRgba, W, H, contentY, contentH, padX); break;
+        case "list":    drawListLayout(ctx, d, accent, accentRgba, W, H, contentY, contentH, padX); break;
+        case "quote":   drawQuoteLayout(ctx, d, accent, accentRgba, W, H, contentY, contentH, padX); break;
+        case "comparison": drawComparisonLayout(ctx, d, accent, accentRgba, W, H, contentY, contentH, padX); break;
+        case "tip":     drawTipLayout(ctx, d, accent, accentRgba, W, H, contentY, contentH, padX); break;
+        default:        drawQuoteLayout(ctx, d, accent, accentRgba, W, H, contentY, contentH, padX);
+      }
 
-      // Accent line above bar
-      ctx.fillStyle = brandColor;
-      ctx.fillRect(0, barY - 12, W, 3);
+      // ── Footer bar ──
+      const footerY = H - 68;
+      ctx.fillStyle = "#0f0f0f";
+      ctx.fillRect(6, footerY, W - 6, 68);
+      ctx.fillStyle = "#1e1e1e";
+      ctx.fillRect(6, footerY, W - 6, 1);
 
-      ctx.font = "600 24px 'Bebas Neue', sans-serif";
-      ctx.fillStyle = brandColor;
-      ctx.letterSpacing = "3px";
-      ctx.fillText("THREADCRAFT", 60, barY + 32);
+      ctx.font = "400 22px 'Bebas Neue', sans-serif";
+      ctx.fillStyle = accent;
+      ctx.textBaseline = "middle";
+      ctx.fillText("THREADCRAFT", 40, footerY + 34);
 
-      ctx.font = "400 20px 'DM Mono', monospace";
-      ctx.fillStyle = "rgba(255,255,255,0.35)";
-      const tagText = "// AI Thread Agent";
-      const tw = ctx.measureText(tagText).width;
-      ctx.fillText(tagText, W - 60 - tw, barY + 32);
+      ctx.font = "400 13px 'DM Mono', monospace";
+      ctx.fillStyle = "#333";
+      const tagW = ctx.measureText("// AI Thread Agent").width;
+      ctx.fillText("// AI Thread Agent", W - 40 - tagW, footerY + 34);
+
+      ctx.textBaseline = "alphabetic";
     }
 
-    function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+    // ── STAT LAYOUT ──
+    function drawStatLayout(ctx, d, accent, accentRgba, W, H, cY, cH, pX) {
+      const centerY = cY + cH / 2;
+
+      // Subtext label above stat
+      if (d.subtext) {
+        ctx.font = "300 18px 'DM Sans', sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.4)";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText(d.subtext.toUpperCase(), pX, centerY - 140);
+      }
+
+      // The big stat
+      if (d.stat) {
+        const statStr = d.stat.value;
+        const unitStr = d.stat.unit || "";
+        const labelStr = d.stat.label || "";
+
+        // Draw value enormously
+        const valSize = statStr.length > 6 ? 160 : statStr.length > 4 ? 200 : 240;
+        ctx.font = `700 ${valSize}px 'DM Sans', sans-serif`;
+        ctx.fillStyle = accent;
+        ctx.shadowColor = accentRgba(0.4);
+        ctx.shadowBlur = 60;
+        ctx.fillText(statStr, pX, centerY + valSize * 0.3);
+        ctx.shadowBlur = 0;
+
+        // Unit
+        if (unitStr) {
+          ctx.font = "300 52px 'DM Sans', sans-serif";
+          ctx.fillStyle = accentRgba(0.7);
+          const valW = ctx.measureText(statStr).width;
+          // Measure with the big font first
+          ctx.font = `700 ${valSize}px 'DM Sans', sans-serif`;
+          const vw = ctx.measureText(statStr).width;
+          ctx.font = "300 52px 'DM Sans', sans-serif";
+          ctx.fillText(unitStr, pX + vw + 16, centerY + 20);
+        }
+
+        // Label below
+        if (labelStr) {
+          ctx.font = "400 22px 'DM Mono', monospace";
+          ctx.fillStyle = "rgba(255,255,255,0.3)";
+          ctx.fillText(labelStr.toUpperCase(), pX, centerY + valSize * 0.3 + 32);
+        }
+      }
+
+      // Headline to the right
+      if (d.headline) {
+        const hSize = d.headline.length > 30 ? 38 : d.headline.length > 20 ? 46 : 54;
+        ctx.font = `500 ${hSize}px 'DM Sans', sans-serif`;
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        wrapCtxText(ctx, d.headline, W * 0.56, cY + 100, W * 0.38, hSize * 1.4);
+      }
+
+      // Vertical divider
+      ctx.strokeStyle = "rgba(255,255,255,0.08)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(W * 0.54, cY + 30);
+      ctx.lineTo(W * 0.54, cY + cH - 30);
+      ctx.stroke();
+    }
+
+    // ── LIST LAYOUT ──
+    function drawListLayout(ctx, d, accent, accentRgba, W, H, cY, cH, pX) {
+      // Headline top-left
+      if (d.headline) {
+        const hSize = d.headline.length > 30 ? 42 : 52;
+        ctx.font = `700 ${hSize}px 'DM Sans', sans-serif`;
+        ctx.fillStyle = "#f0f0f0";
+        ctx.textBaseline = "alphabetic";
+        wrapCtxText(ctx, d.headline, pX, cY + hSize, W * 0.55, hSize * 1.35);
+      }
+
+      // Subtext
+      if (d.subtext) {
+        ctx.font = "300 20px 'DM Sans', sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.4)";
+        ctx.fillText(d.subtext, pX, cY + 130);
+      }
+
+      // List items
+      const points = (d.points || []).slice(0, 4);
+      const listStartY = cY + 200;
+      const itemGap = Math.min(100, (cH - 200) / Math.max(points.length, 1));
+
+      points.forEach((pt, i) => {
+        const itemY = listStartY + i * itemGap;
+
+        // Number circle
+        ctx.beginPath();
+        ctx.arc(pX + 20, itemY - 14, 20, 0, Math.PI * 2);
+        ctx.fillStyle = i === 0 ? accent : accentRgba(0.15);
+        ctx.fill();
+
+        ctx.font = `700 16px 'DM Mono', monospace`;
+        ctx.fillStyle = i === 0 ? "#0a0a0a" : accent;
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "center";
+        ctx.fillText(String(i + 1), pX + 20, itemY - 14);
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+
+        // Item text
+        ctx.font = "400 26px 'DM Sans', sans-serif";
+        ctx.fillStyle = i === 0 ? "#f0f0f0" : "rgba(255,255,255,0.65)";
+        wrapCtxText(ctx, pt, pX + 54, itemY, W * 0.82, 34);
+      });
+
+      // Right side decorative accent block
+      ctx.fillStyle = accentRgba(0.06);
+      ctx.fillRect(W * 0.88, cY, W * 0.1, cH);
+      ctx.fillStyle = accent;
+      ctx.fillRect(W * 0.97, cY, 3, cH);
+    }
+
+    // ── QUOTE LAYOUT ──
+    function drawQuoteLayout(ctx, d, accent, accentRgba, W, H, cY, cH, pX) {
+      const centerY = cY + cH / 2;
+      const text = d.quoteText || d.headline || "";
+
+      // Big quote mark
+      ctx.font = "700 220px 'DM Sans', sans-serif";
+      ctx.fillStyle = accentRgba(0.07);
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText('"', pX - 10, cY + 200);
+
+      // Quote text centered
+      const qSize = text.length > 60 ? 40 : text.length > 40 ? 50 : 62;
+      ctx.font = `300 ${qSize}px 'DM Sans', sans-serif`;
+      ctx.fillStyle = "#f0f0f0";
+      const maxW = W - pX * 2 - 40;
+      wrapCtxText(ctx, text, pX + 40, centerY - 30, maxW, qSize * 1.5);
+
+      // Accent underline
+      ctx.fillStyle = accent;
+      ctx.fillRect(pX + 40, centerY + 50, 80, 4);
+
+      // Subtext below
+      if (d.subtext) {
+        ctx.font = "300 20px 'DM Mono', monospace";
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.fillText(d.subtext.toUpperCase(), pX + 40, centerY + 100);
+      }
+
+      // Headline small label top
+      if (d.headline && d.headline !== text) {
+        ctx.font = "500 16px 'DM Mono', monospace";
+        ctx.fillStyle = accentRgba(0.8);
+        ctx.fillText(d.headline.toUpperCase(), pX + 40, cY + 48);
+      }
+    }
+
+    // ── COMPARISON LAYOUT ──
+    function drawComparisonLayout(ctx, d, accent, accentRgba, W, H, cY, cH, pX) {
+      const midX = W / 2;
+
+      // Headline at top
+      if (d.headline) {
+        ctx.font = "700 48px 'DM Sans', sans-serif";
+        ctx.fillStyle = "#f0f0f0";
+        ctx.textBaseline = "alphabetic";
+        ctx.textAlign = "center";
+        ctx.fillText(d.headline, midX, cY + 60);
+        ctx.textAlign = "left";
+      }
+
+      // Left column
+      const left = d.leftCol || { label: "Before", points: [] };
+      const right = d.rightCol || { label: "After", points: [] };
+
+      // Left card
+      ctx.fillStyle = "#111";
+      ctx.fillRect(pX, cY + 100, midX - pX - 24, cH - 120);
+      ctx.strokeStyle = "#222";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(pX, cY + 100, midX - pX - 24, cH - 120);
+      ctx.fillStyle = "#1e1e1e";
+      ctx.fillRect(pX, cY + 100, midX - pX - 24, 52);
+
+      ctx.font = "700 18px 'DM Mono', monospace";
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.textBaseline = "middle";
+      ctx.fillText(left.label.toUpperCase(), pX + 20, cY + 126);
+
+      (left.points || []).slice(0,4).forEach((pt, i) => {
+        ctx.font = "400 22px 'DM Sans', sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.55)";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText("✕  " + pt, pX + 20, cY + 200 + i * 56);
+      });
+
+      // Right card
+      ctx.fillStyle = "#0f1508";
+      ctx.fillRect(midX + 24, cY + 100, W - midX - 24 - pX, cH - 120);
+      ctx.strokeStyle = accentRgba(0.3);
+      ctx.lineWidth = 1;
+      ctx.strokeRect(midX + 24, cY + 100, W - midX - 24 - pX, cH - 120);
+      ctx.fillStyle = accentRgba(0.15);
+      ctx.fillRect(midX + 24, cY + 100, W - midX - 24 - pX, 52);
+
+      ctx.font = "700 18px 'DM Mono', monospace";
+      ctx.fillStyle = accent;
+      ctx.textBaseline = "middle";
+      ctx.fillText(right.label.toUpperCase(), midX + 44, cY + 126);
+
+      (right.points || []).slice(0,4).forEach((pt, i) => {
+        ctx.font = "400 22px 'DM Sans', sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.8)";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText("✓  " + pt, midX + 44, cY + 200 + i * 56);
+      });
+
+      // VS divider
+      ctx.font = "700 24px 'Bebas Neue', sans-serif";
+      ctx.fillStyle = "#333";
+      ctx.textBaseline = "middle";
+      ctx.textAlign = "center";
+      ctx.fillText("VS", midX, cY + 100 + (cH - 120) / 2);
+      ctx.textAlign = "left";
+    }
+
+    // ── TIP LAYOUT ──
+    function drawTipLayout(ctx, d, accent, accentRgba, W, H, cY, cH, pX) {
+      // Large "TIP" background word
+      ctx.font = "700 320px 'Bebas Neue', sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,0.018)";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText("TIP", pX - 10, cY + cH * 0.85);
+
+      // Accent line
+      ctx.fillStyle = accent;
+      ctx.fillRect(pX, cY + 60, 60, 5);
+
+      // Category label
+      if (d.accentLabel) {
+        ctx.font = "500 14px 'DM Mono', monospace";
+        ctx.fillStyle = accent;
+        ctx.fillText(d.accentLabel.toUpperCase(), pX, cY + 40);
+      }
+
+      // Headline
+      if (d.headline) {
+        const hSize = d.headline.length > 35 ? 50 : d.headline.length > 25 ? 60 : 72;
+        ctx.font = `700 ${hSize}px 'DM Sans', sans-serif`;
+        ctx.fillStyle = "#f0f0f0";
+        wrapCtxText(ctx, d.headline, pX, cY + 100 + hSize, W * 0.7, hSize * 1.35);
+      }
+
+      // Subtext
+      if (d.subtext) {
+        ctx.font = "300 24px 'DM Sans', sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.45)";
+        wrapCtxText(ctx, d.subtext, pX, cY + 300, W * 0.65, 36);
+      }
+
+      // Points (if any)
+      (d.points || []).slice(0,3).forEach((pt, i) => {
+        ctx.fillStyle = i === 0 ? accentRgba(0.9) : "rgba(255,255,255,0.5)";
+        ctx.font = "400 22px 'DM Sans', sans-serif";
+        ctx.fillText("→  " + pt, pX, cY + 380 + i * 52);
+      });
+
+      // Right side stat box
+      if (d.stat) {
+        const bx = W * 0.72, by = cY + 60, bw = W * 0.22, bh = cH * 0.6;
+        ctx.fillStyle = "#111";
+        ctx.fillRect(bx, by, bw, bh);
+        ctx.strokeStyle = accentRgba(0.25);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(bx, by, bw, bh);
+
+        const sv = d.stat.value;
+        const svSize = sv.length > 5 ? 72 : 96;
+        ctx.font = `700 ${svSize}px 'DM Sans', sans-serif`;
+        ctx.fillStyle = accent;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(sv, bx + bw/2, by + bh * 0.42);
+
+        if (d.stat.unit) {
+          ctx.font = "300 22px 'DM Mono', monospace";
+          ctx.fillStyle = accentRgba(0.6);
+          ctx.fillText(d.stat.unit, bx + bw/2, by + bh * 0.65);
+        }
+
+        if (d.stat.label) {
+          ctx.font = "400 16px 'DM Sans', sans-serif";
+          ctx.fillStyle = "rgba(255,255,255,0.3)";
+          ctx.fillText(d.stat.label, bx + bw/2, by + bh * 0.82);
+        }
+
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+      }
+    }
+
+    // ─── TEXT WRAP HELPER ──────────────────────────────────────────────────────
+
+    function wrapCtxText(ctx, text, x, y, maxWidth, lineHeight) {
       const words = text.split(" ");
       let line = "";
-      let currentY = y;
-      const maxY = 1080 - 100;
+      let curY = y;
+      const maxY = 860;
       for (const word of words) {
         const test = line ? line + " " + word : word;
         if (ctx.measureText(test).width > maxWidth && line) {
-          if (currentY > maxY) return;
-          ctx.fillText(line, x, currentY);
-          currentY += lineHeight;
+          if (curY > maxY) { ctx.fillText(line + "…", x, curY); return; }
+          ctx.fillText(line, x, curY);
+          curY += lineHeight;
           line = word;
         } else {
           line = test;
         }
       }
-      if (line && currentY <= maxY) ctx.fillText(line, x, currentY);
+      if (line && curY <= maxY) ctx.fillText(line, x, curY);
     }
 
-    function downloadAiImage(index) {
+    // ─── BASIC TEXT CARD (↓ graphic button) ──────────────────────────────────
+
+    function drawTweetCard(canvasId, text, index, total, isHook, isCTA) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const W = 1600, H = 900;
+      const accent = getBrandColor();
+      const rgb = hexToRgb(accent);
+      const accentRgba = (a) => `rgba(${rgb.r},${rgb.g},${rgb.b},${a})`;
+
+      ctx.fillStyle = "#0a0a0a";
+      ctx.fillRect(0, 0, W, H);
+
+      // Dot grid
+      ctx.fillStyle = "rgba(255,255,255,0.02)";
+      for (let x = 40; x < W; x += 48) {
+        for (let y = 40; y < H; y += 48) {
+          ctx.beginPath(); ctx.arc(x, y, 1, 0, Math.PI*2); ctx.fill();
+        }
+      }
+
+      // Glow blob
+      const grd = ctx.createRadialGradient(W*0.8, H*0.2, 0, W*0.8, H*0.2, 380);
+      grd.addColorStop(0, accentRgba(0.06));
+      grd.addColorStop(1, "transparent");
+      ctx.fillStyle = grd; ctx.fillRect(0,0,W,H);
+
+      // Left accent bar
+      ctx.fillStyle = accent; ctx.fillRect(0,0,6,H);
+
+      // Top bar
+      ctx.fillStyle = "#181818"; ctx.fillRect(6,0,W-6,72);
+      ctx.fillStyle = "#222"; ctx.fillRect(6,72,W-6,1);
+
+      ctx.font = "500 13px 'DM Mono', monospace";
+      ctx.fillStyle = "#444";
+      ctx.textBaseline = "middle";
+      ctx.fillText(`${String(index+1).padStart(2,"0")} / ${String(total).padStart(2,"0")}`, 40, 36);
+
+      if (isHook || isCTA) {
+        const label = isHook ? "HOOK" : "CTA";
+        const col = isHook ? accent : "#ff6b35";
+        ctx.font = "500 11px 'DM Mono', monospace";
+        const bw = ctx.measureText(label).width + 20;
+        ctx.strokeStyle = col; ctx.lineWidth = 1;
+        ctx.strokeRect(W - 40 - bw, 22, bw, 28);
+        ctx.fillStyle = col;
+        ctx.fillText(label, W - 40 - bw + 10, 36);
+      }
+      ctx.textBaseline = "alphabetic";
+
+      // Tweet text — large, clean
+      const pX = 80;
+      const textStart = 160;
+      const fontSize = text.length > 200 ? 34 : text.length > 140 ? 40 : text.length > 80 ? 48 : 58;
+      ctx.font = `300 ${fontSize}px 'DM Sans', sans-serif`;
+      ctx.fillStyle = "#f0f0f0";
+      wrapCtxText(ctx, text, pX, textStart, W - pX * 2, fontSize * 1.55);
+
+      // Footer
+      const fY = H - 68;
+      ctx.fillStyle = "#0f0f0f"; ctx.fillRect(6, fY, W-6, 68);
+      ctx.fillStyle = "#1e1e1e"; ctx.fillRect(6, fY, W-6, 1);
+      ctx.font = "400 22px 'Bebas Neue', sans-serif";
+      ctx.fillStyle = accent;
+      ctx.textBaseline = "middle";
+      ctx.fillText("THREADCRAFT", 40, fY+34);
+      ctx.font = "400 13px 'DM Mono', monospace";
+      ctx.fillStyle = "#333";
+      const tw = ctx.measureText("// AI Thread Agent").width;
+      ctx.fillText("// AI Thread Agent", W - 40 - tw, fY+34);
+      ctx.textBaseline = "alphabetic";
+    }
+
+    // ─── TOGGLE + DOWNLOAD ────────────────────────────────────────────────────
+
+    function toggleCard(btn, index) {
+      const visual = document.getElementById(`visual-${index}`);
+      const tweets = window._currentTweets;
+      if (!tweets) return;
+
+      const isVisible = visual.classList.contains("visible");
+
+      if (!isVisible) {
+        visual.classList.add("visible");
+        const text = tweets[index];
+        const isHook = index === 0;
+        const isCTA = index === tweets.length - 1;
+        drawTweetCard(`canvas-${index}`, text, index, tweets.length, isHook, isCTA);
+        btn.textContent = "↓ save";
+        btn.onclick = () => downloadCard(index);
+      } else {
+        visual.classList.remove("visible");
+        btn.textContent = "↓ graphic";
+        btn.onclick = () => toggleCard(btn, index);
+      }
+    }
+
+    function downloadCard(index) {
+      const canvas = document.getElementById(`canvas-${index}`);
+      if (!canvas) return;
+      const link = document.createElement("a");
+      link.download = `threadcraft-tweet-${String(index+1).padStart(2,"0")}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+
+    function downloadGraphic(index) {
       const imgData = window._tweetImages?.[index];
       if (!imgData) return;
       const link = document.createElement("a");
-      link.download = `threadcraft-visual-${String(index + 1).padStart(2, "0")}.png`;
+      link.download = `threadcraft-infographic-${String(index+1).padStart(2,"0")}.png`;
       link.href = imgData;
       link.click();
+    }
+
+    async function downloadAllCards() {
+      const tweets = window._currentTweets;
+      if (!tweets) return;
+
+      const btn = document.querySelector(".btn-dl-all");
+      btn.textContent = "Generating...";
+      btn.disabled = true;
+
+      for (let i = 0; i < tweets.length; i++) {
+        const visual = document.getElementById(`visual-${i}`);
+        visual.classList.add("visible");
+        drawTweetCard(`canvas-${i}`, tweets[i], i, tweets.length, i === 0, i === tweets.length - 1);
+        await new Promise(r => setTimeout(r, 80));
+        downloadCard(i);
+        await new Promise(r => setTimeout(r, 300));
+      }
+
+      btn.textContent = "↓ All Graphics";
+      btn.disabled = false;
     }
 
     // ─── BRIEF / SCRAPE ───────────────────────────────────────────────────────
@@ -1104,7 +1607,7 @@
       status.classList.toggle("visible", active);
     }
 
-    // ─── GENERATE ─────────────────────────────────────────────────────────────
+    // ─── GENERATE THREAD ──────────────────────────────────────────────────────
 
     async function generateThread() {
       const topic = document.getElementById("topic").value.trim();
@@ -1151,7 +1654,7 @@
 
         card.innerHTML = `
           <div class="tweet-meta">
-            <span class="tweet-num">${String(i + 1).padStart(2, "0")} / ${tweets.length}</span>
+            <span class="tweet-num">${String(i+1).padStart(2,"0")} / ${tweets.length}</span>
             ${isHook ? '<span class="tweet-badge hook-badge">Hook</span>' : isCTA ? '<span class="tweet-badge cta-badge">CTA</span>' : ""}
           </div>
           <div class="tweet-text">${escapeHtml(text)}</div>
@@ -1159,18 +1662,18 @@
             <span class="char-count ${charClass}">${charCount}/280</span>
             <div class="tweet-footer-right">
               <button class="btn-copy-tweet" onclick="copyTweet(this, ${i})">copy</button>
-              <button class="btn-dl-card" onclick="toggleCard(this, ${i})">↓ graphic</button>
-              <button class="btn-ai-img" onclick="generateImage(this, ${i})" style="background:transparent;border:none;color:var(--muted2);font-family:var(--mono);font-size:11px;cursor:pointer;padding:4px 8px;transition:color 0.2s;letter-spacing:1px;" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--muted2)'">✦ AI image</button>
+              <button class="btn-dl-card" onclick="toggleCard(this, ${i})">↓ text card</button>
+              <button class="btn-ai-graphic" onclick="generateGraphic(this, ${i})">✦ infographic</button>
             </div>
           </div>
           <div class="tweet-visual" id="visual-${i}">
-            <canvas id="canvas-${i}" width="1080" height="1080"></canvas>
+            <canvas id="canvas-${i}" width="1600" height="900"></canvas>
           </div>
           <div class="ai-image-loading" id="imgloading-${i}">
-            <div class="ai-image-loading-text">// Generating visual for tweet ${i + 1}...</div>
+            <div class="ai-image-loading-text">// Designing infographic for tweet ${i+1}...</div>
             <div class="ai-image-loading-bar"></div>
           </div>
-          <div class="ai-image-wrap" id="imgwrap-${i}" style="display:none;"></div>
+          <div id="imgwrap-${i}" style="display:none;"></div>
         `;
 
         list.appendChild(card);
@@ -1179,196 +1682,6 @@
       section.classList.add("visible");
       section.scrollIntoView({ behavior: "smooth", block: "start" });
       window._currentTweets = tweets;
-    }
-
-    // ─── CANVAS CARD GENERATION ───────────────────────────────────────────────
-
-    function drawTweetCard(canvasId, text, index, total, isHook, isCTA) {
-      const canvas = document.getElementById(canvasId);
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-      const W = 1080, H = 1080;
-
-      // Background
-      ctx.fillStyle = "#0a0a0a";
-      ctx.fillRect(0, 0, W, H);
-
-      // Subtle grid pattern
-      ctx.strokeStyle = "rgba(255,255,255,0.025)";
-      ctx.lineWidth = 1;
-      for (let x = 0; x <= W; x += 60) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
-      }
-      for (let y = 0; y <= H; y += 60) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-      }
-
-      // Top accent bar
-      const accentColor = isHook ? "#e8ff47" : isCTA ? "#ff6b35" : "#e8ff47";
-      ctx.fillStyle = accentColor;
-      ctx.fillRect(0, 0, W, 6);
-
-      // Left accent stripe
-      ctx.fillStyle = accentColor + "33";
-      ctx.fillRect(0, 0, 6, H);
-
-      // Inner card
-      const pad = 80;
-      ctx.fillStyle = "#111111";
-      ctx.fillRect(pad, pad, W - pad * 2, H - pad * 2);
-      ctx.strokeStyle = "#222222";
-      ctx.lineWidth = 1;
-      ctx.strokeRect(pad, pad, W - pad * 2, H - pad * 2);
-
-      // Left accent inside card
-      ctx.fillStyle = accentColor;
-      ctx.fillRect(pad, pad, 4, H - pad * 2);
-
-      // Tweet number
-      ctx.font = "500 28px 'DM Mono', monospace";
-      ctx.fillStyle = "#444444";
-      ctx.fillText(`${String(index + 1).padStart(2, "0")} / ${total}`, pad + 40, pad + 56);
-
-      // Badge
-      if (isHook || isCTA) {
-        const label = isHook ? "HOOK" : "CTA";
-        const badgeColor = isHook ? "#e8ff47" : "#ff6b35";
-        ctx.font = "500 20px 'DM Mono', monospace";
-        const bw = ctx.measureText(label).width + 28;
-        const bx = W - pad - 40 - bw;
-        const by = pad + 36;
-        ctx.strokeStyle = badgeColor;
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(bx, by, bw, 34);
-        ctx.fillStyle = badgeColor;
-        ctx.fillText(label, bx + 14, by + 23);
-      }
-
-      // Divider line
-      ctx.strokeStyle = "#222222";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(pad + 40, pad + 74);
-      ctx.lineTo(W - pad - 40, pad + 74);
-      ctx.stroke();
-
-      // Tweet text — wrapped
-      ctx.fillStyle = "#f0f0f0";
-      const fontSize = text.length > 180 ? 34 : text.length > 120 ? 38 : text.length > 80 ? 42 : 46;
-      ctx.font = `300 ${fontSize}px 'DM Sans', sans-serif`;
-      ctx.textBaseline = "top";
-
-      const textX = pad + 40;
-      const textY = pad + 110;
-      const maxWidth = W - pad * 2 - 80;
-      const lineHeight = fontSize * 1.6;
-
-      wrapText(ctx, text, textX, textY, maxWidth, lineHeight);
-
-      // Bottom branding bar
-      const barY = H - pad - 60;
-      ctx.strokeStyle = "#222222";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(pad + 40, barY); ctx.lineTo(W - pad - 40, barY); ctx.stroke();
-
-      // ThreadCraft logo text
-      ctx.font = "400 26px 'Bebas Neue', sans-serif";
-      ctx.fillStyle = accentColor;
-      ctx.letterSpacing = "2px";
-      ctx.fillText("THREADCRAFT", pad + 40, barY + 20);
-
-      // X / Twitter handle area
-      ctx.font = "400 22px 'DM Mono', monospace";
-      ctx.fillStyle = "#444444";
-      const xLabel = "// AI Thread Agent";
-      const xw = ctx.measureText(xLabel).width;
-      ctx.fillText(xLabel, W - pad - 40 - xw, barY + 22);
-    }
-
-    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-      const paragraphs = text.split("\n");
-      let currentY = y;
-      const maxY = 1080 - 80 - 80; // don't overflow into branding
-
-      for (const para of paragraphs) {
-        if (currentY > maxY) break;
-        if (para.trim() === "") { currentY += lineHeight * 0.5; continue; }
-        const words = para.split(" ");
-        let line = "";
-        for (const word of words) {
-          const test = line ? line + " " + word : word;
-          if (ctx.measureText(test).width > maxWidth && line) {
-            if (currentY + lineHeight > maxY) { ctx.fillText(line + "…", x, currentY); return; }
-            ctx.fillText(line, x, currentY);
-            currentY += lineHeight;
-            line = word;
-          } else {
-            line = test;
-          }
-        }
-        if (line) {
-          if (currentY + lineHeight <= maxY + lineHeight) {
-            ctx.fillText(line, x, currentY);
-            currentY += lineHeight;
-          }
-        }
-      }
-    }
-
-    // ─── TOGGLE + DOWNLOAD ────────────────────────────────────────────────────
-
-    function toggleCard(btn, index) {
-      const visual = document.getElementById(`visual-${index}`);
-      const tweets = window._currentTweets;
-      if (!tweets) return;
-
-      const isVisible = visual.classList.contains("visible");
-
-      if (!isVisible) {
-        visual.classList.add("visible");
-        const text = tweets[index];
-        const isHook = index === 0;
-        const isCTA = index === tweets.length - 1;
-        drawTweetCard(`canvas-${index}`, text, index, tweets.length, isHook, isCTA);
-        btn.textContent = "↓ save";
-        btn.onclick = () => downloadCard(index);
-      } else {
-        visual.classList.remove("visible");
-        btn.textContent = "↓ graphic";
-        btn.onclick = () => toggleCard(btn, index);
-      }
-    }
-
-    function downloadCard(index) {
-      const canvas = document.getElementById(`canvas-${index}`);
-      if (!canvas) return;
-      const link = document.createElement("a");
-      link.download = `threadcraft-tweet-${String(index + 1).padStart(2, "0")}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    }
-
-    async function downloadAllCards() {
-      const tweets = window._currentTweets;
-      if (!tweets) return;
-
-      const btn = document.querySelector(".btn-dl-all");
-      btn.textContent = "Generating...";
-      btn.disabled = true;
-
-      // Render all cards to hidden canvases then download sequentially
-      for (let i = 0; i < tweets.length; i++) {
-        const visual = document.getElementById(`visual-${i}`);
-        visual.classList.add("visible");
-        drawTweetCard(`canvas-${i}`, tweets[i], i, tweets.length, i === 0, i === tweets.length - 1);
-        await new Promise(r => setTimeout(r, 80)); // small delay between downloads
-        downloadCard(i);
-        await new Promise(r => setTimeout(r, 300));
-      }
-
-      btn.textContent = "↓ All Graphics";
-      btn.disabled = false;
     }
 
     // ─── HELPERS ──────────────────────────────────────────────────────────────
@@ -1384,7 +1697,7 @@
     function copyAll() {
       if (!window._currentTweets) return;
       const text = window._currentTweets
-        .map((t, i) => `${i + 1}/${window._currentTweets.length}\n${t}`)
+        .map((t, i) => `${i+1}/${window._currentTweets.length}\n${t}`)
         .join("\n\n");
       navigator.clipboard.writeText(text).then(() => {
         const btn = document.querySelector(".btn-copy-all");
