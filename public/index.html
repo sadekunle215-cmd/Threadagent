@@ -781,6 +781,11 @@
         </div>
       </div>
 
+      <div class="field">
+        <label>Your X Handle (optional)</label>
+        <input type="text" id="xHandle" placeholder="@yourhandle" autocomplete="off" />
+      </div>
+
       <div class="controls-row">
         <div class="field" style="margin-bottom:0">
           <label>Tone</label>
@@ -864,6 +869,7 @@
 
       const topic = document.getElementById("topic").value.trim();
       const brandColor = getBrandColor();
+      const handle = document.getElementById("xHandle")?.value.trim() || "";
       const tweet = tweets[index];
 
       const loading = document.getElementById(`imgloading-${index}`);
@@ -878,7 +884,7 @@
         const res = await fetch("/api/imagine", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tweet, topic, brandColor }),
+          body: JSON.stringify({ tweet, topic, brandColor, handle }),
         });
 
         const data = await res.json();
@@ -886,14 +892,26 @@
 
         loading.classList.remove("visible");
         wrap.style.display = "block";
-        wrap.innerHTML = `
-          <img src="${data.image}" alt="AI visual for tweet ${index + 1}" />
-          <button class="btn-dl-img" onclick="downloadAiImage(${index})">↓ Download Image</button>
-        `;
 
-        // Store image data for download
+        // Composite on canvas
+        const canvas = document.createElement("canvas");
+        canvas.width = 1080;
+        canvas.height = 1080;
+        wrap.innerHTML = "";
+        wrap.appendChild(canvas);
+
+        await compositeCard(canvas, data, brandColor);
+
+        const finalImg = canvas.toDataURL("image/png");
         if (!window._tweetImages) window._tweetImages = {};
-        window._tweetImages[index] = data.image;
+        window._tweetImages[index] = finalImg;
+
+        // Show download button
+        const dlBtn = document.createElement("button");
+        dlBtn.className = "btn-dl-img";
+        dlBtn.textContent = "↓ Download Image";
+        dlBtn.onclick = () => downloadAiImage(index);
+        wrap.appendChild(dlBtn);
 
         btn.textContent = "✦ regenerate";
         btn.disabled = false;
@@ -904,6 +922,116 @@
         btn.disabled = false;
         showError(`Image ${index + 1}: ${err.message}`);
       }
+    }
+
+    async function compositeCard(canvas, data, brandColor) {
+      const ctx = canvas.getContext("2d");
+      const W = 1080, H = 1080;
+
+      // Draw background image
+      await new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, W, H);
+          resolve();
+        };
+        img.onerror = () => resolve(); // fallback if image fails
+        img.src = data.bg;
+      });
+
+      // Dark gradient overlay — heavier at bottom for text legibility
+      const grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, "rgba(0,0,0,0.35)");
+      grad.addColorStop(0.4, "rgba(0,0,0,0.55)");
+      grad.addColorStop(1, "rgba(0,0,0,0.88)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Left brand stripe
+      ctx.fillStyle = brandColor;
+      ctx.fillRect(0, 0, 7, H);
+
+      // Top handle bar
+      if (data.handle) {
+        ctx.fillStyle = "rgba(0,0,0,0.6)";
+        ctx.fillRect(28, 28, 320, 48);
+        ctx.font = "500 20px 'DM Mono', monospace";
+        ctx.fillStyle = "#cccccc";
+        ctx.fillText(data.handle, 44, 58);
+      }
+
+      // --- Main text area (lower 55% of card) ---
+      const textStartY = H * 0.42;
+
+      // Subtext label
+      if (data.subtext) {
+        ctx.font = "300 26px 'DM Sans', sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.6)";
+        ctx.fillText(data.subtext.toUpperCase(), 60, textStartY);
+      }
+
+      // STAT — huge number if present
+      if (data.stat) {
+        const statSize = data.stat.length > 8 ? 110 : 140;
+        ctx.font = `700 ${statSize}px 'DM Sans', sans-serif`;
+        ctx.fillStyle = brandColor;
+        ctx.shadowColor = brandColor + "88";
+        ctx.shadowBlur = 40;
+        ctx.fillText(data.stat, 60, textStartY + (data.subtext ? 100 : 80));
+        ctx.shadowBlur = 0;
+      }
+
+      // HEADLINE — large editorial text
+      const headlineY = data.stat
+        ? textStartY + (data.subtext ? 100 : 80) + (data.stat.length > 8 ? 130 : 160)
+        : textStartY + (data.subtext ? 90 : 60);
+
+      const headlineSize = data.headline.length > 30 ? 52 : data.headline.length > 20 ? 62 : 72;
+      ctx.font = `700 ${headlineSize}px 'DM Sans', sans-serif`;
+      ctx.fillStyle = "#ffffff";
+
+      // Wrap headline
+      wrapCanvasText(ctx, data.headline, 60, headlineY, W - 120, headlineSize * 1.25);
+
+      // Bottom branding bar
+      const barY = H - 70;
+      ctx.fillStyle = "rgba(0,0,0,0.5)";
+      ctx.fillRect(0, barY - 10, W, 80);
+
+      // Accent line above bar
+      ctx.fillStyle = brandColor;
+      ctx.fillRect(0, barY - 12, W, 3);
+
+      ctx.font = "600 24px 'Bebas Neue', sans-serif";
+      ctx.fillStyle = brandColor;
+      ctx.letterSpacing = "3px";
+      ctx.fillText("THREADCRAFT", 60, barY + 32);
+
+      ctx.font = "400 20px 'DM Mono', monospace";
+      ctx.fillStyle = "rgba(255,255,255,0.35)";
+      const tagText = "// AI Thread Agent";
+      const tw = ctx.measureText(tagText).width;
+      ctx.fillText(tagText, W - 60 - tw, barY + 32);
+    }
+
+    function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(" ");
+      let line = "";
+      let currentY = y;
+      const maxY = 1080 - 100;
+      for (const word of words) {
+        const test = line ? line + " " + word : word;
+        if (ctx.measureText(test).width > maxWidth && line) {
+          if (currentY > maxY) return;
+          ctx.fillText(line, x, currentY);
+          currentY += lineHeight;
+          line = word;
+        } else {
+          line = test;
+        }
+      }
+      if (line && currentY <= maxY) ctx.fillText(line, x, currentY);
     }
 
     function downloadAiImage(index) {
