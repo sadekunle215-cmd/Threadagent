@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ThreadCraft — AI Thread Agent</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   <script src="https://js.paystack.co/v1/inline.js"></script>
   <style>
     :root {
@@ -13,7 +14,7 @@
       --border:#222;--border2:#2a2a2a;
       --accent:#6366f1;--accent2:#ff6b35;--accent3:#47b8ff;
       --text:#f0f0f0;--muted:#555;--muted2:#888;
-      --mono:"DM Mono",monospace;--sans:"DM Sans",sans-serif;--display:"Bebas Neue",sans-serif;
+      --mono:"JetBrains Mono",monospace;--sans:"Inter",sans-serif;--display:"Inter",sans-serif;
     }
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:var(--black);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
@@ -21,7 +22,7 @@
     .container{max-width:780px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
     header{padding:48px 0 32px;border-bottom:1px solid var(--border);margin-bottom:48px}
     .logo-row{display:flex;align-items:baseline;gap:12px;margin-bottom:8px}
-    .logo{font-family:var(--display);font-size:52px;letter-spacing:2px;color:#a5b4fc;line-height:1}
+    .logo{font-family:"Inter",sans-serif;font-weight:700;font-size:48px;letter-spacing:-1px;color:#a5b4fc;line-height:1}
     .logo-tag{font-family:var(--mono);font-size:11px;color:var(--muted2);letter-spacing:3px;text-transform:uppercase;border:1px solid var(--border2);padding:3px 8px}
     .tagline{font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:.5px}
     .step-label{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:20px;display:flex;align-items:center;gap:10px}
@@ -66,7 +67,7 @@
     select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:12px 16px;outline:none;appearance:none;cursor:pointer;transition:border-color .2s}
     select:focus{border-color:#6366f1}
     .select-arrow{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:10px;pointer-events:none}
-    .btn-generate{width:100%;background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;border:none;font-family:var(--display);font-size:22px;letter-spacing:3px;padding:18px;cursor:pointer;transition:all .15s}
+    .btn-generate{width:100%;background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;border:none;font-family:"Inter",sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;padding:18px;cursor:pointer;transition:all .15s}
     .btn-generate:hover:not(:disabled){opacity:.9;transform:translateY(-1px)}
     .btn-generate:disabled{opacity:.5;cursor:not-allowed}
     .loading-bar{height:2px;background:var(--border);margin-top:16px;overflow:hidden;display:none}
@@ -1165,7 +1166,7 @@ function initiatePayment() {
   paymentState.email = emailInput;
 
   const handler = PaystackPop.setup({
-    key: "pk_live_YOUR_PAYSTACK_PUBLIC_KEY", // ← replace with your key
+    key: "pk_live_6c1cdedbdf2881240c8c6bebe10d846d8019f6e4",
     email: emailInput,
     amount: total,
     currency: "NGN",
