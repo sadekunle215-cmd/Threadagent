@@ -306,6 +306,15 @@
           <div class="brief-field"><div class="brief-field-label">Target Audience</div><div class="brief-field-value" id="briefAudience">—</div></div>
           <div class="brief-field"><div class="brief-field-label">Reward / Deadline</div><div class="brief-field-value" id="briefReward">—</div></div>
         </div>
+        <div id="thinBriefWarning" style="display:none;margin-top:14px;padding:12px 14px;background:#1a1200;border:1px solid #ff6b3555">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:#ff6b35;margin-bottom:6px">⚠ DETAILS INCOMPLETE</div>
+          <div style="font-size:12px;color:#888;margin-bottom:10px">This page loads via JavaScript — the scraper missed the task details. Paste the bounty description below so the AI writes the right thing.</div>
+          <button onclick="var a=document.getElementById('manualBriefArea');a.style.display=a.style.display==='none'?'block':'none'" style="background:transparent;border:1px solid #333;color:#aaa;font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:6px 12px;cursor:pointer">+ PASTE BRIEF DETAILS</button>
+          <div id="manualBriefArea" style="display:none;margin-top:10px">
+            <textarea id="manualBriefText" placeholder="Paste the full task description here (copy from the Details tab on Superteam)..." style="width:100%;min-height:100px;background:#111;border:1px solid #333;color:#ddd;font-family:var(--sans);font-size:13px;padding:10px;resize:vertical;outline:none"></textarea>
+            <button onclick="applyManualBrief()" style="margin-top:8px;background:#6366f1;border:none;color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:8px 16px;cursor:pointer">APPLY → UPDATE CONTEXT</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1014,6 +1023,19 @@ function autofillFromBrief(b){
   if(b.topic||b.title)document.getElementById("topic").value=b.topic||b.title;
   const parts=[];if(b.task)parts.push(`Task: ${b.task}`);if(b.requirements)parts.push(`Requirements: ${b.requirements}`);if(b.audience)parts.push(`Target audience: ${b.audience}`);
   if(parts.length)document.getElementById("context").value=parts.join("\n\n");
+  // Detect thin brief: task/requirements missing or placeholder "—"
+  const isThin = (!b.task || b.task==="—" || b.task.length < 20) && (!b.requirements || b.requirements==="—" || b.requirements.length < 20);
+  document.getElementById("thinBriefWarning").style.display = isThin ? "block" : "none";
+}
+
+function applyManualBrief(){
+  const text = document.getElementById("manualBriefText").value.trim();
+  if(!text) return;
+  const existing = document.getElementById("context").value.trim();
+  // Append or replace context with the pasted brief
+  document.getElementById("context").value = existing ? existing + "\n\n" + text : text;
+  document.getElementById("manualBriefArea").style.display = "none";
+  document.getElementById("thinBriefWarning").style.display = "none";
 }
 function clearBrief(){currentBrief=null;document.getElementById("briefCard").classList.remove("visible");document.getElementById("gigUrl").value="";document.getElementById("topic").value="";document.getElementById("context").value="";}
 function setFetchLoading(active){const btn=document.getElementById("fetchBtn"),s=document.getElementById("fetchStatus");btn.disabled=active;btn.textContent=active?"...":"Analyse →";s.classList.toggle("visible",active);}
