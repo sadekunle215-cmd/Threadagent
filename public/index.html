@@ -629,7 +629,7 @@ function _comp(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c
 }
 
 function _quote(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c2,darkText,W,cY,cH,pX){
-  const cy=cY+cH/2;
+  const H=900, cy=cY+cH/2;
   const text=d.quoteText||d.headline||"";
   ctx.font="700 280px 'DM Sans',sans-serif";
   ctx.fillStyle=darkText?"rgba(0,0,0,0.05)":"rgba(255,255,255,0.07)";
