@@ -3,16 +3,41 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { tweet, topic, brandColor, handle } = req.body;
+  const { tweet, topic, brandColor, handle, tweetNum, tweetTotal, isHook, isCTA } = req.body;
   if (!tweet) return res.status(400).json({ error: "Tweet text is required" });
 
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
   if (!OPENAI_API_KEY) return res.status(500).json({ error: "OpenAI API key not configured" });
 
-  const color = brandColor || "#e8ff47";
+  const systemPrompt = `You are a professional infographic data extractor for Twitter/X thread graphics.
+Given a tweet, extract its key visual content for a clean, editorial infographic card.
+
+The card will be 1600x900px (Twitter landscape). Your job is to identify the BEST layout for this tweet's content.
+
+Return ONLY valid JSON, no markdown, no preamble, no backticks:
+
+{
+  "layout": "stat" | "list" | "quote" | "comparison" | "tip",
+  "headline": "Short punchy headline (4-8 words max)",
+  "accentLabel": "2-3 word category label (e.g. DID YOU KNOW, KEY INSIGHT, FAST FACT)",
+  "stat": null or { "value": "65,000", "unit": "TPS", "label": "transactions per second" },
+  "points": [] or array of 3-4 short bullet strings (for list layout, max 8 words each),
+  "leftCol": null or { "label": "Option A", "points": ["point1","point2","point3"] },
+  "rightCol": null or { "label": "Option B", "points": ["point1","point2","point3"] },
+  "quoteText": null or "The key quote or stat statement from the tweet (under 20 words)",
+  "subtext": "Supporting line (max 10 words)",
+  "tweetNum": ${tweetNum || 1},
+  "tweetTotal": ${tweetTotal || 1}
+}
+
+Layout selection guide:
+- "stat": tweet contains a key number, metric, or percentage — show it HUGE
+- "list": tweet has 3-4 tips, steps, reasons, or items
+- "quote": tweet has a strong statement, insight, or opinion to highlight
+- "comparison": tweet contrasts two things — before/after, right/wrong, A vs B
+- "tip": tweet is a single actionable piece of advice with supporting context`;
 
   try {
-    // Step 1: GPT extracts the visual data from the tweet
     const extractRes = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -21,25 +46,14 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "gpt-4o",
-        max_tokens: 400,
-        temperature: 0.4,
+        max_tokens: 600,
+        temperature: 0.3,
+        response_format: { type: "json_object" },
         messages: [
-          {
-            role: "system",
-            content: `You are a visual director creating editorial social media cards for Twitter threads.
-Given a tweet, extract the key visual elements and a DALL-E background prompt.
-
-Return ONLY valid JSON (no markdown) with this shape:
-{
-  "headline": "The single most important phrase or concept (3-7 words max, punchy)",
-  "stat": "A key number or metric if present, else null (e.g. '65,000 TPS', '$2.4B', '3x faster')",
-  "subtext": "A short supporting line (max 8 words)",
-  "bgPrompt": "DALL-E prompt for a dark, moody, cinematic background photo. No text. Real photography style. Related to the tweet topic. Dark tones. Dramatic lighting. Shot on film."
-}`
-          },
+          { role: "system", content: systemPrompt },
           {
             role: "user",
-            content: `Tweet: "${tweet}"\nProject/Topic: ${topic || "tech"}\nBrand color: ${color}`
+            content: `Tweet: "${tweet}"\nTopic: ${topic || "general"}\nBrand color: ${brandColor || "#e8ff47"}\nHandle: ${handle || ""}\nIs hook tweet: ${isHook || false}\nIs CTA tweet: ${isCTA || false}`
           }
         ]
       })
@@ -47,50 +61,33 @@ Return ONLY valid JSON (no markdown) with this shape:
 
     if (!extractRes.ok) {
       const err = await extractRes.json();
-      return res.status(500).json({ error: err.error?.message || "GPT extract error" });
+      return res.status(500).json({ error: err.error?.message || "GPT-4o extraction error" });
     }
 
     const extractData = await extractRes.json();
     let extracted;
+
     try {
       const raw = extractData.choices[0].message.content.trim().replace(/```json|```/g, "").trim();
       extracted = JSON.parse(raw);
     } catch {
-      return res.status(500).json({ error: "Failed to parse GPT response" });
+      return res.status(500).json({ error: "Failed to parse GPT-4o response as JSON" });
     }
 
-    // Step 2: Generate dark cinematic background with DALL-E 3
-    const imageRes = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "dall-e-3",
-        prompt: extracted.bgPrompt + " Cinematic. High contrast. Dark atmosphere. No text, no typography, no words anywhere in the image.",
-        n: 1,
-        size: "1024x1024",
-        quality: "standard",
-        response_format: "b64_json"
-      })
-    });
+    // Ensure required fields always present
+    extracted.tweetNum = tweetNum || 1;
+    extracted.tweetTotal = tweetTotal || 1;
+    extracted.layout = extracted.layout || "quote";
+    extracted.headline = extracted.headline || "";
+    extracted.accentLabel = extracted.accentLabel || "KEY INSIGHT";
+    extracted.subtext = extracted.subtext || "";
+    extracted.points = extracted.points || [];
+    extracted.stat = extracted.stat || null;
+    extracted.leftCol = extracted.leftCol || null;
+    extracted.rightCol = extracted.rightCol || null;
+    extracted.quoteText = extracted.quoteText || null;
 
-    if (!imageRes.ok) {
-      const err = await imageRes.json();
-      return res.status(500).json({ error: err.error?.message || "DALL-E error" });
-    }
-
-    const imageData = await imageRes.json();
-    const bgBase64 = imageData.data[0].b64_json;
-
-    return res.status(200).json({
-      bg: `data:image/png;base64,${bgBase64}`,
-      headline: extracted.headline,
-      stat: extracted.stat || null,
-      subtext: extracted.subtext,
-      handle: handle || null
-    });
+    return res.status(200).json(extracted);
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
