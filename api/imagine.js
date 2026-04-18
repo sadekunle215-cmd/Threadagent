@@ -3,7 +3,7 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { tweet, topic, brandColor } = req.body;
+  const { tweet, topic, brandColor, handle } = req.body;
   if (!tweet) return res.status(400).json({ error: "Tweet text is required" });
 
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -12,8 +12,8 @@ module.exports = async function handler(req, res) {
   const color = brandColor || "#e8ff47";
 
   try {
-    // Step 1: Use GPT-4o to extract a sharp visual concept from the tweet
-    const conceptRes = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Step 1: GPT extracts the visual data from the tweet
+    const extractRes = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -21,42 +21,45 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "gpt-4o",
-        max_tokens: 300,
-        temperature: 0.7,
+        max_tokens: 400,
+        temperature: 0.4,
         messages: [
           {
             role: "system",
-            content: `You are a visual director for social media. Given a tweet, write a concise DALL-E image generation prompt that visually represents the tweet's core idea as a striking, modern graphic.
+            content: `You are a visual director creating editorial social media cards for Twitter threads.
+Given a tweet, extract the key visual elements and a DALL-E background prompt.
 
-Rules:
-- Focus on the KEY concept, data point, or emotion in the tweet
-- Dark background aesthetic (#0a0a0a or similar dark)
-- The primary accent/highlight color must be: ${color}
-- Style: bold, minimal, editorial infographic — like a Wired or Verge cover graphic
-- Abstract or conceptual — no portrait photography
-- NO text, NO typography, NO words in the image
-- Make it viscerally communicate the tweet's message through shape, light, data viz, or metaphor
-- Keep prompt under 120 words
-
-Return ONLY the prompt text. Nothing else.`
+Return ONLY valid JSON (no markdown) with this shape:
+{
+  "headline": "The single most important phrase or concept (3-7 words max, punchy)",
+  "stat": "A key number or metric if present, else null (e.g. '65,000 TPS', '$2.4B', '3x faster')",
+  "subtext": "A short supporting line (max 8 words)",
+  "bgPrompt": "DALL-E prompt for a dark, moody, cinematic background photo. No text. Real photography style. Related to the tweet topic. Dark tones. Dramatic lighting. Shot on film."
+}`
           },
           {
             role: "user",
-            content: `Tweet: "${tweet}"\nTopic context: ${topic || "general"}`
+            content: `Tweet: "${tweet}"\nProject/Topic: ${topic || "tech"}\nBrand color: ${color}`
           }
         ]
       })
     });
 
-    if (!conceptRes.ok) {
-      const err = await conceptRes.json();
-      return res.status(500).json({ error: err.error?.message || "GPT concept error" });
+    if (!extractRes.ok) {
+      const err = await extractRes.json();
+      return res.status(500).json({ error: err.error?.message || "GPT extract error" });
     }
 
-    const conceptData = await conceptRes.json();
-    const imagePrompt = conceptData.choices[0].message.content.trim();
+    const extractData = await extractRes.json();
+    let extracted;
+    try {
+      const raw = extractData.choices[0].message.content.trim().replace(/```json|```/g, "").trim();
+      extracted = JSON.parse(raw);
+    } catch {
+      return res.status(500).json({ error: "Failed to parse GPT response" });
+    }
 
-    // Step 2: Generate image with DALL-E 3
+    // Step 2: Generate dark cinematic background with DALL-E 3
     const imageRes = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: {
@@ -65,7 +68,7 @@ Return ONLY the prompt text. Nothing else.`
       },
       body: JSON.stringify({
         model: "dall-e-3",
-        prompt: imagePrompt,
+        prompt: extracted.bgPrompt + " Cinematic. High contrast. Dark atmosphere. No text, no typography, no words anywhere in the image.",
         n: 1,
         size: "1024x1024",
         quality: "standard",
@@ -75,15 +78,18 @@ Return ONLY the prompt text. Nothing else.`
 
     if (!imageRes.ok) {
       const err = await imageRes.json();
-      return res.status(500).json({ error: err.error?.message || "DALL-E error", prompt: imagePrompt });
+      return res.status(500).json({ error: err.error?.message || "DALL-E error" });
     }
 
     const imageData = await imageRes.json();
-    const b64 = imageData.data[0].b64_json;
+    const bgBase64 = imageData.data[0].b64_json;
 
     return res.status(200).json({
-      image: `data:image/png;base64,${b64}`,
-      prompt: imagePrompt
+      bg: `data:image/png;base64,${bgBase64}`,
+      headline: extracted.headline,
+      stat: extracted.stat || null,
+      subtext: extracted.subtext,
+      handle: handle || null
     });
 
   } catch (err) {
