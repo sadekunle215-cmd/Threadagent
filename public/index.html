@@ -6,6 +6,7 @@
   <title>ThreadCraft — AI Thread Agent</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <script src="https://js.paystack.co/v1/inline.js"></script>
   <style>
     :root {
       --black:#0a0a0a;--surface:#111;--surface2:#181818;
@@ -135,20 +136,149 @@
     .ai-image-loading-bar::after{content:'';display:block;height:100%;width:40%;background:linear-gradient(90deg,#6366f1,#a855f7);animation:slide 1.5s ease-in-out infinite}
     .btn-dl-img{display:block;width:100%;background:transparent;border:1px solid var(--border2);color:var(--muted2);font-family:var(--mono);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:8px;cursor:pointer;margin-top:8px;text-align:center;transition:all .2s}
     .btn-dl-img:hover{border-color:#6366f1;color:#a5b4fc}
+    /* ══ HEADER REDESIGN ══ */
+    header{padding:0;border-bottom:none;margin-bottom:0;position:relative;overflow:hidden}
+    .hero{background:#0a0a0a;border-bottom:1px solid #1a1a1a;padding:48px 0 36px;margin-bottom:48px;position:relative}
+    .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 60% -10%,rgba(192,57,43,0.12) 0%,transparent 70%);pointer-events:none}
+    .hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:28px}
+    .logo-block{display:flex;flex-direction:column;gap:6px}
+    .logo{font-family:var(--display);font-size:64px;letter-spacing:3px;line-height:1;color:#fff;position:relative;display:inline-block}
+    .logo .logo-accent{color:#c0392b}
+    .logo-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:#555;border:1px solid #1e1e1e;padding:4px 10px;width:fit-content}
+    .logo-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#c0392b;animation:pulse 2s ease-in-out infinite;flex-shrink:0}
+    .hero-tagline{font-family:var(--mono);font-size:13px;color:#444;letter-spacing:.4px;max-width:400px;line-height:1.7}
+    .hero-tagline em{color:#c0392b;font-style:normal}
+    .hero-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex-shrink:0}
+    .pricing-pill{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:#555;border:1px solid #1e1e1e;padding:6px 12px;text-align:right;line-height:1.8}
+    .pricing-pill span{color:#c0392b}
+    .hero-divider{height:1px;background:linear-gradient(90deg,transparent,#c0392b44,#c0392b22,transparent);margin:0 0 24px}
+    .hero-stats{display:flex;gap:0;border:1px solid #1a1a1a}
+    .hero-stat{flex:1;padding:14px 20px;border-right:1px solid #1a1a1a;position:relative}
+    .hero-stat:last-child{border-right:none}
+    .hero-stat-val{font-family:var(--display);font-size:26px;color:#fff;letter-spacing:1px;line-height:1}
+    .hero-stat-val em{color:#c0392b;font-style:normal}
+    .hero-stat-lbl{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#444;margin-top:4px}
+
+    /* ══ PRICING MODAL ══ */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+    .modal-overlay.visible{display:flex}
+    .modal{background:#0f0f0f;border:1px solid #222;max-width:480px;width:100%;padding:32px}
+    .modal-title{font-family:var(--display);font-size:28px;letter-spacing:2px;color:#fff;margin-bottom:4px}
+    .modal-sub{font-family:var(--mono);font-size:11px;color:#555;letter-spacing:1px;margin-bottom:28px}
+    .modal-section{margin-bottom:20px}
+    .modal-label{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#555;margin-bottom:10px}
+    .modal-toggle-row{display:flex;align-items:center;justify-content:space-between;background:#111;border:1px solid #1e1e1e;padding:14px 16px;margin-bottom:10px}
+    .modal-toggle-row span{font-family:var(--mono);font-size:12px;color:#999;letter-spacing:.5px}
+    .modal-toggle-row strong{color:#fff}
+    .toggle-switch{position:relative;width:42px;height:24px;flex-shrink:0}
+    .toggle-switch input{opacity:0;width:0;height:0}
+    .toggle-slider{position:absolute;inset:0;background:#1e1e1e;border:1px solid #333;cursor:pointer;transition:.2s}
+    .toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#555;transition:.2s}
+    .toggle-switch input:checked + .toggle-slider{background:#1a0000;border-color:#c0392b}
+    .toggle-switch input:checked + .toggle-slider::before{transform:translateX(18px);background:#c0392b}
+    .modal-img-count{display:none;background:#111;border:1px solid #1e1e1e;padding:14px 16px;margin-bottom:10px;align-items:center;justify-content:space-between;gap:12px}
+    .modal-img-count.visible{display:flex}
+    .modal-img-count span{font-family:var(--mono);font-size:12px;color:#999}
+    .img-count-ctrl{display:flex;align-items:center;gap:10px}
+    .img-count-ctrl button{background:#1a1a1a;border:1px solid #2a2a2a;color:#fff;width:28px;height:28px;font-size:16px;cursor:pointer;font-family:var(--mono);display:flex;align-items:center;justify-content:center;transition:all .15s}
+    .img-count-ctrl button:hover{border-color:#c0392b;color:#c0392b}
+    .img-count-val{font-family:var(--display);font-size:22px;color:#fff;min-width:28px;text-align:center}
+    .price-breakdown{background:#080808;border:1px solid #1a1a1a;padding:16px;margin-bottom:24px}
+    .price-row{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;color:#555;margin-bottom:8px}
+    .price-row:last-child{margin-bottom:0;padding-top:10px;border-top:1px solid #1e1e1e;color:#999}
+    .price-row.total{color:#fff}
+    .price-row .price-val{color:#c0392b}
+    .price-row.total .price-val{font-size:16px;color:#e74c3c}
+    .btn-pay{width:100%;background:linear-gradient(135deg,#c0392b,#e74c3c);color:#fff;border:none;font-family:var(--display);font-size:20px;letter-spacing:3px;padding:16px;cursor:pointer;transition:all .15s}
+    .btn-pay:hover{opacity:.9;transform:translateY(-1px)}
+    .btn-pay:disabled{opacity:.4;cursor:not-allowed}
+    .modal-cancel{display:block;width:100%;text-align:center;font-family:var(--mono);font-size:11px;color:#444;letter-spacing:1px;padding:12px;cursor:pointer;background:none;border:none;margin-top:8px;transition:color .2s}
+    .modal-cancel:hover{color:#888}
+
+    /* ══ PAYMENT BADGE on generate button ══ */
+    .btn-generate.locked{background:#111;border:1px solid #222;color:#444;cursor:not-allowed}
+    .btn-generate.locked:hover{opacity:1;transform:none}
+    .paid-badge{display:none;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:#2ecc71;border:1px solid #2ecc7133;padding:6px 12px;text-align:center;margin-bottom:10px}
+    .paid-badge.visible{display:block}
     footer{margin-top:80px;padding:32px 0;border-top:1px solid var(--border);text-align:center}
     footer p{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:1px}
-    @media(max-width:560px){.logo{font-size:38px}.controls-row{grid-template-columns:1fr}.brief-grid{grid-template-columns:1fr}.brief-field.full{grid-column:1}.custom-colors{flex-wrap:wrap}}
+    @media(max-width:560px){.logo{font-size:44px}.hero-stats{flex-wrap:wrap}.hero-stat{min-width:50%}.controls-row{grid-template-columns:1fr}.brief-grid{grid-template-columns:1fr}.brief-field.full{grid-column:1}.custom-colors{flex-wrap:wrap}.hero-top{flex-direction:column}.hero-right{align-items:flex-start}}
   </style>
 </head>
 <body>
-<div class="container">
-  <header>
-    <div class="logo-row">
-      <div class="logo">ThreadCraft</div>
-      <div class="logo-tag">AI Agent v2</div>
+
+<!-- ── PAYMENT MODAL ── -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal">
+    <div class="modal-title">CONFIRM ORDER</div>
+    <div class="modal-sub">// review your selections before paying</div>
+
+    <div class="modal-section">
+      <div class="modal-label">Thread Images</div>
+      <div class="modal-toggle-row">
+        <span>Generate an image for <strong>every tweet</strong>?</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="allImagesToggle" onchange="onToggleAllImages()" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="modal-img-count" id="imgCountRow">
+        <span>Or choose how many images:</span>
+        <div class="img-count-ctrl">
+          <button onclick="adjustImgCount(-1)">−</button>
+          <div class="img-count-val" id="imgCountVal">0</div>
+          <button onclick="adjustImgCount(1)">+</button>
+        </div>
+      </div>
     </div>
-    <p class="tagline">// paste a gig link. get a thread that actually hits.</p>
-  </header>
+
+    <div class="price-breakdown" id="priceBreakdown">
+      <div class="price-row"><span>Tweets</span><span class="price-val" id="priceTweets">—</span></div>
+      <div class="price-row"><span>Images (₦200 each)</span><span class="price-val" id="priceImgs">—</span></div>
+      <div class="price-row total"><span>Total</span><span class="price-val" id="priceTotal">—</span></div>
+    </div>
+
+    <button class="btn-pay" id="btnPay" onclick="initiatePayment()">PAY WITH PAYSTACK</button>
+    <button class="modal-cancel" onclick="closeModal()">cancel</button>
+  </div>
+</div>
+
+<div class="container">
+  <!-- ── HERO HEADER ── -->
+  <div class="hero">
+    <div class="hero-top">
+      <div class="logo-block">
+        <div class="logo">THREAD<span class="logo-accent">CRAFT</span></div>
+        <div class="logo-badge">AI Thread Agent &nbsp;·&nbsp; v2</div>
+        <p class="hero-tagline">Paste a gig link. Build threads that <em>actually hit.</em><br>Powered by GPT-4o + DALL-E 3.</p>
+      </div>
+      <div class="hero-right">
+        <div class="pricing-pill">
+          <span>₦75</span> / tweet<br>
+          <span>₦200</span> / infographic
+        </div>
+      </div>
+    </div>
+    <div class="hero-divider"></div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-val"><em>75</em></div>
+        <div class="hero-stat-lbl">Naira per tweet</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val"><em>200</em></div>
+        <div class="hero-stat-lbl">Naira per image</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">GPT<em>-4o</em></div>
+        <div class="hero-stat-lbl">AI Engine</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">DALL<em>-E3</em></div>
+        <div class="hero-stat-lbl">Image Engine</div>
+      </div>
+    </div>
+  </div>
 
   <div class="form-section">
     <div class="step-label">Step 01 — Paste Gig Link</div>
@@ -264,7 +394,8 @@
       </div>
     </div>
 
-    <button class="btn-generate" id="generateBtn" onclick="generateThread()">GENERATE THREAD</button>
+    <div class="paid-badge" id="paidBadge">✓ PAYMENT CONFIRMED — GENERATING UNLOCKED</div>
+    <button class="btn-generate locked" id="generateBtn" onclick="handleGenerateClick()">🔒 PAY TO GENERATE</button>
     <div class="loading-bar" id="loadingBar"></div>
     <div class="error-box" id="errorBox"></div>
   </div>
@@ -787,7 +918,7 @@ async function generateGraphic(btn, index) {
     const imgPrompt = buildImagePrompt(tweet, topic);
     let circleImg = null;
     try {
-      const imgRes = await fetch("/api/image-gen", {
+      const imgRes = await fetch("/api/imagine", {
         method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({ prompt: imgPrompt, size: "1024x1024" })
       });
@@ -855,7 +986,16 @@ async function downloadAllCards(){
 async function fetchBrief(){
   const url=document.getElementById("gigUrl").value.trim();if(!url){showError("Paste a gig URL first.");return;}
   clearError();setFetchLoading(true);
-  try{const res=await fetch("/api/scrape",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url})});const data=await res.json();if(!res.ok)throw new Error(data.error||"Failed");currentBrief=data.brief;renderBrief(data.brief);autofillFromBrief(data.brief);}
+  try{
+    const res=await fetch("/api/scrape",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url})});
+    const data=await res.json();if(!res.ok)throw new Error(data.error||"Failed");
+    currentBrief=data.brief;renderBrief(data.brief);autofillFromBrief(data.brief);
+    // Reset payment state for new gig
+    paymentState.paid=false;paymentState.imageCount=0;
+    const btn=document.getElementById("generateBtn");
+    btn.classList.add("locked");btn.textContent="🔒 PAY TO GENERATE";btn.onclick=()=>handleGenerateClick();
+    document.getElementById("paidBadge").classList.remove("visible");
+  }
   catch(err){showError(err.message);}finally{setFetchLoading(false);}
 }
 let currentBrief=null;
@@ -931,7 +1071,157 @@ function hideThread(){document.getElementById("threadSection").classList.remove(
 function escapeHtml(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
 
 document.getElementById("gigUrl").addEventListener("keydown",e=>{if(e.key==="Enter")fetchBrief();});
-document.getElementById("topic").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey)generateThread();});
+document.getElementById("topic").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey)handleGenerateClick();});
+
+// ─── PAYMENT STATE ────────────────────────────────────────────────────────────
+const PRICE_TWEET = 75;   // ₦75 per tweet
+const PRICE_IMAGE = 200;  // ₦200 per image
+let paymentState = {
+  paid: false,
+  tweetCount: 0,
+  imageCount: 0,
+  allImages: false,
+  email: ""
+};
+
+function handleGenerateClick() {
+  if (paymentState.paid) {
+    generateThread();
+  } else {
+    const tweetCount = estimateTweetCount();
+    if (tweetCount === 0) {
+      showError("Configure your thread first (set topic + length).");
+      return;
+    }
+    openPayModal(tweetCount);
+  }
+}
+
+function estimateTweetCount() {
+  const len = document.getElementById("length").value;
+  if (len === "short") return 6;
+  if (len === "long") return 15;
+  return 10; // medium
+}
+
+function openPayModal(tweetCount) {
+  paymentState.tweetCount = tweetCount;
+  paymentState.imageCount = 0;
+  paymentState.allImages = false;
+  document.getElementById("allImagesToggle").checked = false;
+  document.getElementById("imgCountRow").classList.remove("visible");
+  document.getElementById("imgCountVal").textContent = "0";
+  updatePriceBreakdown();
+  document.getElementById("payModal").classList.add("visible");
+}
+
+function closeModal() {
+  document.getElementById("payModal").classList.remove("visible");
+}
+
+function onToggleAllImages() {
+  const checked = document.getElementById("allImagesToggle").checked;
+  paymentState.allImages = checked;
+  const row = document.getElementById("imgCountRow");
+  if (checked) {
+    paymentState.imageCount = paymentState.tweetCount;
+    document.getElementById("imgCountVal").textContent = paymentState.tweetCount;
+    row.classList.remove("visible");
+  } else {
+    row.classList.add("visible");
+  }
+  updatePriceBreakdown();
+}
+
+function adjustImgCount(delta) {
+  const max = paymentState.tweetCount;
+  paymentState.imageCount = Math.max(0, Math.min(max, paymentState.imageCount + delta));
+  document.getElementById("imgCountVal").textContent = paymentState.imageCount;
+  updatePriceBreakdown();
+}
+
+function updatePriceBreakdown() {
+  const tc = paymentState.tweetCount;
+  const ic = paymentState.allImages ? tc : paymentState.imageCount;
+  const tweetCost = tc * PRICE_TWEET;
+  const imgCost   = ic * PRICE_IMAGE;
+  const total     = tweetCost + imgCost;
+  document.getElementById("priceTweets").textContent = `₦${tweetCost.toLocaleString()}`;
+  document.getElementById("priceImgs").textContent   = ic > 0 ? `₦${imgCost.toLocaleString()}` : "₦0";
+  document.getElementById("priceTotal").textContent  = `₦${total.toLocaleString()}`;
+  document.getElementById("btnPay").textContent = `PAY ₦${total.toLocaleString()} WITH PAYSTACK`;
+}
+
+function initiatePayment() {
+  const tc   = paymentState.tweetCount;
+  const ic   = paymentState.allImages ? tc : paymentState.imageCount;
+  const total = (tc * PRICE_TWEET + ic * PRICE_IMAGE) * 100; // kobo
+
+  const emailInput = prompt("Enter your email for payment receipt:");
+  if (!emailInput || !emailInput.includes("@")) {
+    alert("A valid email is required to process payment.");
+    return;
+  }
+  paymentState.email = emailInput;
+
+  const handler = PaystackPop.setup({
+    key: "pk_live_YOUR_PAYSTACK_PUBLIC_KEY", // ← replace with your key
+    email: emailInput,
+    amount: total,
+    currency: "NGN",
+    ref: "TC-" + Date.now(),
+    metadata: {
+      custom_fields: [
+        { display_name: "Tweets", variable_name: "tweets", value: tc },
+        { display_name: "Images", variable_name: "images", value: ic }
+      ]
+    },
+    onClose() {
+      // user closed without paying — do nothing
+    },
+    callback(response) {
+      // Payment successful
+      paymentState.paid = true;
+      paymentState.imageCount = ic;
+      paymentState.allImages = ic === tc;
+      closeModal();
+      unlockGenerate();
+    }
+  });
+  handler.openIframe();
+}
+
+function unlockGenerate() {
+  const btn = document.getElementById("generateBtn");
+  btn.classList.remove("locked");
+  btn.textContent = "GENERATE THREAD";
+  btn.onclick = () => generateThread();
+  document.getElementById("paidBadge").classList.add("visible");
+}
+
+// Override renderThread to auto-generate images for paid image slots
+const _origRenderThread = renderThread;
+function renderThread(tweets) {
+  _origRenderThread(tweets);
+  // After render, auto-trigger infographic for paid image slots
+  if (paymentState.paid && paymentState.imageCount > 0) {
+    const count = paymentState.allImages ? tweets.length : paymentState.imageCount;
+    setTimeout(() => {
+      for (let i = 0; i < Math.min(count, tweets.length); i++) {
+        const btn = document.querySelector(`#imgwrap-${i}`)?.previousElementSibling?.previousElementSibling?.querySelector(".btn-ai-graphic");
+        // find the infographic button for this tweet card
+        const cards = document.querySelectorAll(".tweet-card");
+        if (cards[i]) {
+          const graphicBtn = cards[i].querySelector(".btn-ai-graphic");
+          if (graphicBtn && !graphicBtn.disabled) {
+            setTimeout(() => generateGraphic(graphicBtn, i), i * 800);
+          }
+        }
+      }
+    }, 500);
+  }
+}
+
 </script>
 </body>
 </html>
