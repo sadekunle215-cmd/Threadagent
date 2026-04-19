@@ -901,6 +901,36 @@
       </div>
       <div class="scene-list" id="msSceneList"></div>
     </div>
+
+    <!-- Motion Video Generator -->
+    <div id="msVideoSection" style="display:none;margin-top:28px">
+      <div class="step-label">Generate Motion Video</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.4px;line-height:1.8;margin-bottom:14px">
+          Renders each scene as an animated clip — overlay text fades in with the scene number and duration. Output is a <strong style="color:var(--muted2)">.webm</strong> video you can download and edit further.
+        </div>
+        <button class="btn-generate" id="msRenderVideoBtn" onclick="msRenderVideo()" style="width:100%;padding:14px">
+          <i class="fa-solid fa-film"></i> &nbsp;RENDER MOTION VIDEO
+        </button>
+        <div id="msVideoProgress" style="display:none;margin-top:14px">
+          <div style="font-family:var(--mono);font-size:11px;color:var(--muted2);margin-bottom:8px" id="msVideoProgressLabel">Rendering…</div>
+          <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden">
+            <div id="msVideoProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--red2),var(--accent2));transition:width .3s ease;border-radius:2px"></div>
+          </div>
+        </div>
+      </div>
+      <div id="msVideoPreview" style="display:none">
+        <div class="step-label" style="margin-bottom:8px">Preview &amp; Download</div>
+        <video id="msVideoEl" controls playsinline style="width:100%;border-radius:12px;border:1px solid var(--border);background:#000;display:block"></video>
+        <button class="btn-dl-script" id="msVideoDownloadBtn" style="width:100%;margin-top:10px;padding:12px;border-radius:10px;font-size:12px;letter-spacing:1.5px" onclick="msDownloadVideo()">
+          ↓ DOWNLOAD VIDEO (.webm)
+        </button>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:8px;text-align:center">
+          Convert .webm → .mp4 free at <span style="color:var(--muted2)">cloudconvert.com</span> or <span style="color:var(--muted2)">ffmpeg.guide</span>
+        </div>
+      </div>
+    </div>
+
     <div style="height:40px"></div>
   </div>
 </div>
@@ -1746,6 +1776,17 @@ function msRenderScenes(scenes){
   window._msScenes = scenes;
   section.classList.add("visible");
   section.scrollIntoView({behavior:"smooth", block:"start"});
+  // Show video generator below
+  const vidSec = document.getElementById("msVideoSection");
+  if (vidSec) vidSec.style.display = "block";
+  // Reset previous video preview
+  const prevSec = document.getElementById("msVideoPreview");
+  if (prevSec) prevSec.style.display = "none";
+  const progBox = document.getElementById("msVideoProgress");
+  if (progBox) progBox.style.display = "none";
+  const renderBtn = document.getElementById("msRenderVideoBtn");
+  if (renderBtn) { renderBtn.disabled = false; renderBtn.innerHTML = '<i class="fa-solid fa-film"></i> &nbsp;RENDER MOTION VIDEO'; }
+  _msVideoBlob = null;
 }
 
 function msDownloadScript(){
@@ -1770,6 +1811,218 @@ function msDownloadScript(){
 }
 
 function showMsError(m){ const b=document.getElementById("msErrorBox"); b.textContent=`// ${m}`; b.classList.add("visible"); }
+
+// ══════════════════════════════════════════════════════
+// MOTION VIDEO RENDERER (Canvas → MediaRecorder → .webm)
+// ══════════════════════════════════════════════════════
+let _msVideoBlob = null;
+
+async function msRenderVideo() {
+  const scenes = window._msScenes;
+  if (!scenes || !scenes.length) return;
+
+  const btn = document.getElementById("msRenderVideoBtn");
+  const progressBox = document.getElementById("msVideoProgress");
+  const progressBar = document.getElementById("msVideoProgressBar");
+  const progressLabel = document.getElementById("msVideoProgressLabel");
+  const previewSec = document.getElementById("msVideoPreview");
+  const videoEl = document.getElementById("msVideoEl");
+
+  btn.disabled = true; btn.textContent = "⏳ Rendering…";
+  progressBox.style.display = "block";
+  previewSec.style.display = "none";
+  _msVideoBlob = null;
+
+  // Canvas setup — 1280×720 for wide compatibility
+  const W = 1280, H = 720;
+  const canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d");
+
+  // Parse scene duration string e.g. "0:04 – 0:08" → seconds
+  function parseDurSecs(scene, idx, total, totalSecs) {
+    try {
+      const raw = scene.duration || "";
+      const parts = raw.split("–").map(s => s.trim());
+      if (parts.length === 2) {
+        const toSec = t => { const [m,s] = t.split(":").map(Number); return m*60+s; };
+        const dur = toSec(parts[1]) - toSec(parts[0]);
+        if (dur > 0) return dur;
+      }
+    } catch(e){}
+    return Math.round(totalSecs / total) || 4;
+  }
+
+  // Detect total video length from page selection
+  const totalSecs = parseInt(msSelectedLen) || 30;
+  const fps = 30;
+
+  // Style palette based on visual style
+  const styleColors = {
+    cinematic:  { bg1:"#0a0a0a", bg2:"#1a0a0a", accent:"#e0161a", text:"#f0f0f0", sub:"#888888" },
+    energetic:  { bg1:"#0d0014", bg2:"#0a1a00", accent:"#f97316", text:"#ffffff", sub:"#aaaaaa" },
+    minimal:    { bg1:"#f5f5f3", bg2:"#e8e8e4", accent:"#e0161a", text:"#111111", sub:"#666666" },
+    technical:  { bg1:"#0d1117", bg2:"#0a1a2e", accent:"#3b82f6", text:"#e0e0e0", sub:"#6b7280" },
+  };
+  const pal = styleColors[msSelectedStyle] || styleColors.cinematic;
+
+  // Check MediaRecorder support
+  const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+    ? "video/webm;codecs=vp9"
+    : MediaRecorder.isTypeSupported("video/webm")
+    ? "video/webm"
+    : null;
+
+  if (!mimeType) {
+    btn.disabled = false; btn.textContent = "RENDER MOTION VIDEO";
+    progressBox.style.display = "none";
+    showMsError("Your browser doesn't support video recording. Use Chrome or Edge.");
+    return;
+  }
+
+  const stream = canvas.captureStream(fps);
+  const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 4_000_000 });
+  const chunks = [];
+  recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+
+  recorder.onstop = () => {
+    _msVideoBlob = new Blob(chunks, { type: "video/webm" });
+    const url = URL.createObjectURL(_msVideoBlob);
+    videoEl.src = url;
+    previewSec.style.display = "block";
+    btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-film"></i> &nbsp;RE-RENDER VIDEO';
+    progressBox.style.display = "none";
+    previewSec.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  recorder.start();
+
+  // Render scenes frame by frame
+  for (let si = 0; si < scenes.length; si++) {
+    const scene = typeof scenes[si] === "object" ? scenes[si]
+      : { scene: si+1, duration:"", visual:"", overlay: scenes[si], voiceover:"", mood:"" };
+    const sceneDur = parseDurSecs(scene, si, scenes.length, totalSecs);
+    const totalFrames = sceneDur * fps;
+
+    progressLabel.textContent = `Rendering scene ${si+1} of ${scenes.length}…`;
+    progressBar.style.width = `${Math.round((si / scenes.length) * 100)}%`;
+
+    const sceneNumStr = String(scene.scene || si+1).padStart(2, "0");
+    const overlayText = scene.overlay || "";
+    const durLabel = scene.duration || "";
+
+    for (let f = 0; f < totalFrames; f++) {
+      const t = f / totalFrames; // 0→1 progress within scene
+      // Fade: in 0–15%, hold 15–80%, out 80–100%
+      const fadeIn  = Math.min(1, t / 0.15);
+      const fadeOut = t > 0.8 ? Math.max(0, 1 - (t - 0.8) / 0.2) : 1;
+      const alpha   = Math.min(fadeIn, fadeOut);
+
+      // Background gradient
+      const grad = ctx.createLinearGradient(0, 0, W, H);
+      grad.addColorStop(0, pal.bg1);
+      grad.addColorStop(1, pal.bg2);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Subtle grid lines (technical style) or grain overlay
+      if (pal === styleColors.technical) {
+        ctx.strokeStyle = "rgba(59,130,246,0.06)";
+        ctx.lineWidth = 1;
+        for (let gx = 0; gx < W; gx += 80) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
+        for (let gy = 0; gy < H; gy += 80) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
+      }
+
+      // Accent bar on left
+      ctx.globalAlpha = alpha * 0.9;
+      ctx.fillStyle = pal.accent;
+      ctx.fillRect(64, H*0.28, 4, H*0.44);
+      ctx.globalAlpha = 1;
+
+      // Scene number
+      ctx.globalAlpha = alpha * 0.35;
+      ctx.font = `700 ${H * 0.52}px "Arial", sans-serif`;
+      ctx.fillStyle = pal.text;
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillText(sceneNumStr, W - 60, H * 0.5);
+      ctx.globalAlpha = 1;
+
+      // SCENE label
+      ctx.globalAlpha = alpha;
+      ctx.font = `400 ${H * 0.028}px "Courier New", monospace`;
+      ctx.fillStyle = pal.accent;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText("SCENE " + sceneNumStr, 80, H * 0.32);
+
+      // Duration pill
+      if (durLabel) {
+        ctx.font = `400 ${H * 0.022}px "Courier New", monospace`;
+        ctx.fillStyle = pal.sub;
+        ctx.fillText(durLabel, 80, H * 0.355);
+      }
+
+      // Overlay text — wrap at ~28 chars per line
+      if (overlayText) {
+        const words = overlayText.split(" ");
+        const lines = [];
+        let cur = "";
+        words.forEach(w => {
+          if ((cur + " " + w).trim().length > 28 && cur) { lines.push(cur); cur = w; }
+          else cur = cur ? cur + " " + w : w;
+        });
+        if (cur) lines.push(cur);
+        const lineH = H * 0.072;
+        const startY = H * 0.42;
+        ctx.font = `700 ${H * 0.062}px "Arial", sans-serif`;
+        ctx.fillStyle = pal.text;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        lines.slice(0, 4).forEach((ln, li) => {
+          ctx.fillText(ln, 80, startY + li * lineH);
+        });
+      } else {
+        // If no overlay, show "Visual" description truncated
+        const visual = (scene.visual || "").slice(0, 80) + ((scene.visual||"").length > 80 ? "…" : "");
+        ctx.font = `400 ${H * 0.032}px "Arial", sans-serif`;
+        ctx.fillStyle = pal.sub;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText(visual, 80, H * 0.44, W - 200);
+      }
+
+      // Bottom brand strip
+      ctx.globalAlpha = alpha * 0.6;
+      ctx.fillStyle = pal.sub;
+      ctx.font = `400 ${H * 0.022}px "Courier New", monospace`;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText("THREADCRAFT · MOTION SCRIPT", 80, H - 36);
+      ctx.textAlign = "right";
+      ctx.fillText(`${si+1} / ${scenes.length}`, W - 80, H - 36);
+      ctx.globalAlpha = 1;
+
+      // Yield to browser every 5 frames to avoid freeze
+      if (f % 5 === 0) await new Promise(r => setTimeout(r, 0));
+    }
+  }
+
+  progressBar.style.width = "100%";
+  progressLabel.textContent = "Finalising…";
+  await new Promise(r => setTimeout(r, 100));
+  recorder.stop();
+}
+
+function msDownloadVideo() {
+  if (!_msVideoBlob) return;
+  const topic = document.getElementById("ms-topic").value.trim() || "motion-video";
+  const slug = topic.toLowerCase().replace(/\s+/g, "-").slice(0, 30);
+  const a = document.createElement("a");
+  a.download = `${slug}.webm`;
+  a.href = URL.createObjectURL(_msVideoBlob);
+  a.click();
+}
 
 // ─── RENDER THREAD ────────────────────────────────────────────────────────────
 function renderThread(tweets){
