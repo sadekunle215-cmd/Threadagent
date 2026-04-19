@@ -263,7 +263,7 @@
     .btn-back:hover{border-color:var(--red);color:var(--red)}
     .page-title{font-family:var(--display);font-size:22px;letter-spacing:2px;color:var(--text);display:flex;align-items:center;gap:10px}.page-title i{color:var(--red);font-size:18px}
 
-    /* ══ HOME HERO — WELCOME CARD ══ */
+    /* ══ HOME HERO ══ */
     .home-hero{background:linear-gradient(135deg,var(--surface) 0%,rgba(224,22,26,.1) 100%);border:1px solid rgba(224,22,26,.25);border-radius:20px;padding:28px 24px;margin:20px 0 24px;position:relative;overflow:hidden;box-shadow:0 0 40px rgba(224,22,26,.07)}
     .home-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(224,22,26,.18) 0%,transparent 70%);pointer-events:none}
     .home-hero::after{content:'';position:absolute;bottom:-40px;left:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(245,166,35,.08) 0%,transparent 70%);pointer-events:none}
@@ -271,7 +271,7 @@
     .home-welcome-text i{color:var(--red);font-size:13px}
     .home-email-display{font-family:var(--sans);font-size:15px;font-weight:700;color:var(--text);letter-spacing:.3px;margin-bottom:20px;word-break:break-all}
     .home-balance-row{display:flex;align-items:stretch;gap:12px}
-    .home-balance-card{flex:1;background:rgba(0,0,0,.45);border:1px solid rgba(224,22,26,.2);border-radius:14px;padding:16px 18px;backdrop-filter:blur(4px)}
+    .home-balance-card{flex:1;background:rgba(0,0,0,.45);border:1px solid rgba(224,22,26,.2);border-radius:14px;padding:16px 18px}
     .home-balance-lbl{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:6px}
     .home-balance-lbl i{color:var(--accent2)}
     .home-balance-amount{font-family:var(--display);font-size:36px;letter-spacing:3px;color:var(--accent2);line-height:1;text-shadow:0 0 20px rgba(245,166,35,.25)}
@@ -283,7 +283,7 @@
     .qa-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 14px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:6px}
     .qa-card:hover{border-color:var(--red);background:var(--surface2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(224,22,26,.1)}
     .qa-card:active{transform:translateY(0)}
-    .qa-icon{font-size:1.5rem;line-height:1;color:var(--red);width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:rgba(224,22,26,.1);border-radius:10px}
+    .qa-icon{font-size:1.4rem;line-height:1;color:var(--red);width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:rgba(224,22,26,.1);border-radius:10px}
     .qa-label{font-family:var(--display);font-size:16px;letter-spacing:1.5px;color:var(--text)}
     .qa-desc{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.5px}
 
@@ -324,6 +324,45 @@
     /* ══ INSUFFICIENT BALANCE TOAST ══ */
     #balanceToast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid rgba(224,22,26,.5);border-radius:10px;color:#ff8080;font-family:var(--mono);font-size:12px;letter-spacing:1px;padding:12px 24px;z-index:9997;display:none;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5)}
     #balanceToast.visible{display:block;animation:fadeUp .3s ease}
+
+    /* ══ GFX INTERACTIVE EDITOR ══ */
+    .template-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+    .tmpl-card{border:2px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s;background:var(--surface)}
+    .tmpl-card.active{border-color:var(--red);box-shadow:0 0 0 3px rgba(224,22,26,.2)}
+    .tmpl-card:hover:not(.active){border-color:var(--muted2)}
+    .tmpl-canvas{width:100%;height:auto;display:block}
+    .tmpl-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:7px;background:var(--surface2);border-top:1px solid var(--border);text-align:center}
+    .tmpl-card.active .tmpl-label{color:var(--red)}
+    .quick-inputs{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+    .qi-row{display:flex;flex-direction:column;gap:4px}
+    .qi-label{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+    .qi-input{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;width:100%;transition:border-color .2s;resize:none}
+    .qi-input:focus{border-color:var(--red)}
+    .canvas-outer{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:8px}
+    .canvas-outer canvas{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none;-webkit-user-select:none;user-select:none}
+    .wm-badge{font-family:var(--mono);font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.5);background:rgba(0,0,0,.6);padding:3px 8px;position:absolute;top:8px;right:8px;border-radius:4px;pointer-events:none;border:1px solid rgba(255,255,255,.15)}
+    .canvas-hint{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;margin-bottom:12px;letter-spacing:.3px}
+    .el-panel{background:var(--surface);border:1px solid rgba(224,22,26,.5);border-radius:12px;padding:16px;margin-bottom:14px;animation:fadeUp .2s ease}
+    .el-panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .el-panel-name{font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--red)}
+    .btn-desel{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:var(--mono);font-size:10px;padding:4px 10px;cursor:pointer}
+    .btn-desel:hover{color:var(--text);border-color:var(--muted2)}
+    .ep-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px}
+    .ep-col{display:flex;flex-direction:column;gap:4px}
+    .ep-lbl{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+    .ep-color{width:38px;height:34px;border:1px solid var(--border);border-radius:8px;background:none;cursor:pointer;padding:2px}
+    .ep-num{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:13px;padding:7px 8px;outline:none;width:72px}
+    .ep-txt{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:13px;padding:8px 10px;outline:none;width:100%;resize:none;min-height:62px;line-height:1.5}
+    .ep-txt:focus,.ep-num:focus{border-color:var(--red)}
+    .ep-fbtn{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted2);font-family:var(--mono);font-size:9px;padding:5px 8px;cursor:pointer;white-space:nowrap}
+    .ep-fbtn.on{border-color:var(--red);color:var(--red);background:rgba(224,22,26,.08)}
+    .ep-abtn{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted2);font-family:var(--mono);font-size:11px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+    .ep-abtn.on{border-color:var(--red);color:var(--red)}
+    .bg-presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+    .bg-preset{display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-family:var(--mono);font-size:10px;padding:6px 10px;cursor:pointer;transition:all .15s}
+    .bg-preset.on{border-color:var(--red);color:var(--red);background:rgba(224,22,26,.08)}
+    .bg-dot{width:18px;height:18px;border-radius:4px;flex-shrink:0}
+    .editor-sec{margin-bottom:18px}
   </style>
 </head>
 <body>
@@ -431,7 +470,7 @@
     <div class="tx-section">
       <div class="tx-section-title">RECENT TRANSACTIONS</div>
       <div id="txList" class="tx-list">
-        <div class="tx-empty">No transactions yet. Top up your wallet to get started.</div>
+        <div class="tx-empty">No transactions yet — top up your wallet to get started.</div>
       </div>
     </div>
   </div>
@@ -445,11 +484,11 @@
       <div class="page-title"><i class="fa-solid fa-bullseye"></i> SOLVE GIG</div>
     </div>
     <div class="form-section">
-      <div class="step-label">Step 1 — Paste your gig URL</div>
+      <div class="step-label">Step 01 — Paste Gig Link</div>
       <div class="url-block">
         <div class="url-input-row">
           <input type="text" id="gigUrl" placeholder="https://earn.superteam.fun/listing/..." autocomplete="off" spellcheck="false" />
-          <button class="btn-fetch" id="fetchBtn" onclick="fetchBrief()">ANALYSE</button>
+          <button class="btn-fetch" id="fetchBtn" onclick="fetchBrief()">ANALYSE →</button>
         </div>
         <div class="fetch-status" id="fetchStatus">
           <div class="fetch-dot"></div>
@@ -480,15 +519,15 @@
           </div>
         </div>
       </div>
-      <div class="or-divider"><span>or write from scratch</span></div>
-      <div class="step-label">Step 2 — Configure your thread</div>
+      <div class="or-divider"><span>or write manually</span></div>
+      <div class="step-label">Step 02 — Configure Thread</div>
       <div class="field">
         <label>Topic *</label>
         <input type="text" id="topic" placeholder="e.g. Why most devs never ship their side projects" />
       </div>
       <div class="field">
         <label>Extra context (optional)</label>
-        <textarea id="context" placeholder="Add supporting details, key points, or notes for the AI to consider..."></textarea>
+        <textarea id="context" placeholder="Add details, talking points, or notes for the AI..."></textarea>
       </div>
       <div class="brand-color-row">
         <label>Card Style</label>
@@ -566,14 +605,14 @@
       <div class="page-title"><i class="fa-solid fa-pen-nib"></i> CREATE THREAD</div>
     </div>
     <div class="form-section">
-      <div class="step-label">Configure your thread</div>
+      <div class="step-label">Configure Thread</div>
       <div class="field">
         <label>Topic *</label>
         <input type="text" id="ct-topic" placeholder="e.g. Why most devs never ship their side projects" />
       </div>
       <div class="field">
         <label>Extra context (optional)</label>
-        <textarea id="ct-context" placeholder="Add supporting details, key points, or notes for the AI to consider..."></textarea>
+        <textarea id="ct-context" placeholder="Add details, talking points, or notes for the AI..."></textarea>
       </div>
       <div class="brand-color-row">
         <label>Card Style</label>
@@ -650,40 +689,41 @@
       <button class="btn-back" onclick="showPage('pageHome')"><i class="fa fa-arrow-left"></i> Back</button>
       <div class="page-title"><i class="fa-solid fa-palette"></i> CREATE GRAPHICS</div>
     </div>
-    <div class="form-section">
-      <div class="step-label">Configure your text card</div>
-      <div class="field">
-        <label>Tweet Text *</label>
-        <textarea id="gfx-text" placeholder="Enter the tweet text for your graphic card..." style="min-height:120px"></textarea>
-      </div>
-      <div class="brand-color-row">
-        <label>Card Style</label>
-        <div class="gradient-presets" id="gfxGradientPresets">
-          <button class="preset active" data-c1="#6366f1" data-c2="#a855f7" data-dark="false" onclick="selectPresetFor(this,'gfx')"><span style="background:linear-gradient(135deg,#6366f1,#a855f7)"></span>Violet</button>
-          <button class="preset" data-c1="#0ea5e9" data-c2="#6366f1" data-dark="false" onclick="selectPresetFor(this,'gfx')"><span style="background:linear-gradient(135deg,#0ea5e9,#6366f1)"></span>Ocean</button>
-          <button class="preset" data-c1="#f97316" data-c2="#ef4444" data-dark="false" onclick="selectPresetFor(this,'gfx')"><span style="background:linear-gradient(135deg,#f97316,#ef4444)"></span>Fire</button>
-          <button class="preset" data-c1="#10b981" data-c2="#0ea5e9" data-dark="false" onclick="selectPresetFor(this,'gfx')"><span style="background:linear-gradient(135deg,#10b981,#0ea5e9)"></span>Mint</button>
-          <button class="preset" data-c1="#f59e0b" data-c2="#f97316" data-dark="false" onclick="selectPresetFor(this,'gfx')"><span style="background:linear-gradient(135deg,#f59e0b,#f97316)"></span>Sunset</button>
-          <button class="preset" data-c1="#f8fafc" data-c2="#dbeafe" data-dark="true" onclick="selectPresetFor(this,'gfx')"><span style="background:linear-gradient(135deg,#f8fafc,#dbeafe);outline:1px solid #cbd5e1"></span>Clean</button>
-          <button class="preset" data-c1="#0f172a" data-c2="#1e293b" data-dark="false" onclick="selectPresetFor(this,'gfx')"><span style="background:linear-gradient(135deg,#0f172a,#1e293b)"></span>Slate</button>
-        </div>
-        <div class="custom-colors">
-          <div class="custom-color-field"><span>Color A</span><input type="color" id="gfx-color1" value="#6366f1" oninput="onCustomColorFor('gfx')" /></div>
-          <div class="custom-color-field"><span>Color B</span><input type="color" id="gfx-color2" value="#a855f7" oninput="onCustomColorFor('gfx')" /></div>
-          <div class="custom-color-field"><span>Dark text</span><input type="checkbox" id="gfx-darkTextMode" onchange="onCustomColorFor('gfx')" /></div>
-        </div>
-      </div>
-      <div class="field">
-        <label>Your X Handle (optional)</label>
-        <input type="text" id="gfx-xHandle" placeholder="@yourhandle" autocomplete="off" />
-      </div>
-      <button class="btn-generate" onclick="generateStandaloneGraphic()">GENERATE CARD — &#8358;100</button>
-      <div class="error-box" id="gfxErrorBox"></div>
-      <div id="gfxPreview" style="display:none;margin-top:20px">
-        <canvas id="gfxCanvas" width="1600" height="900" style="width:100%;height:auto;border:1px solid var(--border);border-radius:10px"></canvas>
-        <button class="btn-generate" style="margin-top:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="downloadStandaloneGraphic()">↓ Download Card</button>
+
+    <!-- Step 1: Template picker -->
+    <div class="editor-sec">
+      <div class="step-label">Choose a layout template</div>
+      <div class="template-grid" id="gfxTmplGrid"></div>
+    </div>
+
+    <!-- Step 2: Quick content inputs (shown after template pick) -->
+    <div class="editor-sec" id="gfxInputsSec" style="display:none">
+      <div class="step-label">Edit your content</div>
+      <div class="quick-inputs" id="gfxQuickInputs"></div>
+      <div class="step-label" style="margin-bottom:8px">Background style</div>
+      <div class="bg-presets" id="gfxBgPresets">
+        <button class="bg-preset on" data-c1="#0d0d0d" data-c2="#1a0802" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#0d0d0d,#1a0802)"></span>Cinema</button>
+        <button class="bg-preset" data-c1="#07062a" data-c2="#100e5c" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#07062a,#100e5c)"></span>Navy</button>
+        <button class="bg-preset" data-c1="#0d1117" data-c2="#1a2332" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#0d1117,#1a2332)"></span>Slate</button>
+        <button class="bg-preset" data-c1="#0b1a0b" data-c2="#0d3b0d" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#0b1a0b,#0d3b0d)"></span>Forest</button>
+        <button class="bg-preset" data-c1="#f5f5f3" data-c2="#e0e0da" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#f5f5f3,#e0e0da);border:1px solid #ccc"></span>Light</button>
+        <button class="bg-preset" data-c1="#1a0020" data-c2="#3a0060" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#1a0020,#3a0060)"></span>Purple</button>
       </div>
     </div>
+
+    <!-- Step 3: Live preview -->
+    <div class="editor-sec" id="gfxPreviewSec" style="display:none">
+      <div class="step-label" style="margin-bottom:4px">Live preview</div>
+      <p class="canvas-hint"><i class="fa-solid fa-hand-pointer" style="color:var(--red)"></i> Tap any element to select &amp; edit · Drag to reposition</p>
+      <div class="canvas-outer">
+        <canvas id="gfxPrevCanvas" width="1600" height="900"></canvas>
+        <div class="wm-badge">WATERMARKED PREVIEW</div>
+      </div>
+      <div class="el-panel" id="gfxElPanel" style="display:none"></div>
+    </div>
+
+    <div class="error-box" id="gfxErrorBox"></div>
+    <button class="btn-generate" id="gfxGenBtn" style="display:none" onclick="gfxGenerate()">GENERATE HD — &#8358;100</button>
     <div style="height:40px"></div>
   </div>
 </div>
@@ -696,37 +736,29 @@
       <div class="page-title"><i class="fa-solid fa-chart-column"></i> CREATE INFOGRAPHIC</div>
     </div>
     <div class="form-section">
+      <div class="step-label">Choose a layout style</div>
+      <div class="template-grid" id="infTmplGrid" style="margin-bottom:20px"></div>
       <div class="step-label">Configure your infographic</div>
       <div class="field">
         <label>Topic / Tweet Text *</label>
-        <textarea id="inf-text" placeholder="Describe what you want the infographic to visualise..." style="min-height:120px"></textarea>
-      </div>
-      <div class="brand-color-row">
-        <label>Card Style</label>
-        <div class="gradient-presets" id="infGradientPresets">
-          <button class="preset active" data-c1="#6366f1" data-c2="#a855f7" data-dark="false" onclick="selectPresetFor(this,'inf')"><span style="background:linear-gradient(135deg,#6366f1,#a855f7)"></span>Violet</button>
-          <button class="preset" data-c1="#0ea5e9" data-c2="#6366f1" data-dark="false" onclick="selectPresetFor(this,'inf')"><span style="background:linear-gradient(135deg,#0ea5e9,#6366f1)"></span>Ocean</button>
-          <button class="preset" data-c1="#f97316" data-c2="#ef4444" data-dark="false" onclick="selectPresetFor(this,'inf')"><span style="background:linear-gradient(135deg,#f97316,#ef4444)"></span>Fire</button>
-          <button class="preset" data-c1="#10b981" data-c2="#0ea5e9" data-dark="false" onclick="selectPresetFor(this,'inf')"><span style="background:linear-gradient(135deg,#10b981,#0ea5e9)"></span>Mint</button>
-          <button class="preset" data-c1="#f59e0b" data-c2="#f97316" data-dark="false" onclick="selectPresetFor(this,'inf')"><span style="background:linear-gradient(135deg,#f59e0b,#f97316)"></span>Sunset</button>
-          <button class="preset" data-c1="#f8fafc" data-c2="#dbeafe" data-dark="true" onclick="selectPresetFor(this,'inf')"><span style="background:linear-gradient(135deg,#f8fafc,#dbeafe);outline:1px solid #cbd5e1"></span>Clean</button>
-          <button class="preset" data-c1="#0f172a" data-c2="#1e293b" data-dark="false" onclick="selectPresetFor(this,'inf')"><span style="background:linear-gradient(135deg,#0f172a,#1e293b)"></span>Slate</button>
-        </div>
-        <div class="custom-colors">
-          <div class="custom-color-field"><span>Color A</span><input type="color" id="inf-color1" value="#6366f1" oninput="onCustomColorFor('inf')" /></div>
-          <div class="custom-color-field"><span>Color B</span><input type="color" id="inf-color2" value="#a855f7" oninput="onCustomColorFor('inf')" /></div>
-          <div class="custom-color-field"><span>Dark text</span><input type="checkbox" id="inf-darkTextMode" onchange="onCustomColorFor('inf')" /></div>
-        </div>
+        <textarea id="inf-text" placeholder="Describe what you'd like the infographic to visualise..." style="min-height:120px"></textarea>
       </div>
       <div class="field">
         <label>Your X Handle (optional)</label>
         <input type="text" id="inf-xHandle" placeholder="@yourhandle" autocomplete="off" />
       </div>
-      <button class="btn-generate" onclick="generateStandaloneInfographic()">GENERATE INFOGRAPHIC — &#8358;200</button>
+      <button class="btn-generate" id="infGenBtn" onclick="infGenerate()">GENERATE INFOGRAPHIC — &#8358;200</button>
       <div class="error-box" id="infErrorBox"></div>
-      <div id="infPreview" style="display:none;margin-top:20px">
-        <canvas id="infCanvas" width="1600" height="900" style="width:100%;height:auto;border:1px solid var(--border);border-radius:10px"></canvas>
-        <button class="btn-generate" style="margin-top:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="downloadStandaloneInfographic()">↓ Download Infographic</button>
+
+      <!-- Preview with watermark -->
+      <div id="infPreviewSec" style="display:none;margin-top:20px">
+        <div class="step-label" style="margin-bottom:4px">Preview</div>
+        <p class="canvas-hint"><i class="fa-solid fa-droplet" style="color:var(--red)"></i> Watermarked preview — generate final to download clean HD version</p>
+        <div class="canvas-outer">
+          <canvas id="infCanvas" width="1600" height="900"></canvas>
+          <div class="wm-badge">WATERMARKED PREVIEW</div>
+        </div>
+        <button class="btn-generate" id="infFinalBtn" style="margin-top:12px" onclick="infDownloadFinal()">&#8595; DOWNLOAD CLEAN HD</button>
       </div>
     </div>
     <div style="height:40px"></div>
@@ -1451,8 +1483,7 @@ auth.onAuthStateChanged(async user => {
     document.getElementById("authScreen").classList.add("hidden");
     document.getElementById("walletBar").classList.add("visible");
     await ensureUserDoc(user);
-    const homeEmailEl = document.getElementById("homeEmail");
-    if (homeEmailEl) homeEmailEl.textContent = user.email;
+    const hee = document.getElementById("homeEmail"); if(hee) hee.textContent=user.email;
     listenBalance(user.uid);
     loadTransactions(user.uid);
   } else {
@@ -1477,8 +1508,7 @@ function listenBalance(uid) {
       const el = document.getElementById("walletBalance");
       el.textContent = `\u20A6${userBalance.toLocaleString()}`;
       el.style.color = userBalance < 100 ? "var(--accent2)" : "var(--red)";
-      const homeEl = document.getElementById("homeBalanceVal");
-      if (homeEl) homeEl.textContent = `\u20A6${userBalance.toLocaleString()}`;
+      const hb = document.getElementById("homeBalanceVal"); if(hb) hb.textContent=`\u20A6${userBalance.toLocaleString()}`;
     }
   });
 }
@@ -1489,7 +1519,7 @@ function loadTransactions(uid) {
     .orderBy("createdAt","desc").limit(20)
     .onSnapshot(snap => {
       const list = document.getElementById("txList");
-      if (snap.empty) { list.innerHTML = '<div class="tx-empty">No transactions yet. Top up your wallet to get started.</div>'; return; }
+      if (snap.empty) { list.innerHTML = '<div class="tx-empty">No transactions yet — top up your wallet to get started.</div>'; return; }
       list.innerHTML = snap.docs.map(doc => {
         const d = doc.data();
         const isCredit = d.amount > 0;
@@ -1606,43 +1636,24 @@ function selectTopup(amount, btn) {
 
 function doTopup() {
   if (!selectedTopup || !currentUser) return;
-  if (typeof PaystackPop === "undefined") {
-    showBalanceToast("Payment system not loaded — please refresh the page.");
-    return;
-  }
+  if (typeof PaystackPop === "undefined") { showBalanceToast("Payment system not loaded — please refresh."); return; }
   const payBtn = document.getElementById("btnPayTopup");
-  payBtn.disabled = true;
-  payBtn.textContent = "Opening payment...";
+  payBtn.disabled = true; payBtn.textContent = "Opening payment...";
   try {
     const popup = new PaystackPop();
     popup.newTransaction({
       key: "pk_live_6c1cdedbdf2881240c8c6bebe10d846d8019f6e4",
-      email: currentUser.email,
-      amount: selectedTopup * 100,
-      currency: "NGN",
+      email: currentUser.email, amount: selectedTopup * 100, currency: "NGN",
       ref: "TC-TOPUP-" + Date.now(),
-      onSuccess: async function(transaction) {
+      onSuccess: async function(tx) {
         payBtn.textContent = "Confirming...";
-        await db.collection("users").doc(currentUser.uid).update({
-          balance: firebase.firestore.FieldValue.increment(selectedTopup)
-        });
-        await db.collection("users").doc(currentUser.uid).collection("transactions").add({
-          amount: selectedTopup, description: "Wallet top-up", ref: transaction.reference,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        closeTopup();
-        showBalanceToast("\u20A6" + selectedTopup.toLocaleString() + " added to your wallet!", true);
+        await db.collection("users").doc(currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(selectedTopup) });
+        await db.collection("users").doc(currentUser.uid).collection("transactions").add({ amount: selectedTopup, description: "Wallet top-up", ref: tx.reference, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        closeTopup(); showBalanceToast("\u20A6" + selectedTopup.toLocaleString() + " added!", true);
       },
-      onCancel: function() {
-        payBtn.disabled = false;
-        payBtn.textContent = "Pay \u20A6" + selectedTopup.toLocaleString() + " \u2192";
-      }
+      onCancel: function() { payBtn.disabled = false; payBtn.textContent = "Pay \u20A6" + selectedTopup.toLocaleString() + " \u2192"; }
     });
-  } catch(e) {
-    payBtn.disabled = false;
-    payBtn.textContent = "Pay \u20A6" + selectedTopup.toLocaleString() + " \u2192";
-    showBalanceToast("Payment failed to open — check your connection.");
-  }
+  } catch(e) { payBtn.disabled = false; payBtn.textContent = "Pay \u20A6" + selectedTopup.toLocaleString() + " \u2192"; showBalanceToast("Payment failed — check your connection."); }
 }
 
 // ══════════════════════════════════════════════════════
@@ -1703,7 +1714,7 @@ async function ctGenerateThread() {
   const context = document.getElementById("ct-context").value.trim();
   const tone    = document.getElementById("ct-tone").value;
   const length  = document.getElementById("ct-length").value;
-  if (!topic) { document.getElementById("ctErrorBox").textContent="Please enter a topic to continue."; document.getElementById("ctErrorBox").classList.add("visible"); return; }
+  if (!topic) { document.getElementById("ctErrorBox").textContent="// Drop a topic first."; document.getElementById("ctErrorBox").classList.add("visible"); return; }
   const tweetCount = length==="short"?6:length==="long"?15:10;
   const cost = tweetCount * PRICE_TWEET;
   const ok = await deduct(cost, `Thread — ${tweetCount} tweets`);
@@ -1767,65 +1778,453 @@ function ctToggleCard(btn,index) {
 function ctCopyAll(){if(!window._ctTweets)return;navigator.clipboard.writeText(window._ctTweets.map((t,i)=>`${i+1}/${window._ctTweets.length}\n${t}`).join("\n\n")).then(()=>{const b=document.querySelector("#ctThreadSection .btn-copy-all");b.textContent="Copied ✓";setTimeout(()=>b.textContent="Copy All",2000);});}
 async function ctDownloadAllCards(){const tweets=window._ctTweets;if(!tweets)return;const btn=document.querySelector("#ctThreadSection .btn-dl-all");btn.textContent="Generating...";btn.disabled=true;for(let i=0;i<tweets.length;i++){const v=document.getElementById(`ct-visual-${i}`);v.classList.add("visible");drawTextCard(`ct-canvas-${i}`,tweets[i],i,tweets.length,i===0,i===tweets.length-1);await new Promise(r=>setTimeout(r,80));const c=document.getElementById(`ct-canvas-${i}`);const a=document.createElement("a");a.download=`threadcraft-${String(i+1).padStart(2,"0")}.png`;a.href=c.toDataURL("image/png");a.click();await new Promise(r=>setTimeout(r,300));}btn.textContent="↓ All Cards";btn.disabled=false;}
 
-// ══════════════════════════════════════════════════════
-// CREATE GRAPHICS (standalone text card)
-// ══════════════════════════════════════════════════════
-async function generateStandaloneGraphic() {
-  if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
-  const text = document.getElementById("gfx-text").value.trim();
-  if (!text) { document.getElementById("gfxErrorBox").textContent="Please enter tweet text first."; document.getElementById("gfxErrorBox").classList.add("visible"); return; }
-  const ok = await deduct(PRICE_TEXTCARD, "Standalone text card");
-  if (!ok) return;
-  document.getElementById("gfxErrorBox").classList.remove("visible");
-  const oldStyle = cardStyle;
-  cardStyle = pageStyles.gfx;
-  const preview = document.getElementById("gfxPreview");
-  preview.style.display = "block";
-  drawTextCard("gfxCanvas", text, 0, 1, true, true);
-  cardStyle = oldStyle;
-  preview.scrollIntoView({behavior:"smooth", block:"start"});
-}
-function downloadStandaloneGraphic(){const c=document.getElementById("gfxCanvas");const a=document.createElement("a");a.download="threadcraft-graphic.png";a.href=c.toDataURL("image/png");a.click();}
+// (Graphics editor replaced by gfxGenerate)
 
-// ══════════════════════════════════════════════════════
-// CREATE INFOGRAPHIC (standalone AI infographic)
-// ══════════════════════════════════════════════════════
-async function generateStandaloneInfographic() {
-  if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
-  const text = document.getElementById("inf-text").value.trim();
-  if (!text) { document.getElementById("infErrorBox").textContent="Please describe what you'd like the infographic to show."; document.getElementById("infErrorBox").classList.add("visible"); return; }
-  const ok = await deduct(PRICE_IMAGE, "Standalone infographic");
-  if (!ok) return;
-  document.getElementById("infErrorBox").classList.remove("visible");
-  const btn = document.querySelector("#pageCreateInfographic .btn-generate");
-  btn.disabled=true; btn.textContent="GENERATING...";
-  try {
-    const res = await fetch("/api/infographic", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tweet:text,topic:text})});
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error||"Failed");
-    const style = pageStyles.inf;
-    const handle = document.getElementById("inf-xHandle").value.trim();
-    const canvas = document.getElementById("infCanvas");
-    canvas.width=1600; canvas.height=900;
-    drawInfographic(canvas, data, style, handle, false, false, null);
-    document.getElementById("infPreview").style.display="block";
-    document.getElementById("infPreview").scrollIntoView({behavior:"smooth",block:"start"});
-  } catch(err) {
-    await db.collection("users").doc(currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(PRICE_IMAGE)});
-    document.getElementById("infErrorBox").textContent="// "+err.message; document.getElementById("infErrorBox").classList.add("visible");
-  } finally {
-    btn.disabled=false; btn.textContent="GENERATE INFOGRAPHIC — ₦200";
-  }
-}
-function downloadStandaloneInfographic(){const c=document.getElementById("infCanvas");const a=document.createElement("a");a.download="threadcraft-infographic.png";a.href=c.toDataURL("image/png");a.click();}
+// (Infographic generation handled by infGenerate)
 
 // ── DOMContentLoaded ──
+
+// ══════════════════════════════════════════════════════
+// GFX INTERACTIVE EDITOR
+// ══════════════════════════════════════════════════════
+
+const GFX_TEMPLATES = [
+  { id:'cinema', name:'Dark Cinema',
+    bg:{ c1:'#0d0d0d', c2:'#1a0802' },
+    elements:[
+      { id:'brand', type:'text', label:'Brand Name', text:'YOUR BRAND', x:80, y:108, fs:22, color:'#ffffff88', ff:'DM Sans', fw:'300', align:'left' },
+      { id:'line1', type:'line', label:'Top Accent Line', x:80, y:158, w:90, color:'#c8a84b' },
+      { id:'title', type:'text', label:'Main Title', text:'15TH ANNUAL\nCAR SHOW', x:80, y:195, fs:118, color:'#ffffff', ff:'Bebas Neue', fw:'400', align:'left' },
+      { id:'line2', type:'line', label:'Bottom Accent Line', x:80, y:556, w:90, color:'#c8a84b' },
+      { id:'date', type:'text', label:'Date', text:'SEPTEMBER 17-21, 2024', x:80, y:616, fs:24, color:'#ffffff', ff:'DM Mono', fw:'400', align:'left' },
+      { id:'loc', type:'text', label:'Location', text:'AVDA. ENRIQUE PEINADOR', x:80, y:658, fs:24, color:'#ffffff', ff:'DM Mono', fw:'400', align:'left' },
+    ]
+  },
+  { id:'agency', name:'Bold Agency',
+    bg:{ c1:'#07062a', c2:'#100e5c' },
+    elements:[
+      { id:'brand', type:'text', label:'Brand', text:'Your Company', x:80, y:68, fs:20, color:'#ffffffaa', ff:'DM Sans', fw:'300', align:'left' },
+      { id:'h1', type:'text', label:'Headline 1', text:'DIGITAL', x:80, y:130, fs:158, color:'#ffffff', ff:'Bebas Neue', fw:'400', align:'left' },
+      { id:'h2', type:'text', label:'Headline 2 (accent)', text:'MARKETING', x:80, y:310, fs:130, color:'#f97316', ff:'Bebas Neue', fw:'400', align:'left' },
+      { id:'h3', type:'text', label:'Headline 3', text:'FOR YOUR BUSINESS', x:80, y:456, fs:76, color:'#ffffff', ff:'Bebas Neue', fw:'400', align:'left' },
+      { id:'tagline', type:'text', label:'Tagline', text:'Grow Your Business — Maximize The Results', x:80, y:568, fs:25, color:'#ffffffdd', ff:'DM Sans', fw:'700', align:'left' },
+      { id:'body', type:'text', label:'Body Text', text:'Build your business digitally to reach a wider audience.', x:80, y:612, fs:20, color:'#ffffff88', ff:'DM Sans', fw:'400', align:'left' },
+      { id:'handle', type:'text', label:'Handle / Contact', text:'@yourhandle  |  contact@email.com', x:80, y:848, fs:21, color:'#ffffffcc', ff:'DM Sans', fw:'400', align:'left' },
+      { id:'dots', type:'dots', label:'Dot Grid', x:878, y:38, color:'#ffffff44', cols:9, rows:5, gap:20, ds:3 },
+    ]
+  },
+  { id:'crypto', name:'Crypto Card',
+    bg:{ c1:'#0d1117', c2:'#1a2332' },
+    elements:[
+      { id:'bgtext', type:'text', label:'Background Text', text:'TOKEN\nLOCKS', x:60, y:100, fs:218, color:'#ffffff06', ff:'Bebas Neue', fw:'400', align:'left' },
+      { id:'card', type:'rect', label:'Card Block', x:820, y:170, w:680, h:512, color:'#ede8e0', radius:14 },
+      { id:'author', type:'text', label:'Author Handle', text:'@yourusername x @brand', x:856, y:264, fs:19, color:'#666666', ff:'DM Mono', fw:'400', align:'left' },
+      { id:'ctitle', type:'text', label:'Card Title', text:'Your Project:\nMy journey into\nwhat matters', x:840, y:318, fs:48, color:'#111111', ff:'DM Sans', fw:'800', align:'left' },
+      { id:'csub', type:'text', label:'Card Subtitle', text:'(and why everyone needs it)', x:840, y:586, fs:22, color:'#555555', ff:'DM Sans', fw:'400', align:'left' },
+    ]
+  },
+  { id:'minimal', name:'Clean Minimal',
+    bg:{ c1:'#f5f5f3', c2:'#e0e0da' },
+    elements:[
+      { id:'brand', type:'text', label:'Brand', text:'your brand', x:800, y:200, fs:20, color:'#aaaaaa', ff:'DM Mono', fw:'400', align:'center' },
+      { id:'title', type:'text', label:'Title', text:'YOUR THREAD\nTITLE HERE', x:800, y:278, fs:112, color:'#111111', ff:'Bebas Neue', fw:'400', align:'center' },
+      { id:'line', type:'line', label:'Accent Line', x:650, y:575, w:300, color:'#e0161a' },
+      { id:'sub', type:'text', label:'Subtitle', text:'A thread by @yourhandle', x:800, y:626, fs:25, color:'#777777', ff:'DM Mono', fw:'400', align:'center' },
+      { id:'dots', type:'dots', label:'Decoration', x:1380, y:680, color:'#bbbbbb', cols:5, rows:5, gap:22, ds:4 },
+    ]
+  }
+];
+
+// ── State ──
+let gfxState = null;
+let gfxSelId = null;
+let gfxDrag = null, gfxDragOrigin = null, gfxDragElOrigin = null, gfxDidDrag = false;
+let gfxBg = { c1:null, c2:null };
+
+function gfxClone(t) {
+  return { ...t, bg:{...t.bg}, elements: t.elements.map(e=>({...e})) };
+}
+
+// ── Render ──
+function gfxRender(canvas, state, wm) {
+  const ctx = canvas.getContext('2d');
+  const W=1600, H=900;
+  ctx.clearRect(0,0,W,H);
+  const c1 = gfxBg.c1||state.bg.c1, c2 = gfxBg.c2||state.bg.c2;
+  const g = ctx.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,c1); g.addColorStop(1,c2);
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  state.elements.forEach(el => gfxDrawEl(ctx, el, el.id===gfxSelId));
+  if (wm) gfxWatermark(ctx, W, H);
+}
+
+function gfxDrawEl(ctx, el, sel) {
+  ctx.save();
+  if (el.type==='text') {
+    const lines = el.text.split('\n');
+    const lh = el.fs * 1.22;
+    ctx.font = (el.fw||'400')+' '+el.fs+'px "'+(el.ff||'DM Sans')+'", sans-serif';
+    ctx.fillStyle = el.color||'#ffffff';
+    ctx.textAlign = el.align||'left';
+    ctx.textBaseline = 'top';
+    lines.forEach((ln,i) => ctx.fillText(ln, el.x, el.y + i*lh));
+  } else if (el.type==='line') {
+    ctx.strokeStyle = el.color||'#ffffff'; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.moveTo(el.x,el.y); ctx.lineTo(el.x+(el.w||80),el.y); ctx.stroke();
+  } else if (el.type==='rect') {
+    ctx.fillStyle = el.color||'#ffffff';
+    const r = el.radius||0;
+    if (r>0 && ctx.roundRect) { ctx.beginPath(); ctx.roundRect(el.x,el.y,el.w,el.h,r); ctx.fill(); }
+    else { ctx.fillRect(el.x,el.y,el.w,el.h); }
+  } else if (el.type==='dots') {
+    const gap=el.gap||20, ds=el.ds||3;
+    ctx.fillStyle = el.color||'#ffffff44';
+    for(let r=0;r<el.rows;r++) for(let c=0;c<el.cols;c++) {
+      ctx.beginPath(); ctx.arc(el.x+c*gap, el.y+r*gap, ds, 0, Math.PI*2); ctx.fill();
+    }
+  }
+  if (sel) {
+    const bb = gfxBB(el);
+    ctx.strokeStyle='#3b82f6'; ctx.lineWidth=3;
+    ctx.setLineDash([7,4]); ctx.strokeRect(bb.x-10,bb.y-10,bb.w+20,bb.h+20);
+    ctx.setLineDash([]);
+    ctx.fillStyle='#3b82f6'; ctx.fillRect(bb.x-10,bb.y-10,16,16);
+    ctx.fillStyle='#fff'; ctx.font='bold 11px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='top';
+    ctx.fillText('✥',bb.x-8,bb.y-9);
+  }
+  ctx.restore();
+}
+
+function gfxBB(el) {
+  if (el.type==='text') {
+    const lines=el.text.split('\n'), lh=el.fs*1.22;
+    const h=lh*lines.length;
+    const cw = el.ff&&el.ff.includes('Bebas') ? 0.62 : 0.55;
+    const maxW = Math.max(...lines.map(l=>l.length)) * el.fs * cw;
+    const x = el.align==='center' ? el.x-maxW/2 : el.align==='right' ? el.x-maxW : el.x;
+    return {x, y:el.y, w:maxW, h};
+  }
+  if (el.type==='line') return {x:el.x, y:el.y-6, w:el.w||80, h:12};
+  if (el.type==='rect') return {x:el.x, y:el.y, w:el.w, h:el.h};
+  if (el.type==='dots') {
+    const g=el.gap||20;
+    return {x:el.x, y:el.y, w:(el.cols-1)*g+10, h:(el.rows-1)*g+10};
+  }
+  return {x:el.x, y:el.y, w:100, h:40};
+}
+
+function gfxHit(cx, cy) {
+  if (!gfxState) return null;
+  for (let i=gfxState.elements.length-1;i>=0;i--) {
+    const el=gfxState.elements[i], bb=gfxBB(el);
+    if (cx>=bb.x-14&&cx<=bb.x+bb.w+14&&cy>=bb.y-14&&cy<=bb.y+bb.h+14) return el;
+  }
+  return null;
+}
+
+function gfxWatermark(ctx, W, H) {
+  ctx.save(); ctx.globalAlpha=0.13; ctx.fillStyle='#ffffff';
+  ctx.font='bold 28px "DM Mono",monospace'; ctx.textBaseline='top';
+  for(let sy=-80;sy<H+80;sy+=160) for(let sx=-80;sx<W+80;sx+=160) {
+    ctx.save(); ctx.translate(sx,sy); ctx.rotate(-Math.PI/7); ctx.fillText('THREADCRAFT',0,0); ctx.restore();
+  }
+  ctx.restore();
+}
+
+// ── Canvas → logical coords ──
+function gfxPt(e) {
+  const c=document.getElementById('gfxPrevCanvas'), r=c.getBoundingClientRect();
+  const sx=1600/r.width, sy=900/r.height;
+  const cx=e.touches?e.touches[0].clientX:e.clientX;
+  const cy=e.touches?e.touches[0].clientY:e.clientY;
+  return {x:(cx-r.left)*sx, y:(cy-r.top)*sy};
+}
+
+// ── Pointer handlers ──
+function gfxPDown(e) {
+  const pt=gfxPt(e); const el=gfxHit(pt.x,pt.y);
+  gfxDrag=el?el.id:null; gfxDragOrigin=pt; gfxDidDrag=false;
+  if(el) gfxDragElOrigin={x:el.x,y:el.y};
+}
+function gfxPMove(e) {
+  if(!gfxDrag||!gfxDragOrigin) return;
+  const pt=gfxPt(e); const dx=pt.x-gfxDragOrigin.x, dy=pt.y-gfxDragOrigin.y;
+  if(Math.abs(dx)>5||Math.abs(dy)>5) gfxDidDrag=true;
+  if(!gfxDidDrag) return;
+  const el=gfxState.elements.find(e=>e.id===gfxDrag); if(!el) return;
+  el.x=gfxDragElOrigin.x+dx; el.y=gfxDragElOrigin.y+dy;
+  gfxRefreshPreview();
+  const ex=document.getElementById('ep-x'), ey=document.getElementById('ep-y');
+  if(ex) ex.value=Math.round(el.x); if(ey) ey.value=Math.round(el.y);
+}
+function gfxPUp(e) {
+  if(!gfxDidDrag&&gfxDrag) {
+    const el=gfxState&&gfxState.elements.find(e=>e.id===gfxDrag);
+    if(el){gfxSelId=el.id; gfxShowPanel(el); gfxRefreshPreview();}
+  } else if(!gfxDrag) {
+    gfxSelId=null; gfxHidePanel(); gfxRefreshPreview();
+  }
+  gfxDrag=null; gfxDragOrigin=null; gfxDragElOrigin=null;
+}
+
+// ── Init template thumbnails ──
+function gfxInitTmpls() {
+  const grid=document.getElementById('gfxTmplGrid'); if(!grid) return;
+  grid.innerHTML='';
+  GFX_TEMPLATES.forEach(t => {
+    const card=document.createElement('div'); card.className='tmpl-card'; card.id='gtc-'+t.id;
+    card.innerHTML='<canvas class="tmpl-canvas" width="320" height="180"></canvas><div class="tmpl-label">'+t.name+'</div>';
+    card.onclick=()=>gfxPickTmpl(t.id);
+    grid.appendChild(card);
+    const tc=card.querySelector('canvas'), ctx=tc.getContext('2d');
+    const off=document.createElement('canvas'); off.width=1600; off.height=900;
+    const savedBg={...gfxBg}, savedSel=gfxSelId;
+    gfxBg={c1:null,c2:null}; gfxSelId=null;
+    gfxRender(off, gfxClone(t), false);
+    gfxBg=savedBg; gfxSelId=savedSel;
+    ctx.drawImage(off,0,0,1600,900,0,0,320,180);
+  });
+}
+
+function gfxPickTmpl(id) {
+  const t=GFX_TEMPLATES.find(t=>t.id===id); if(!t) return;
+  gfxState=gfxClone(t); gfxSelId=null; gfxBg={c1:null,c2:null};
+  document.querySelectorAll('.tmpl-card').forEach(c=>c.classList.remove('active'));
+  const card=document.getElementById('gtc-'+id); if(card) card.classList.add('active');
+  // Reset bg presets to first active
+  document.querySelectorAll('#gfxBgPresets .bg-preset').forEach((b,i)=>b.classList.toggle('on',i===0));
+  gfxBg={c1:t.bg.c1, c2:t.bg.c2};
+  document.getElementById('gfxInputsSec').style.display='block';
+  document.getElementById('gfxPreviewSec').style.display='block';
+  document.getElementById('gfxGenBtn').style.display='block';
+  gfxPopInputs();
+  gfxRefreshPreview();
+  gfxHidePanel();
+}
+
+function gfxPopInputs() {
+  const c=document.getElementById('gfxQuickInputs'); if(!c||!gfxState) return;
+  c.innerHTML='';
+  gfxState.elements.forEach(el=>{
+    if(el.type!=='text') return;
+    const multi=el.text.includes('\n')||el.fs>=60;
+    const row=document.createElement('div'); row.className='qi-row';
+    const safe=el.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+    row.innerHTML='<div class="qi-label">'+( el.label||el.id)+'</div>'
+      +(multi?'<textarea class="qi-input" id="qi-'+el.id+'" rows="2" oninput="gfxElUp(\''+el.id+'\',\'text\',this.value)">'+safe+'</textarea>'
+             :'<input class="qi-input" id="qi-'+el.id+'" type="text" value="'+safe+'" oninput="gfxElUp(\''+el.id+'\',\'text\',this.value)">');
+    c.appendChild(row);
+  });
+}
+
+function gfxElUp(id, prop, val) {
+  if(!gfxState) return;
+  const el=gfxState.elements.find(e=>e.id===id); if(!el) return;
+  el[prop]=prop==='fs'||prop==='x'||prop==='y'||prop==='w'||prop==='h'?+val:val;
+  gfxRefreshPreview();
+}
+
+function gfxElUpAndQI(id, prop, val) {
+  gfxElUp(id,prop,val);
+  const qi=document.getElementById('qi-'+id); if(qi) qi.value=val;
+}
+
+function gfxSetBg(btn) {
+  document.querySelectorAll('#gfxBgPresets .bg-preset').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); gfxBg={c1:btn.dataset.c1, c2:btn.dataset.c2};
+  gfxRefreshPreview();
+}
+
+function gfxRefreshPreview() {
+  const c=document.getElementById('gfxPrevCanvas'); if(!c||!gfxState) return;
+  gfxRender(c, gfxState, true);
+}
+
+// ── Edit panel ──
+function gfxShowPanel(el) {
+  const p=document.getElementById('gfxElPanel'); if(!p) return;
+  p.style.display='block';
+  const safeText=el.text?el.text.replace(/&/g,'&amp;').replace(/</g,'&lt;'):'' ;
+  const fonts=['Bebas Neue','DM Sans','DM Mono'];
+  const fbtns=fonts.map(f=>'<button class="ep-fbtn'+(el.ff===f?' on':'')+'" onclick="gfxElUp(\''+el.id+'\',\'ff\',\''+f+'\');gfxShowPanel(gfxState.elements.find(e=>e.id===\''+el.id+'\'))">'+f+'</button>').join('');
+  const colorVal=el.color&&el.color.length===7?el.color:'#ffffff';
+  p.innerHTML=`
+    <div class="el-panel-hdr"><span class="el-panel-name">${el.label||el.id}</span>
+      <button class="btn-desel" onclick="gfxDesel()">✕ Done</button></div>
+    ${el.type==='text'?`
+      <div style="margin-bottom:10px">
+        <div class="ep-lbl" style="margin-bottom:4px">Text Content</div>
+        <textarea class="ep-txt" id="ep-txt" oninput="gfxElUpAndQI('${el.id}','text',this.value)">${safeText}</textarea>
+      </div>
+      <div class="ep-row">
+        <div class="ep-col"><div class="ep-lbl">Color</div><input type="color" class="ep-color" value="${colorVal}" oninput="gfxElUp('${el.id}','color',this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">Size</div><input type="number" class="ep-num" id="ep-fs" value="${el.fs}" min="8" max="300" oninput="gfxElUp('${el.id}','fs',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">Font</div><div style="display:flex;gap:4px;flex-wrap:wrap">${fbtns}</div></div>
+      </div>
+      <div class="ep-row" style="margin-top:4px">
+        <div class="ep-col"><div class="ep-lbl">X</div><input type="number" class="ep-num" id="ep-x" value="${Math.round(el.x)}" oninput="gfxElUp('${el.id}','x',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">Y</div><input type="number" class="ep-num" id="ep-y" value="${Math.round(el.y)}" oninput="gfxElUp('${el.id}','y',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">Align</div>
+          <div style="display:flex;gap:4px">
+            <button class="ep-abtn${el.align==='left'?' on':''}" onclick="gfxElUp('${el.id}','align','left');gfxShowPanel(gfxState.elements.find(e=>e.id==='${el.id}'))">L</button>
+            <button class="ep-abtn${el.align==='center'?' on':''}" onclick="gfxElUp('${el.id}','align','center');gfxShowPanel(gfxState.elements.find(e=>e.id==='${el.id}'))">C</button>
+            <button class="ep-abtn${el.align==='right'?' on':''}" onclick="gfxElUp('${el.id}','align','right');gfxShowPanel(gfxState.elements.find(e=>e.id==='${el.id}'))">R</button>
+          </div>
+        </div>
+      </div>`
+    :el.type==='line'?`
+      <div class="ep-row">
+        <div class="ep-col"><div class="ep-lbl">Color</div><input type="color" class="ep-color" value="${colorVal}" oninput="gfxElUp('${el.id}','color',this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">Length</div><input type="number" class="ep-num" value="${el.w||80}" oninput="gfxElUp('${el.id}','w',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">X</div><input type="number" class="ep-num" id="ep-x" value="${Math.round(el.x)}" oninput="gfxElUp('${el.id}','x',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">Y</div><input type="number" class="ep-num" id="ep-y" value="${Math.round(el.y)}" oninput="gfxElUp('${el.id}','y',+this.value)"></div>
+      </div>`
+    :el.type==='rect'?`
+      <div class="ep-row">
+        <div class="ep-col"><div class="ep-lbl">Color</div><input type="color" class="ep-color" value="${colorVal}" oninput="gfxElUp('${el.id}','color',this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">X</div><input type="number" class="ep-num" id="ep-x" value="${Math.round(el.x)}" oninput="gfxElUp('${el.id}','x',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">Y</div><input type="number" class="ep-num" id="ep-y" value="${Math.round(el.y)}" oninput="gfxElUp('${el.id}','y',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">Width</div><input type="number" class="ep-num" value="${el.w}" oninput="gfxElUp('${el.id}','w',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">Height</div><input type="number" class="ep-num" value="${el.h}" oninput="gfxElUp('${el.id}','h',+this.value)"></div>
+      </div>`
+    :el.type==='dots'?`
+      <div class="ep-row">
+        <div class="ep-col"><div class="ep-lbl">Color</div><input type="color" class="ep-color" value="${el.color&&el.color.length===7?el.color:'#ffffff'}" oninput="gfxElUp('${el.id}','color',this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">X</div><input type="number" class="ep-num" id="ep-x" value="${Math.round(el.x)}" oninput="gfxElUp('${el.id}','x',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">Y</div><input type="number" class="ep-num" id="ep-y" value="${Math.round(el.y)}" oninput="gfxElUp('${el.id}','y',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">Cols</div><input type="number" class="ep-num" value="${el.cols}" min="1" max="20" oninput="gfxElUp('${el.id}','cols',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">Rows</div><input type="number" class="ep-num" value="${el.rows}" min="1" max="20" oninput="gfxElUp('${el.id}','rows',+this.value)"></div>
+      </div>`:''}
+  `;
+}
+
+function gfxDesel() { gfxSelId=null; gfxHidePanel(); gfxRefreshPreview(); }
+function gfxHidePanel() { const p=document.getElementById('gfxElPanel'); if(p) p.style.display='none'; }
+
+// ── Final generate ──
+async function gfxGenerate() {
+  if(!currentUser){document.getElementById('authScreen').classList.remove('hidden');return;}
+  if(!gfxState){const e=document.getElementById('gfxErrorBox');e.textContent='Please select a template first.';e.classList.add('visible');return;}
+  const ok=await deduct(PRICE_TEXTCARD,'Graphic generation'); if(!ok) return;
+  document.getElementById('gfxErrorBox').classList.remove('visible');
+  const out=document.createElement('canvas'); out.width=1600; out.height=900;
+  const savedSel=gfxSelId; gfxSelId=null;
+  gfxRender(out,gfxState,false);
+  gfxSelId=savedSel;
+  const a=document.createElement('a'); a.download='threadcraft-graphic.png';
+  a.href=out.toDataURL('image/png'); a.click();
+}
+
+// ── Attach canvas events ──
+function gfxAttachEvents() {
+  const c=document.getElementById('gfxPrevCanvas'); if(!c) return;
+  c.addEventListener('mousedown',gfxPDown);
+  c.addEventListener('mousemove',gfxPMove);
+  c.addEventListener('mouseup',gfxPUp);
+  c.addEventListener('mouseleave',gfxPUp);
+  c.addEventListener('touchstart',e=>{e.preventDefault();gfxPDown(e);},{passive:false});
+  c.addEventListener('touchmove',e=>{e.preventDefault();gfxPMove(e);},{passive:false});
+  c.addEventListener('touchend',e=>{e.preventDefault();gfxPUp(e);},{passive:false});
+}
+
+// ══════════════════════════════════════════════════════
+// INFOGRAPHIC TEMPLATES + PREVIEW WATERMARK
+// ══════════════════════════════════════════════════════
+const INF_TEMPLATES = [
+  { id:'bars', name:'Bar Chart', desc:'Comparison bars' },
+  { id:'stats', name:'Stat Blocks', desc:'Key numbers' },
+  { id:'timeline', name:'Timeline', desc:'Steps & flow' },
+];
+
+let infCurrentStyle = null;
+
+function infInitTmpls() {
+  const grid=document.getElementById('infTmplGrid'); if(!grid) return;
+  grid.innerHTML='';
+  INF_TEMPLATES.forEach((t,i)=>{
+    const card=document.createElement('div'); card.className='tmpl-card'+(i===0?' active':'');
+    card.id='itc-'+t.id;
+    card.innerHTML='<canvas class="tmpl-canvas" width="320" height="180"></canvas><div class="tmpl-label">'+t.name+' — '+t.desc+'</div>';
+    card.onclick=()=>{
+      document.querySelectorAll('[id^=itc-]').forEach(c=>c.classList.remove('active'));
+      card.classList.add('active'); infCurrentStyle=t.id;
+    };
+    grid.appendChild(card);
+    // Draw placeholder thumbnail
+    const tc=card.querySelector('canvas'), ctx=tc.getContext('2d');
+    const colors=['#e0161a','#3b82f6','#22c55e'];
+    ctx.fillStyle='#141414'; ctx.fillRect(0,0,320,180);
+    if(t.id==='bars'){
+      [90,140,110,160,75].forEach((h,j)=>{
+        ctx.fillStyle=colors[j%3]; ctx.fillRect(30+j*52,180-h,38,h);
+      });
+    } else if(t.id==='stats'){
+      ['42K','98%','3.2M'].forEach((v,j)=>{
+        ctx.fillStyle=colors[j]; ctx.fillRect(j*108+10,40,98,100);
+        ctx.fillStyle='#fff'; ctx.font='bold 22px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(v,j*108+59,90);
+      });
+    } else {
+      [30,80,130].forEach((y,j)=>{
+        ctx.fillStyle=colors[j]; ctx.beginPath(); ctx.arc(40,y+20,10,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#fff'; ctx.font='12px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
+        ctx.fillText('Step '+(j+1)+' — description',60,y+20);
+      });
+    }
+  });
+  infCurrentStyle='bars';
+}
+
+// Override the infographic generate to add watermark
+async function infGenerate() {
+  if(!currentUser){document.getElementById('authScreen').classList.remove('hidden');return;}
+  const text=document.getElementById('inf-text').value.trim();
+  if(!text){const e=document.getElementById('infErrorBox');e.textContent="Please describe what you'd like the infographic to show.";e.classList.add('visible');return;}
+  const ok=await deduct(PRICE_IMAGE,'Standalone infographic'); if(!ok) return;
+  document.getElementById('infErrorBox').classList.remove('visible');
+  const btn=document.getElementById('infGenBtn');
+  btn.disabled=true; btn.textContent='GENERATING...';
+  try {
+    const res=await fetch('/api/infographic',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tweet:text,topic:text})});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error||'Failed');
+    const style=pageStyles.inf||{c1:'#6366f1',c2:'#a855f7',darkText:false};
+    const handle=document.getElementById('inf-xHandle').value.trim();
+    const canvas=document.getElementById('infCanvas');
+    canvas.width=1600; canvas.height=900;
+    drawInfographic(canvas,data,style,handle,false,false,null);
+    // Draw watermark on top
+    gfxWatermark(canvas.getContext('2d'),1600,900);
+    document.getElementById('infPreviewSec').style.display='block';
+    document.getElementById('infPreviewSec').scrollIntoView({behavior:'smooth',block:'start'});
+    // Store data for clean download
+    window._infLastData={data,style,handle};
+  } catch(err) {
+    await db.collection('users').doc(currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(PRICE_IMAGE)});
+    const e=document.getElementById('infErrorBox');e.textContent='// '+err.message;e.classList.add('visible');
+  } finally { btn.disabled=false; btn.textContent='GENERATE INFOGRAPHIC — \u20A6200'; }
+}
+
+function infDownloadFinal() {
+  if(!window._infLastData) return;
+  const {data,style,handle}=window._infLastData;
+  const out=document.createElement('canvas'); out.width=1600; out.height=900;
+  drawInfographic(out,data,style,handle,false,false,null); // no watermark
+  const a=document.createElement('a'); a.download='threadcraft-infographic.png';
+  a.href=out.toDataURL('image/png'); a.click();
+}
+
+
+
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("loginPassword")?.addEventListener("keydown", e => { if(e.key==="Enter") doLogin(); });
   document.getElementById("signupPassword")?.addEventListener("keydown", e => { if(e.key==="Enter") doSignup(); });
   document.getElementById("gigUrl")?.addEventListener("keydown", e => { if(e.key==="Enter") fetchBrief(); });
   document.getElementById("topic")?.addEventListener("keydown", e => { if(e.key==="Enter"&&!e.shiftKey) handleGenerateClick(); });
   document.getElementById("ct-topic")?.addEventListener("keydown", e => { if(e.key==="Enter"&&!e.shiftKey) handleCtGenerateClick(); });
+  gfxInitTmpls();
+  gfxAttachEvents();
+  infInitTmpls();
 });
 
 // ══════════════════════════════════════════════════════
@@ -1837,7 +2236,7 @@ const paidTextCards    = new Set();
 function handleGenerateClick() {
   if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
   const tweetCount = estimateTweetCount();
-  if (tweetCount === 0) { showError("Please configure your thread settings first."); return; }
+  if (tweetCount === 0) { showError("Configure your thread first."); return; }
   const cost = tweetCount * PRICE_TWEET;
   if (userBalance < cost) {
     showBalanceToast(`Need \u20A6${cost} to generate — top up your wallet`);
@@ -1861,7 +2260,7 @@ async function generateThread() {
   const context = document.getElementById("context").value.trim();
   const tone    = document.getElementById("tone").value;
   const length  = document.getElementById("length").value;
-  if (!topic) { showError("Please enter a topic to continue."); return; }
+  if (!topic) { showError("Drop a topic first."); return; }
 
   const tweetCount = estimateTweetCount();
   const cost = tweetCount * PRICE_TWEET;
