@@ -240,19 +240,65 @@
     .auth-divider{display:flex;align-items:center;gap:12px;margin:20px 0;font-family:var(--mono);font-size:10px;color:var(--muted)}
     .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
 
-    /* ══ WALLET BAR ══ */
-    #walletBar{background:rgba(13,13,13,.97);border-bottom:1px solid var(--border);padding:10px 20px;display:none;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+    /* ══ TOP NAV ══ */
+    #walletBar{background:rgba(13,13,13,.97);border-bottom:1px solid var(--border);padding:0 16px;height:56px;display:none;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1000;backdrop-filter:blur(12px)}
     #walletBar.visible{display:flex}
-    .wallet-user{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:1px}
-    .wallet-center{display:flex;align-items:center;gap:12px}
-    .wallet-balance-wrap{display:flex;flex-direction:column}
-    .wallet-balance{font-family:var(--display);font-size:20px;color:var(--text);letter-spacing:2px;line-height:1}
-    .wallet-balance.low{color:var(--red);animation:pulse 1.5s ease-in-out infinite}
-    .wallet-balance-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
-    .btn-topup{background:var(--red);color:#fff;border:none;border-radius:8px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 14px;cursor:pointer;transition:background .2s}
-    .btn-topup:hover{background:var(--red2)}
+    .nav-logo{font-family:var(--display);font-size:1.5rem;letter-spacing:3px;color:var(--text)}
+    .nav-logo span{color:var(--red)}
+    .nav-right{display:flex;align-items:center;gap:8px}
+    .nav-balance-pill{display:flex;align-items:center;gap:6px;background:rgba(224,22,26,.1);border:1px solid rgba(224,22,26,.3);border-radius:20px;padding:6px 12px;cursor:pointer;transition:all .2s}
+    .nav-balance-pill:hover{background:rgba(224,22,26,.18)}
+    .nav-bal-lbl{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--muted)}
+    .nav-bal-val{font-family:var(--display);font-size:17px;letter-spacing:2px;color:var(--red);line-height:1}
+    .nav-bal-plus{background:var(--red);color:#fff;font-family:var(--mono);font-size:9px;letter-spacing:1px;padding:3px 8px;border-radius:20px;white-space:nowrap}
     .btn-logout{background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:7px 12px;cursor:pointer;transition:all .2s}
     .btn-logout:hover{border-color:var(--muted2);color:var(--muted2)}
+
+    /* ══ PAGES ══ */
+    #appRoot{padding-top:0}
+    .app-page{display:none;min-height:calc(100vh - 56px)}
+    .app-page.active{display:block}
+    .page-header{display:flex;align-items:center;gap:14px;padding:20px 0 16px;border-bottom:1px solid var(--border);margin-bottom:24px}
+    .btn-back{background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-family:var(--mono);font-size:11px;padding:7px 12px;cursor:pointer;transition:all .2s;white-space:nowrap}
+    .btn-back:hover{border-color:var(--red);color:var(--red)}
+    .page-title{font-family:var(--display);font-size:22px;letter-spacing:2px;color:var(--text)}
+
+    /* ══ HOME HERO ══ */
+    .home-hero{background:linear-gradient(135deg,var(--surface) 0%,rgba(224,22,26,.06) 100%);border:1px solid rgba(224,22,26,.15);border-radius:16px;padding:24px 20px;margin:16px 0 20px;position:relative;overflow:hidden}
+    .home-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(224,22,26,.15) 0%,transparent 70%);pointer-events:none}
+    .home-logo{font-family:var(--display);font-size:2.8rem;letter-spacing:4px;color:var(--text);line-height:1;margin-bottom:8px}
+    .home-logo span{color:var(--red)}
+    .home-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--muted);border:1px solid var(--border);border-radius:20px;padding:4px 10px;margin-bottom:12px}
+    .live-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 2s infinite;flex-shrink:0}
+    .home-tagline{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px}
+    .home-tagline em{color:var(--red);font-style:normal}
+    .home-pricing-pill{font-family:var(--mono);font-size:10px;color:var(--muted2);line-height:1.8}
+    .home-pricing-pill span{color:var(--red)}
+
+    /* ══ QUICK ACTION GRID ══ */
+    .qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px}
+    .qa-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 14px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:6px}
+    .qa-card:hover{border-color:var(--red);background:var(--surface2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(224,22,26,.1)}
+    .qa-card:active{transform:translateY(0)}
+    .qa-icon{font-size:1.6rem;line-height:1}
+    .qa-label{font-family:var(--display);font-size:16px;letter-spacing:1.5px;color:var(--text)}
+    .qa-desc{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.5px}
+
+    /* ══ TRANSACTION LIST ══ */
+    .tx-section{margin-bottom:32px}
+    .tx-section-title{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:14px}
+    .tx-list{display:flex;flex-direction:column;gap:0}
+    .tx-item{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+    .tx-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+    .tx-icon.credit{background:rgba(34,197,94,.1);color:var(--grn)}
+    .tx-icon.debit{background:rgba(224,22,26,.1);color:var(--red)}
+    .tx-desc-wrap{flex:1;min-width:0}
+    .tx-title{font-size:.84rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .tx-date{font-size:.7rem;color:var(--muted);margin-top:2px}
+    .tx-amount{font-family:var(--display);font-size:1.1rem;letter-spacing:1px;white-space:nowrap}
+    .tx-amount.plus{color:var(--grn)}
+    .tx-amount.minus{color:var(--red)}
+    .tx-empty{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;padding:32px 0;letter-spacing:.5px}
 
     /* ══ TOPUP MODAL — bottom sheet style ══ */
     #topupModal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9998;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
@@ -302,17 +348,17 @@
   </div>
 </div>
 
-<!-- ══ WALLET BAR ══ -->
+<!-- ══ TOP NAV ══ -->
 <div id="walletBar">
-  <div class="wallet-user" id="walletUser">—</div>
-  <div class="wallet-center">
-    <div class="wallet-balance-wrap">
-      <div class="wallet-balance-lbl">Balance</div>
-      <div class="wallet-balance" id="walletBalance">&#8358;0</div>
+  <div class="nav-logo">THREAD<span>CRAFT</span></div>
+  <div class="nav-right">
+    <div class="nav-balance-pill" onclick="openTopup()">
+      <span class="nav-bal-lbl">BALANCE</span>
+      <span class="nav-bal-val" id="walletBalance">&#8358;0</span>
+      <span class="nav-bal-plus">+ TOP UP</span>
     </div>
-    <button class="btn-topup" onclick="openTopup()">+ Top Up</button>
+    <button class="btn-logout" onclick="doLogout()">Logout</button>
   </div>
-  <button class="btn-logout" onclick="doLogout()">Logout</button>
 </div>
 
 <!-- ══ TOP-UP MODAL ══ -->
@@ -336,188 +382,354 @@
 <div id="balanceToast">⚠ Insufficient balance — please top up</div>
 
 
-<div class="container">
-  <!-- ── HERO HEADER ── -->
-  <div class="hero">
-    <div class="hero-top">
-      <div class="logo-block">
-        <div class="logo">THREAD<span class="logo-accent">CRAFT</span></div>
-        <div class="logo-badge">AI Thread Agent &nbsp;·&nbsp; v2</div>
-        <p class="hero-tagline">Paste a gig link. Build threads that <em>actually hit.</em><br>Powered by GPT-4o + DALL-E 3.</p>
-      </div>
-      <div class="hero-right">
-        <div class="pricing-pill">
-          <span>&#8358;30</span> / tweet<br>
-          <span>&#8358;100</span> / text card<br>
-          <span>&#8358;200</span> / infographic
+<div id="appRoot">
+
+<!-- ══ HOME PAGE ══ -->
+<div id="pageHome" class="app-page active">
+  <div class="container">
+    <!-- Hero Welcome -->
+    <div class="home-hero">
+      <div class="home-hero-inner">
+        <div class="home-logo">THREAD<span>CRAFT</span></div>
+        <div class="home-badge"><span class="live-dot"></span> AI THREAD AGENT &nbsp;·&nbsp; V2</div>
+        <p class="home-tagline">Paste a gig link. Build threads that <em>actually hit.</em><br>Powered by GPT-4o + DALL-E 3.</p>
+        <div class="home-pricing-pill">
+          <span>&#8358;30</span> / tweet &nbsp;·&nbsp; <span>&#8358;100</span> / text card &nbsp;·&nbsp; <span>&#8358;200</span> / infographic
         </div>
       </div>
     </div>
-    <div class="hero-divider"></div>
-    <div class="hero-stats">
-      <div class="hero-stat">
-        <div class="hero-stat-val"><em>&#8358;30</em></div>
-        <div class="hero-stat-lbl">Naira per tweet</div>
+
+    <!-- Quick Action Grid -->
+    <div class="qa-grid">
+      <div class="qa-card" onclick="showPage('pageSolveGig')">
+        <div class="qa-icon">🎯</div>
+        <div class="qa-label">Solve Gig</div>
+        <div class="qa-desc">Analyse &amp; build threads</div>
       </div>
-      <div class="hero-stat">
-        <div class="hero-stat-val"><em>&#8358;200</em></div>
-        <div class="hero-stat-lbl">Naira per image</div>
+      <div class="qa-card" onclick="showPage('pageCreateGraphics')">
+        <div class="qa-icon">🎨</div>
+        <div class="qa-label">Create Graphics</div>
+        <div class="qa-desc">Standalone text cards</div>
       </div>
-      <div class="hero-stat">
-        <div class="hero-stat-val">GPT<em>-4o</em></div>
-        <div class="hero-stat-lbl">AI Engine</div>
+      <div class="qa-card" onclick="showPage('pageCreateInfographic')">
+        <div class="qa-icon">📊</div>
+        <div class="qa-label">Infographics</div>
+        <div class="qa-desc">AI-powered visuals</div>
       </div>
-      <div class="hero-stat">
-        <div class="hero-stat-val">DALL<em>-E3</em></div>
-        <div class="hero-stat-lbl">Image Engine</div>
+      <div class="qa-card" onclick="showPage('pageCreateThread')">
+        <div class="qa-icon">🧵</div>
+        <div class="qa-label">Create Thread</div>
+        <div class="qa-desc">Write without a gig</div>
+      </div>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="tx-section">
+      <div class="tx-section-title">RECENT TRANSACTIONS</div>
+      <div id="txList" class="tx-list">
+        <div class="tx-empty">No transactions yet — top up your wallet to get started.</div>
       </div>
     </div>
   </div>
-
-  <div class="form-section">
-    <div class="step-label">Step 01 — Paste Gig Link</div>
-    <div class="url-block">
-      <div class="url-input-row">
-        <input type="text" id="gigUrl" placeholder="https://earn.superteam.fun/listing/..." autocomplete="off" spellcheck="false" />
-        <button class="btn-fetch" id="fetchBtn" onclick="fetchBrief()">Analyse →</button>
-      </div>
-      <div class="fetch-status" id="fetchStatus">
-        <div class="fetch-dot"></div>
-        <span>Fetching page and extracting brief...</span>
-      </div>
-      <div class="brief-card" id="briefCard">
-        <div class="brief-card-header">
-          <div>
-            <div class="brief-platform" id="briefPlatform">Platform</div>
-            <div class="brief-title" id="briefTitle">—</div>
-          </div>
-          <button class="btn-clear-brief" onclick="clearBrief()">✕ Clear</button>
-        </div>
-        <div class="brief-grid">
-          <div class="brief-field full"><div class="brief-field-label">Task</div><div class="brief-field-value highlight" id="briefTask">—</div></div>
-          <div class="brief-field full"><div class="brief-field-label">Requirements</div><div class="brief-field-value" id="briefRequirements">—</div></div>
-          <div class="brief-field"><div class="brief-field-label">Target Audience</div><div class="brief-field-value" id="briefAudience">—</div></div>
-          <div class="brief-field"><div class="brief-field-label">Reward / Deadline</div><div class="brief-field-value" id="briefReward">—</div></div>
-        </div>
-        <div id="thinBriefWarning" style="display:none;margin-top:14px;padding:12px 14px;background:#1a1200;border:1px solid #ff6b3555">
-          <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:#ff6b35;margin-bottom:6px">⚠ DETAILS INCOMPLETE</div>
-          <div style="font-size:12px;color:#888;margin-bottom:10px">This page loads via JavaScript — the scraper missed the task details. Paste the bounty description below so the AI writes the right thing.</div>
-          <button onclick="var a=document.getElementById('manualBriefArea');a.style.display=a.style.display==='none'?'block':'none'" style="background:transparent;border:1px solid #333;color:#aaa;font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:6px 12px;cursor:pointer">+ PASTE BRIEF DETAILS</button>
-          <div id="manualBriefArea" style="display:none;margin-top:10px">
-            <textarea id="manualBriefText" placeholder="Paste the full task description here (copy from the Details tab on Superteam)..." style="width:100%;min-height:100px;background:#111;border:1px solid #333;color:#ddd;font-family:var(--sans);font-size:13px;padding:10px;resize:vertical;outline:none"></textarea>
-            <button onclick="applyManualBrief()" style="margin-top:8px;background:var(--red);border:none;color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:8px 16px;cursor:pointer;border-radius:8px">APPLY → UPDATE CONTEXT</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="or-divider"><span>or write manually</span></div>
-    <div class="step-label">Step 02 — Configure Thread</div>
-
-    <div class="field">
-      <label>Topic *</label>
-      <input type="text" id="topic" placeholder="e.g. Why most devs never ship their side projects" />
-    </div>
-    <div class="field">
-      <label>Extra context (optional)</label>
-      <textarea id="context" placeholder="Add details, talking points, or notes for the AI..."></textarea>
-    </div>
-
-    <!-- Gradient / Style Picker -->
-    <div class="brand-color-row">
-      <label>Card Style</label>
-      <div class="gradient-presets" id="gradientPresets">
-        <button class="preset active" data-c1="#6366f1" data-c2="#a855f7" data-dark="false" onclick="selectPreset(this)">
-          <span style="background:linear-gradient(135deg,#6366f1,#a855f7)"></span>Violet
-        </button>
-        <button class="preset" data-c1="#0ea5e9" data-c2="#6366f1" data-dark="false" onclick="selectPreset(this)">
-          <span style="background:linear-gradient(135deg,#0ea5e9,#6366f1)"></span>Ocean
-        </button>
-        <button class="preset" data-c1="#f97316" data-c2="#ef4444" data-dark="false" onclick="selectPreset(this)">
-          <span style="background:linear-gradient(135deg,#f97316,#ef4444)"></span>Fire
-        </button>
-        <button class="preset" data-c1="#10b981" data-c2="#0ea5e9" data-dark="false" onclick="selectPreset(this)">
-          <span style="background:linear-gradient(135deg,#10b981,#0ea5e9)"></span>Mint
-        </button>
-        <button class="preset" data-c1="#f59e0b" data-c2="#f97316" data-dark="false" onclick="selectPreset(this)">
-          <span style="background:linear-gradient(135deg,#f59e0b,#f97316)"></span>Sunset
-        </button>
-        <button class="preset" data-c1="#f8fafc" data-c2="#dbeafe" data-dark="true" onclick="selectPreset(this)">
-          <span style="background:linear-gradient(135deg,#f8fafc,#dbeafe);outline:1px solid #cbd5e1"></span>Clean
-        </button>
-        <button class="preset" data-c1="#0f172a" data-c2="#1e293b" data-dark="false" onclick="selectPreset(this)">
-          <span style="background:linear-gradient(135deg,#0f172a,#1e293b)"></span>Slate
-        </button>
-      </div>
-      <div class="custom-colors">
-        <div class="custom-color-field">
-          <span>Color A</span>
-          <input type="color" id="color1" value="#6366f1" oninput="onCustomColor()" />
-        </div>
-        <div class="custom-color-field">
-          <span>Color B</span>
-          <input type="color" id="color2" value="#a855f7" oninput="onCustomColor()" />
-        </div>
-        <div class="custom-color-field">
-          <span>Dark text</span>
-          <input type="checkbox" id="darkTextMode" onchange="onCustomColor()" />
-        </div>
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Your X Handle (optional)</label>
-      <input type="text" id="xHandle" placeholder="@yourhandle" autocomplete="off" />
-    </div>
-
-    <div class="controls-row">
-      <div class="field" style="margin-bottom:0">
-        <label>Tone</label>
-        <div class="select-wrap">
-          <select id="tone">
-            <option value="conversational">Conversational</option>
-            <option value="bold and provocative">Bold & Provocative</option>
-            <option value="educational storytelling">Educational Storytelling</option>
-            <option value="personal and vulnerable">Personal & Vulnerable</option>
-            <option value="analytical and data-driven">Analytical & Data-Driven</option>
-          </select>
-          <span class="select-arrow">▼</span>
-        </div>
-      </div>
-      <div class="field" style="margin-bottom:0">
-        <label>Length</label>
-        <div class="select-wrap">
-          <select id="length">
-            <option value="short">Short (5–7 tweets)</option>
-            <option value="medium" selected>Medium (8–12 tweets)</option>
-            <option value="long">Long (13–18 tweets)</option>
-          </select>
-          <span class="select-arrow">▼</span>
-        </div>
-      </div>
-    </div>
-
-    <button class="btn-generate" id="generateBtn" onclick="handleGenerateClick()">GENERATE THREAD</button>
-    <div class="loading-bar" id="loadingBar"></div>
-    <div class="error-box" id="errorBox"></div>
-  </div>
-
-  <div class="thread-section" id="threadSection">
-    <div class="thread-header">
-      <div class="thread-header-left">
-        <div class="thread-title">Generated Thread</div>
-        <div class="thread-count" id="tweetCountLabel">0 tweets</div>
-      </div>
-      <div class="thread-header-actions">
-        <button class="btn-copy-all" onclick="copyAll()">Copy All</button>
-        <button class="btn-dl-all" onclick="downloadAllCards()">↓ All Cards</button>
-      </div>
-    </div>
-    <div class="tweet-list" id="tweetList"></div>
-  </div>
-
-  <footer><p>ThreadCraft — AI Thread Agent // Powered by GPT-4o</p></footer>
 </div>
+
+<!-- ══ SOLVE GIG PAGE ══ -->
+<div id="pageSolveGig" class="app-page">
+  <div class="container">
+    <div class="page-header">
+      <button class="btn-back" onclick="showPage('pageHome')"><i class="fa fa-arrow-left"></i> Back</button>
+      <div class="page-title">🎯 SOLVE GIG</div>
+    </div>
+    <div class="form-section">
+      <div class="step-label">Step 01 — Paste Gig Link</div>
+      <div class="url-block">
+        <div class="url-input-row">
+          <input type="text" id="gigUrl" placeholder="https://earn.superteam.fun/listing/..." autocomplete="off" spellcheck="false" />
+          <button class="btn-fetch" id="fetchBtn" onclick="fetchBrief()">ANALYSE →</button>
+        </div>
+        <div class="fetch-status" id="fetchStatus">
+          <div class="fetch-dot"></div>
+          <span>Fetching page and extracting brief...</span>
+        </div>
+        <div class="brief-card" id="briefCard">
+          <div class="brief-card-header">
+            <div>
+              <div class="brief-platform" id="briefPlatform">Platform</div>
+              <div class="brief-title" id="briefTitle">—</div>
+            </div>
+            <button class="btn-clear-brief" onclick="clearBrief()">✕ Clear</button>
+          </div>
+          <div class="brief-grid">
+            <div class="brief-field full"><div class="brief-field-label">Task</div><div class="brief-field-value highlight" id="briefTask">—</div></div>
+            <div class="brief-field full"><div class="brief-field-label">Requirements</div><div class="brief-field-value" id="briefRequirements">—</div></div>
+            <div class="brief-field"><div class="brief-field-label">Target Audience</div><div class="brief-field-value" id="briefAudience">—</div></div>
+            <div class="brief-field"><div class="brief-field-label">Reward / Deadline</div><div class="brief-field-value" id="briefReward">—</div></div>
+          </div>
+          <div id="thinBriefWarning" style="display:none;margin-top:14px;padding:12px 14px;background:#1a1200;border:1px solid #ff6b3555;border-radius:10px">
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:#ff6b35;margin-bottom:6px">⚠ DETAILS INCOMPLETE</div>
+            <div style="font-size:12px;color:#888;margin-bottom:10px">This page loads via JavaScript — the scraper missed the task details. Paste the bounty description below so the AI writes the right thing.</div>
+            <button onclick="var a=document.getElementById('manualBriefArea');a.style.display=a.style.display==='none'?'block':'none'" style="background:transparent;border:1px solid #333;border-radius:8px;color:#aaa;font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:6px 12px;cursor:pointer">+ PASTE BRIEF DETAILS</button>
+            <div id="manualBriefArea" style="display:none;margin-top:10px">
+              <textarea id="manualBriefText" placeholder="Paste the full task description here..." style="width:100%;min-height:100px;background:#111;border:1px solid #333;border-radius:10px;color:#ddd;font-family:var(--sans);font-size:13px;padding:10px;resize:vertical;outline:none"></textarea>
+              <button onclick="applyManualBrief()" style="margin-top:8px;background:var(--red);border:none;color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:8px 16px;cursor:pointer;border-radius:8px">APPLY → UPDATE CONTEXT</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="or-divider"><span>or write manually</span></div>
+      <div class="step-label">Step 02 — Configure Thread</div>
+      <div class="field">
+        <label>Topic *</label>
+        <input type="text" id="topic" placeholder="e.g. Why most devs never ship their side projects" />
+      </div>
+      <div class="field">
+        <label>Extra context (optional)</label>
+        <textarea id="context" placeholder="Add details, talking points, or notes for the AI..."></textarea>
+      </div>
+      <div class="brand-color-row">
+        <label>Card Style</label>
+        <div class="gradient-presets" id="gradientPresets">
+          <button class="preset active" data-c1="#6366f1" data-c2="#a855f7" data-dark="false" onclick="selectPreset(this)"><span style="background:linear-gradient(135deg,#6366f1,#a855f7)"></span>Violet</button>
+          <button class="preset" data-c1="#0ea5e9" data-c2="#6366f1" data-dark="false" onclick="selectPreset(this)"><span style="background:linear-gradient(135deg,#0ea5e9,#6366f1)"></span>Ocean</button>
+          <button class="preset" data-c1="#f97316" data-c2="#ef4444" data-dark="false" onclick="selectPreset(this)"><span style="background:linear-gradient(135deg,#f97316,#ef4444)"></span>Fire</button>
+          <button class="preset" data-c1="#10b981" data-c2="#0ea5e9" data-dark="false" onclick="selectPreset(this)"><span style="background:linear-gradient(135deg,#10b981,#0ea5e9)"></span>Mint</button>
+          <button class="preset" data-c1="#f59e0b" data-c2="#f97316" data-dark="false" onclick="selectPreset(this)"><span style="background:linear-gradient(135deg,#f59e0b,#f97316)"></span>Sunset</button>
+          <button class="preset" data-c1="#f8fafc" data-c2="#dbeafe" data-dark="true" onclick="selectPreset(this)"><span style="background:linear-gradient(135deg,#f8fafc,#dbeafe);outline:1px solid #cbd5e1"></span>Clean</button>
+          <button class="preset" data-c1="#0f172a" data-c2="#1e293b" data-dark="false" onclick="selectPreset(this)"><span style="background:linear-gradient(135deg,#0f172a,#1e293b)"></span>Slate</button>
+        </div>
+        <div class="custom-colors">
+          <div class="custom-color-field"><span>Color A</span><input type="color" id="color1" value="#6366f1" oninput="onCustomColor()" /></div>
+          <div class="custom-color-field"><span>Color B</span><input type="color" id="color2" value="#a855f7" oninput="onCustomColor()" /></div>
+          <div class="custom-color-field"><span>Dark text</span><input type="checkbox" id="darkTextMode" onchange="onCustomColor()" /></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Your X Handle (optional)</label>
+        <input type="text" id="xHandle" placeholder="@yourhandle" autocomplete="off" />
+      </div>
+      <div class="controls-row">
+        <div class="field" style="margin-bottom:0">
+          <label>Tone</label>
+          <div class="select-wrap">
+            <select id="tone">
+              <option value="conversational">Conversational</option>
+              <option value="bold and provocative">Bold &amp; Provocative</option>
+              <option value="educational storytelling">Educational Storytelling</option>
+              <option value="personal and vulnerable">Personal &amp; Vulnerable</option>
+              <option value="analytical and data-driven">Analytical &amp; Data-Driven</option>
+            </select>
+            <span class="select-arrow">▼</span>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>Length</label>
+          <div class="select-wrap">
+            <select id="length">
+              <option value="short">Short (5–7 tweets)</option>
+              <option value="medium" selected>Medium (8–12 tweets)</option>
+              <option value="long">Long (13–18 tweets)</option>
+            </select>
+            <span class="select-arrow">▼</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn-generate" id="generateBtn" onclick="handleGenerateClick()">GENERATE THREAD</button>
+      <div class="loading-bar" id="loadingBar"></div>
+      <div class="error-box" id="errorBox"></div>
+    </div>
+    <div class="thread-section" id="threadSection">
+      <div class="thread-header">
+        <div class="thread-header-left">
+          <div class="thread-title">Generated Thread</div>
+          <div class="thread-count" id="tweetCountLabel">0 tweets</div>
+        </div>
+        <div class="thread-header-actions">
+          <button class="btn-copy-all" onclick="copyAll()">Copy All</button>
+          <button class="btn-dl-all" onclick="downloadAllCards()">↓ All Cards</button>
+        </div>
+      </div>
+      <div class="tweet-list" id="tweetList"></div>
+    </div>
+    <div style="height:40px"></div>
+  </div>
+</div>
+
+<!-- ══ CREATE THREAD PAGE ══ -->
+<div id="pageCreateThread" class="app-page">
+  <div class="container">
+    <div class="page-header">
+      <button class="btn-back" onclick="showPage('pageHome')"><i class="fa fa-arrow-left"></i> Back</button>
+      <div class="page-title">🧵 CREATE THREAD</div>
+    </div>
+    <div class="form-section">
+      <div class="step-label">Configure Thread</div>
+      <div class="field">
+        <label>Topic *</label>
+        <input type="text" id="ct-topic" placeholder="e.g. Why most devs never ship their side projects" />
+      </div>
+      <div class="field">
+        <label>Extra context (optional)</label>
+        <textarea id="ct-context" placeholder="Add details, talking points, or notes for the AI..."></textarea>
+      </div>
+      <div class="brand-color-row">
+        <label>Card Style</label>
+        <div class="gradient-presets" id="ctGradientPresets">
+          <button class="preset active" data-c1="#6366f1" data-c2="#a855f7" data-dark="false" onclick="selectPresetFor(this,'ct')"><span style="background:linear-gradient(135deg,#6366f1,#a855f7)"></span>Violet</button>
+          <button class="preset" data-c1="#0ea5e9" data-c2="#6366f1" data-dark="false" onclick="selectPresetFor(this,'ct')"><span style="background:linear-gradient(135deg,#0ea5e9,#6366f1)"></span>Ocean</button>
+          <button class="preset" data-c1="#f97316" data-c2="#ef4444" data-dark="false" onclick="selectPresetFor(this,'ct')"><span style="background:linear-gradient(135deg,#f97316,#ef4444)"></span>Fire</button>
+          <button class="preset" data-c1="#10b981" data-c2="#0ea5e9" data-dark="false" onclick="selectPresetFor(this,'ct')"><span style="background:linear-gradient(135deg,#10b981,#0ea5e9)"></span>Mint</button>
+          <button class="preset" data-c1="#f59e0b" data-c2="#f97316" data-dark="false" onclick="selectPresetFor(this,'ct')"><span style="background:linear-gradient(135deg,#f59e0b,#f97316)"></span>Sunset</button>
+          <button class="preset" data-c1="#f8fafc" data-c2="#dbeafe" data-dark="true" onclick="selectPresetFor(this,'ct')"><span style="background:linear-gradient(135deg,#f8fafc,#dbeafe);outline:1px solid #cbd5e1"></span>Clean</button>
+          <button class="preset" data-c1="#0f172a" data-c2="#1e293b" data-dark="false" onclick="selectPresetFor(this,'ct')"><span style="background:linear-gradient(135deg,#0f172a,#1e293b)"></span>Slate</button>
+        </div>
+        <div class="custom-colors">
+          <div class="custom-color-field"><span>Color A</span><input type="color" id="ct-color1" value="#6366f1" oninput="onCustomColorFor('ct')" /></div>
+          <div class="custom-color-field"><span>Color B</span><input type="color" id="ct-color2" value="#a855f7" oninput="onCustomColorFor('ct')" /></div>
+          <div class="custom-color-field"><span>Dark text</span><input type="checkbox" id="ct-darkTextMode" onchange="onCustomColorFor('ct')" /></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Your X Handle (optional)</label>
+        <input type="text" id="ct-xHandle" placeholder="@yourhandle" autocomplete="off" />
+      </div>
+      <div class="controls-row">
+        <div class="field" style="margin-bottom:0">
+          <label>Tone</label>
+          <div class="select-wrap">
+            <select id="ct-tone">
+              <option value="conversational">Conversational</option>
+              <option value="bold and provocative">Bold &amp; Provocative</option>
+              <option value="educational storytelling">Educational Storytelling</option>
+              <option value="personal and vulnerable">Personal &amp; Vulnerable</option>
+              <option value="analytical and data-driven">Analytical &amp; Data-Driven</option>
+            </select>
+            <span class="select-arrow">▼</span>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>Length</label>
+          <div class="select-wrap">
+            <select id="ct-length">
+              <option value="short">Short (5–7 tweets)</option>
+              <option value="medium" selected>Medium (8–12 tweets)</option>
+              <option value="long">Long (13–18 tweets)</option>
+            </select>
+            <span class="select-arrow">▼</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn-generate" id="ctGenerateBtn" onclick="handleCtGenerateClick()">GENERATE THREAD</button>
+      <div class="loading-bar" id="ctLoadingBar"></div>
+      <div class="error-box" id="ctErrorBox"></div>
+    </div>
+    <div class="thread-section" id="ctThreadSection">
+      <div class="thread-header">
+        <div class="thread-header-left">
+          <div class="thread-title">Generated Thread</div>
+          <div class="thread-count" id="ctTweetCountLabel">0 tweets</div>
+        </div>
+        <div class="thread-header-actions">
+          <button class="btn-copy-all" onclick="ctCopyAll()">Copy All</button>
+          <button class="btn-dl-all" onclick="ctDownloadAllCards()">↓ All Cards</button>
+        </div>
+      </div>
+      <div class="tweet-list" id="ctTweetList"></div>
+    </div>
+    <div style="height:40px"></div>
+  </div>
+</div>
+
+<!-- ══ CREATE GRAPHICS PAGE ══ -->
+<div id="pageCreateGraphics" class="app-page">
+  <div class="container">
+    <div class="page-header">
+      <button class="btn-back" onclick="showPage('pageHome')"><i class="fa fa-arrow-left"></i> Back</button>
+      <div class="page-title">🎨 CREATE GRAPHICS</div>
+    </div>
+    <div class="form-section">
+      <div class="step-label">Configure Text Card</div>
+      <div class="field">
+        <label>Tweet Text *</label>
+        <textarea id="gfx-text" placeholder="Enter the tweet text for your graphic card..." style="min-height:120px"></textarea>
+      </div>
+      <div class="brand-color-row">
+        <label>Card Style</label>
+        <div class="gradient-presets" id="gfxGradientPresets">
+          <button class="preset active" data-c1="#6366f1" data-c2="#a855f7" data-dark="false" onclick="selectPresetFor(this,'gfx')"><span style="background:linear-gradient(135deg,#6366f1,#a855f7)"></span>Violet</button>
+          <button class="preset" data-c1="#0ea5e9" data-c2="#6366f1" data-dark="false" onclick="selectPresetFor(this,'gfx')"><span style="background:linear-gradient(135deg,#0ea5e9,#6366f1)"></span>Ocean</button>
+          <button class="preset" data-c1="#f97316" data-c2="#ef4444" data-dark="false" onclick="selectPresetFor(this,'gfx')"><span style="background:linear-gradient(135deg,#f97316,#ef4444)"></span>Fire</button>
+          <button class="preset" data-c1="#10b981" data-c2="#0ea5e9" data-dark="false" onclick="selectPresetFor(this,'gfx')"><span style="background:linear-gradient(135deg,#10b981,#0ea5e9)"></span>Mint</button>
+          <button class="preset" data-c1="#f59e0b" data-c2="#f97316" data-dark="false" onclick="selectPresetFor(this,'gfx')"><span style="background:linear-gradient(135deg,#f59e0b,#f97316)"></span>Sunset</button>
+          <button class="preset" data-c1="#f8fafc" data-c2="#dbeafe" data-dark="true" onclick="selectPresetFor(this,'gfx')"><span style="background:linear-gradient(135deg,#f8fafc,#dbeafe);outline:1px solid #cbd5e1"></span>Clean</button>
+          <button class="preset" data-c1="#0f172a" data-c2="#1e293b" data-dark="false" onclick="selectPresetFor(this,'gfx')"><span style="background:linear-gradient(135deg,#0f172a,#1e293b)"></span>Slate</button>
+        </div>
+        <div class="custom-colors">
+          <div class="custom-color-field"><span>Color A</span><input type="color" id="gfx-color1" value="#6366f1" oninput="onCustomColorFor('gfx')" /></div>
+          <div class="custom-color-field"><span>Color B</span><input type="color" id="gfx-color2" value="#a855f7" oninput="onCustomColorFor('gfx')" /></div>
+          <div class="custom-color-field"><span>Dark text</span><input type="checkbox" id="gfx-darkTextMode" onchange="onCustomColorFor('gfx')" /></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Your X Handle (optional)</label>
+        <input type="text" id="gfx-xHandle" placeholder="@yourhandle" autocomplete="off" />
+      </div>
+      <button class="btn-generate" onclick="generateStandaloneGraphic()">GENERATE CARD — &#8358;100</button>
+      <div class="error-box" id="gfxErrorBox"></div>
+      <div id="gfxPreview" style="display:none;margin-top:20px">
+        <canvas id="gfxCanvas" width="1600" height="900" style="width:100%;height:auto;border:1px solid var(--border);border-radius:10px"></canvas>
+        <button class="btn-generate" style="margin-top:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="downloadStandaloneGraphic()">↓ Download Card</button>
+      </div>
+    </div>
+    <div style="height:40px"></div>
+  </div>
+</div>
+
+<!-- ══ CREATE INFOGRAPHIC PAGE ══ -->
+<div id="pageCreateInfographic" class="app-page">
+  <div class="container">
+    <div class="page-header">
+      <button class="btn-back" onclick="showPage('pageHome')"><i class="fa fa-arrow-left"></i> Back</button>
+      <div class="page-title">📊 CREATE INFOGRAPHIC</div>
+    </div>
+    <div class="form-section">
+      <div class="step-label">Configure Infographic</div>
+      <div class="field">
+        <label>Topic / Tweet Text *</label>
+        <textarea id="inf-text" placeholder="Describe what you want the infographic to visualise..." style="min-height:120px"></textarea>
+      </div>
+      <div class="brand-color-row">
+        <label>Card Style</label>
+        <div class="gradient-presets" id="infGradientPresets">
+          <button class="preset active" data-c1="#6366f1" data-c2="#a855f7" data-dark="false" onclick="selectPresetFor(this,'inf')"><span style="background:linear-gradient(135deg,#6366f1,#a855f7)"></span>Violet</button>
+          <button class="preset" data-c1="#0ea5e9" data-c2="#6366f1" data-dark="false" onclick="selectPresetFor(this,'inf')"><span style="background:linear-gradient(135deg,#0ea5e9,#6366f1)"></span>Ocean</button>
+          <button class="preset" data-c1="#f97316" data-c2="#ef4444" data-dark="false" onclick="selectPresetFor(this,'inf')"><span style="background:linear-gradient(135deg,#f97316,#ef4444)"></span>Fire</button>
+          <button class="preset" data-c1="#10b981" data-c2="#0ea5e9" data-dark="false" onclick="selectPresetFor(this,'inf')"><span style="background:linear-gradient(135deg,#10b981,#0ea5e9)"></span>Mint</button>
+          <button class="preset" data-c1="#f59e0b" data-c2="#f97316" data-dark="false" onclick="selectPresetFor(this,'inf')"><span style="background:linear-gradient(135deg,#f59e0b,#f97316)"></span>Sunset</button>
+          <button class="preset" data-c1="#f8fafc" data-c2="#dbeafe" data-dark="true" onclick="selectPresetFor(this,'inf')"><span style="background:linear-gradient(135deg,#f8fafc,#dbeafe);outline:1px solid #cbd5e1"></span>Clean</button>
+          <button class="preset" data-c1="#0f172a" data-c2="#1e293b" data-dark="false" onclick="selectPresetFor(this,'inf')"><span style="background:linear-gradient(135deg,#0f172a,#1e293b)"></span>Slate</button>
+        </div>
+        <div class="custom-colors">
+          <div class="custom-color-field"><span>Color A</span><input type="color" id="inf-color1" value="#6366f1" oninput="onCustomColorFor('inf')" /></div>
+          <div class="custom-color-field"><span>Color B</span><input type="color" id="inf-color2" value="#a855f7" oninput="onCustomColorFor('inf')" /></div>
+          <div class="custom-color-field"><span>Dark text</span><input type="checkbox" id="inf-darkTextMode" onchange="onCustomColorFor('inf')" /></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Your X Handle (optional)</label>
+        <input type="text" id="inf-xHandle" placeholder="@yourhandle" autocomplete="off" />
+      </div>
+      <button class="btn-generate" onclick="generateStandaloneInfographic()">GENERATE INFOGRAPHIC — &#8358;200</button>
+      <div class="error-box" id="infErrorBox"></div>
+      <div id="infPreview" style="display:none;margin-top:20px">
+        <canvas id="infCanvas" width="1600" height="900" style="width:100%;height:auto;border:1px solid var(--border);border-radius:10px"></canvas>
+        <button class="btn-generate" style="margin-top:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="downloadStandaloneInfographic()">↓ Download Infographic</button>
+      </div>
+    </div>
+    <div style="height:40px"></div>
+  </div>
+</div>
+
+</div><!-- end appRoot -->
 
 <script>
 // ─── CARD STYLE STATE ─────────────────────────────────────────────────────────
@@ -1203,8 +1415,7 @@ function clearError(){document.getElementById("errorBox").classList.remove("visi
 function hideThread(){document.getElementById("threadSection").classList.remove("visible");}
 function escapeHtml(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
 
-document.getElementById("gigUrl").addEventListener("keydown",e=>{if(e.key==="Enter")fetchBrief();});
-document.getElementById("topic").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey)handleGenerateClick();});
+// ── Event listeners moved to DOMContentLoaded below ──
 
 // ══════════════════════════════════════════════════════
 // FIREBASE + WALLET SYSTEM
@@ -1235,9 +1446,9 @@ auth.onAuthStateChanged(async user => {
     currentUser = user;
     document.getElementById("authScreen").classList.add("hidden");
     document.getElementById("walletBar").classList.add("visible");
-    document.getElementById("walletUser").textContent = user.email;
     await ensureUserDoc(user);
     listenBalance(user.uid);
+    loadTransactions(user.uid);
   } else {
     currentUser = null;
     document.getElementById("authScreen").classList.remove("hidden");
@@ -1259,9 +1470,36 @@ function listenBalance(uid) {
       userBalance = snap.data().balance || 0;
       const el = document.getElementById("walletBalance");
       el.textContent = `\u20A6${userBalance.toLocaleString()}`;
-      el.classList.toggle("low", userBalance < 100);
+      el.style.color = userBalance < 100 ? "var(--accent2)" : "var(--red)";
     }
   });
+}
+
+// ── Load transactions ──
+function loadTransactions(uid) {
+  db.collection("users").doc(uid).collection("transactions")
+    .orderBy("createdAt","desc").limit(20)
+    .onSnapshot(snap => {
+      const list = document.getElementById("txList");
+      if (snap.empty) { list.innerHTML = '<div class="tx-empty">No transactions yet — top up your wallet to get started.</div>'; return; }
+      list.innerHTML = snap.docs.map(doc => {
+        const d = doc.data();
+        const isCredit = d.amount > 0;
+        const icon = isCredit ? "💳" : "⚡";
+        const cls  = isCredit ? "credit" : "debit";
+        const amtCls = isCredit ? "plus" : "minus";
+        const sign = isCredit ? "+" : "";
+        const ts = d.createdAt?.toDate ? d.createdAt.toDate().toLocaleDateString("en-NG",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}) : "—";
+        return `<div class="tx-item">
+          <div class="tx-icon ${cls}">${icon}</div>
+          <div class="tx-desc-wrap">
+            <div class="tx-title">${d.description || "Transaction"}</div>
+            <div class="tx-date">${ts}</div>
+          </div>
+          <div class="tx-amount ${amtCls}">${sign}&#8358;${Math.abs(d.amount).toLocaleString()}</div>
+        </div>`;
+      }).join("");
+    });
 }
 
 // ── Auth UI ──
@@ -1397,10 +1635,187 @@ function doTopup() {
   }
 }
 
-// ── Enter key helpers ──
+// ══════════════════════════════════════════════════════
+// PAGE ROUTING
+// ══════════════════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll(".app-page").forEach(p => p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0,0);
+}
+
+// ══════════════════════════════════════════════════════
+// PER-PAGE CARD STYLE STATE
+// ══════════════════════════════════════════════════════
+const pageStyles = {
+  ct:  { c1:"#6366f1", c2:"#a855f7", darkText:false },
+  gfx: { c1:"#6366f1", c2:"#a855f7", darkText:false },
+  inf: { c1:"#6366f1", c2:"#a855f7", darkText:false }
+};
+
+function selectPresetFor(btn, page) {
+  const container = btn.closest(".brand-color-row").querySelector(".gradient-presets");
+  container.querySelectorAll(".preset").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  pageStyles[page].c1 = btn.dataset.c1;
+  pageStyles[page].c2 = btn.dataset.c2;
+  pageStyles[page].darkText = btn.dataset.dark === "true";
+  document.getElementById(`${page}-color1`).value = pageStyles[page].c1;
+  document.getElementById(`${page}-color2`).value = pageStyles[page].c2;
+  document.getElementById(`${page}-darkTextMode`).checked = pageStyles[page].darkText;
+}
+function onCustomColorFor(page) {
+  const container = document.getElementById(`${page}-color1`).closest(".brand-color-row");
+  container.querySelectorAll(".preset").forEach(b => b.classList.remove("active"));
+  pageStyles[page].c1 = document.getElementById(`${page}-color1`).value;
+  pageStyles[page].c2 = document.getElementById(`${page}-color2`).value;
+  pageStyles[page].darkText = document.getElementById(`${page}-darkTextMode`).checked;
+}
+
+// ══════════════════════════════════════════════════════
+// CREATE THREAD (standalone — no gig link)
+// ══════════════════════════════════════════════════════
+const ctPaidInfographics = new Set();
+const ctPaidTextCards    = new Set();
+
+function handleCtGenerateClick() {
+  if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
+  const len = document.getElementById("ct-length").value;
+  const tweetCount = len==="short"?6:len==="long"?15:10;
+  const cost = tweetCount * PRICE_TWEET;
+  if (userBalance < cost) { showBalanceToast(`Need \u20A6${cost} — top up your wallet`); openTopup(); return; }
+  ctGenerateThread();
+}
+
+async function ctGenerateThread() {
+  if (!currentUser) return;
+  const topic   = document.getElementById("ct-topic").value.trim();
+  const context = document.getElementById("ct-context").value.trim();
+  const tone    = document.getElementById("ct-tone").value;
+  const length  = document.getElementById("ct-length").value;
+  if (!topic) { document.getElementById("ctErrorBox").textContent="// Drop a topic first."; document.getElementById("ctErrorBox").classList.add("visible"); return; }
+  const tweetCount = length==="short"?6:length==="long"?15:10;
+  const cost = tweetCount * PRICE_TWEET;
+  const ok = await deduct(cost, `Thread — ${tweetCount} tweets`);
+  if (!ok) return;
+  const btn = document.getElementById("ctGenerateBtn");
+  btn.disabled=true; btn.textContent="GENERATING...";
+  document.getElementById("ctLoadingBar").classList.add("active");
+  document.getElementById("ctErrorBox").classList.remove("visible");
+  document.getElementById("ctThreadSection").classList.remove("visible");
+  try {
+    const res  = await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic,context,tone,length})});
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error||"Something went wrong");
+    ctRenderThread(data.tweets);
+    ctPaidInfographics.clear(); ctPaidTextCards.clear();
+  } catch(err) {
+    await db.collection("users").doc(currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(cost)});
+    document.getElementById("ctErrorBox").textContent="// "+err.message; document.getElementById("ctErrorBox").classList.add("visible");
+  } finally {
+    btn.disabled=false; btn.textContent="GENERATE THREAD";
+    document.getElementById("ctLoadingBar").classList.remove("active");
+  }
+}
+
+function ctRenderThread(tweets) {
+  const style = pageStyles.ct;
+  const handle = document.getElementById("ct-xHandle").value.trim();
+  const list = document.getElementById("ctTweetList"), section = document.getElementById("ctThreadSection");
+  list.innerHTML=""; document.getElementById("ctTweetCountLabel").textContent=`${tweets.length} tweets`;
+  tweets.forEach((text,i) => {
+    const isHook=i===0, isCTA=i===tweets.length-1, cc=text.length, cClass=cc>280?"over":cc>250?"warn":"";
+    const card=document.createElement("div"); card.className=`tweet-card${isHook?" hook":isCTA?" cta":""}`; card.style.setProperty("--i",i);
+    card.innerHTML=`<div class="tweet-meta"><span class="tweet-num">${String(i+1).padStart(2,"0")} / ${tweets.length}</span>${isHook?'<span class="tweet-badge hook-badge">Hook</span>':isCTA?'<span class="tweet-badge cta-badge">CTA</span>':""}</div>
+    <div class="tweet-text">${escapeHtml(text)}</div>
+    <div class="tweet-footer"><span class="char-count ${cClass}">${cc}/280</span>
+    <div class="tweet-footer-right">
+      <button class="btn-copy-tweet" onclick="(function(b,t){navigator.clipboard.writeText(t).then(()=>{b.textContent='copied ✓';setTimeout(()=>b.textContent='copy',2000)})})(this,'${escapeHtml(text).replace(/'/g,"\\'")}')">copy</button>
+      <button class="btn-dl-card" onclick="ctPayForTextCard(this,${i})">↓ text card</button>
+    </div></div>
+    <div class="tweet-visual" id="ct-visual-${i}"><canvas id="ct-canvas-${i}" width="1600" height="900"></canvas></div>`;
+    list.appendChild(card);
+  });
+  section.classList.add("visible"); section.scrollIntoView({behavior:"smooth",block:"start"}); window._ctTweets=tweets;
+}
+
+async function ctPayForTextCard(btn,index) {
+  if (!currentUser) return;
+  if (ctPaidTextCards.has(index)) { ctToggleCard(btn,index); return; }
+  const ok = await deduct(PRICE_TEXTCARD, `Text card — tweet ${index+1}`);
+  if (!ok) return;
+  ctPaidTextCards.add(index); ctToggleCard(btn,index);
+}
+function ctToggleCard(btn,index) {
+  const v=document.getElementById(`ct-visual-${index}`), tweets=window._ctTweets; if(!tweets)return;
+  if(!v.classList.contains("visible")){
+    v.classList.add("visible");
+    drawTextCard(`ct-canvas-${index}`,tweets[index],index,tweets.length,index===0,index===tweets.length-1);
+    btn.textContent="↓ save"; btn.onclick=()=>{const c=document.getElementById(`ct-canvas-${index}`);const a=document.createElement("a");a.download=`threadcraft-${String(index+1).padStart(2,"0")}.png`;a.href=c.toDataURL("image/png");a.click();};
+  } else { v.classList.remove("visible"); btn.textContent="↓ text card"; btn.onclick=()=>ctPayForTextCard(btn,index); }
+}
+function ctCopyAll(){if(!window._ctTweets)return;navigator.clipboard.writeText(window._ctTweets.map((t,i)=>`${i+1}/${window._ctTweets.length}\n${t}`).join("\n\n")).then(()=>{const b=document.querySelector("#ctThreadSection .btn-copy-all");b.textContent="Copied ✓";setTimeout(()=>b.textContent="Copy All",2000);});}
+async function ctDownloadAllCards(){const tweets=window._ctTweets;if(!tweets)return;const btn=document.querySelector("#ctThreadSection .btn-dl-all");btn.textContent="Generating...";btn.disabled=true;for(let i=0;i<tweets.length;i++){const v=document.getElementById(`ct-visual-${i}`);v.classList.add("visible");drawTextCard(`ct-canvas-${i}`,tweets[i],i,tweets.length,i===0,i===tweets.length-1);await new Promise(r=>setTimeout(r,80));const c=document.getElementById(`ct-canvas-${i}`);const a=document.createElement("a");a.download=`threadcraft-${String(i+1).padStart(2,"0")}.png`;a.href=c.toDataURL("image/png");a.click();await new Promise(r=>setTimeout(r,300));}btn.textContent="↓ All Cards";btn.disabled=false;}
+
+// ══════════════════════════════════════════════════════
+// CREATE GRAPHICS (standalone text card)
+// ══════════════════════════════════════════════════════
+async function generateStandaloneGraphic() {
+  if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
+  const text = document.getElementById("gfx-text").value.trim();
+  if (!text) { document.getElementById("gfxErrorBox").textContent="// Enter tweet text first."; document.getElementById("gfxErrorBox").classList.add("visible"); return; }
+  const ok = await deduct(PRICE_TEXTCARD, "Standalone text card");
+  if (!ok) return;
+  document.getElementById("gfxErrorBox").classList.remove("visible");
+  const oldStyle = cardStyle;
+  cardStyle = pageStyles.gfx;
+  const preview = document.getElementById("gfxPreview");
+  preview.style.display = "block";
+  drawTextCard("gfxCanvas", text, 0, 1, true, true);
+  cardStyle = oldStyle;
+  preview.scrollIntoView({behavior:"smooth", block:"start"});
+}
+function downloadStandaloneGraphic(){const c=document.getElementById("gfxCanvas");const a=document.createElement("a");a.download="threadcraft-graphic.png";a.href=c.toDataURL("image/png");a.click();}
+
+// ══════════════════════════════════════════════════════
+// CREATE INFOGRAPHIC (standalone AI infographic)
+// ══════════════════════════════════════════════════════
+async function generateStandaloneInfographic() {
+  if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
+  const text = document.getElementById("inf-text").value.trim();
+  if (!text) { document.getElementById("infErrorBox").textContent="// Describe your infographic first."; document.getElementById("infErrorBox").classList.add("visible"); return; }
+  const ok = await deduct(PRICE_IMAGE, "Standalone infographic");
+  if (!ok) return;
+  document.getElementById("infErrorBox").classList.remove("visible");
+  const btn = document.querySelector("#pageCreateInfographic .btn-generate");
+  btn.disabled=true; btn.textContent="GENERATING...";
+  try {
+    const res = await fetch("/api/infographic", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tweet:text,topic:text})});
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error||"Failed");
+    const style = pageStyles.inf;
+    const handle = document.getElementById("inf-xHandle").value.trim();
+    const canvas = document.getElementById("infCanvas");
+    canvas.width=1600; canvas.height=900;
+    drawInfographic(canvas, data, style, handle, false, false, null);
+    document.getElementById("infPreview").style.display="block";
+    document.getElementById("infPreview").scrollIntoView({behavior:"smooth",block:"start"});
+  } catch(err) {
+    await db.collection("users").doc(currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(PRICE_IMAGE)});
+    document.getElementById("infErrorBox").textContent="// "+err.message; document.getElementById("infErrorBox").classList.add("visible");
+  } finally {
+    btn.disabled=false; btn.textContent="GENERATE INFOGRAPHIC — ₦200";
+  }
+}
+function downloadStandaloneInfographic(){const c=document.getElementById("infCanvas");const a=document.createElement("a");a.download="threadcraft-infographic.png";a.href=c.toDataURL("image/png");a.click();}
+
+// ── DOMContentLoaded ──
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("loginPassword")?.addEventListener("keydown", e => { if(e.key==="Enter") doLogin(); });
   document.getElementById("signupPassword")?.addEventListener("keydown", e => { if(e.key==="Enter") doSignup(); });
+  document.getElementById("gigUrl")?.addEventListener("keydown", e => { if(e.key==="Enter") fetchBrief(); });
+  document.getElementById("topic")?.addEventListener("keydown", e => { if(e.key==="Enter"&&!e.shiftKey) handleGenerateClick(); });
+  document.getElementById("ct-topic")?.addEventListener("keydown", e => { if(e.key==="Enter"&&!e.shiftKey) handleCtGenerateClick(); });
 });
 
 // ══════════════════════════════════════════════════════
