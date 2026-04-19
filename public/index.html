@@ -363,6 +363,56 @@
     .bg-preset.on{border-color:var(--red);color:var(--red);background:rgba(224,22,26,.08)}
     .bg-dot{width:18px;height:18px;border-radius:4px;flex-shrink:0}
     .editor-sec{margin-bottom:18px}
+
+    /* ══ TASK TYPE WARNING ══ */
+    .task-type-warning{display:none;margin-top:14px;border-radius:12px;overflow:hidden;border:1px solid rgba(245,166,35,.35);background:linear-gradient(135deg,#1a1100,#120d00)}
+    .task-type-warning.visible{display:block}
+    .ttw-header{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(245,166,35,.2)}
+    .ttw-icon{width:34px;height:34px;border-radius:8px;background:rgba(245,166,35,.15);display:flex;align-items:center;justify-content:center;color:var(--accent2);font-size:15px;flex-shrink:0}
+    .ttw-label-wrap{flex:1}
+    .ttw-label{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent2);margin-bottom:2px}
+    .ttw-title{font-size:13px;font-weight:600;color:var(--text)}
+    .ttw-body{padding:12px 16px 16px}
+    .ttw-msg{font-family:var(--mono);font-size:11px;color:var(--muted2);letter-spacing:.3px;line-height:1.7;margin-bottom:14px}
+    .ttw-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .btn-ttw-primary{background:linear-gradient(135deg,#b45309,var(--accent2));color:#000;border:none;border-radius:8px;font-family:var(--display);font-size:13px;letter-spacing:1.5px;padding:10px 16px;cursor:pointer;transition:opacity .2s;white-space:nowrap}
+    .btn-ttw-primary:hover{opacity:.88}
+    .btn-ttw-ignore{background:transparent;border:none;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.5px;cursor:pointer;padding:4px;transition:color .2s}
+    .btn-ttw-ignore:hover{color:var(--muted2)}
+
+    /* ══ MOTION SCRIPT PAGE ══ */
+    .scene-list{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+    .scene-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;animation:fadeUp .3s ease forwards;animation-delay:calc(var(--i)*.05s);opacity:0}
+    .scene-card-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--border)}
+    .scene-num{font-family:var(--display);font-size:20px;letter-spacing:2px;color:var(--red);line-height:1}
+    .scene-dur{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--muted);background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:20px;padding:3px 10px}
+    .btn-copy-scene{background:transparent;border:none;color:var(--muted);font-family:var(--mono);font-size:10px;cursor:pointer;padding:4px 8px;transition:color .2s;letter-spacing:1px}
+    .btn-copy-scene:hover{color:var(--red)}
+    .btn-copy-scene.copied{color:var(--grn)}
+    .scene-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+    .scene-field{display:flex;flex-direction:column;gap:4px}
+    .scene-field-label{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+    .scene-field-label.lbl-visual{color:#60a5fa}
+    .scene-field-label.lbl-overlay{color:var(--red)}
+    .scene-field-label.lbl-vo{color:var(--grn)}
+    .scene-field-label.lbl-mood{color:var(--accent2)}
+    .scene-field-value{font-size:13px;color:#d4d4d4;line-height:1.6}
+    .scene-section{display:none}
+    .scene-section.visible{display:block}
+    .scene-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px}
+    .scene-count-label{font-family:var(--display);font-size:26px;color:var(--red);letter-spacing:2px;line-height:1}
+    .btn-dl-script{background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 14px;cursor:pointer;transition:all .2s}
+    .btn-dl-script:hover{border-color:var(--accent2);color:var(--accent2)}
+    .motion-style-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+    .motion-style-opt{background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .2s;text-align:left}
+    .motion-style-opt:hover{border-color:var(--muted2)}
+    .motion-style-opt.active{border-color:var(--red);background:rgba(224,22,26,.06)}
+    .mso-name{font-family:var(--display);font-size:15px;letter-spacing:1px;color:var(--text);margin-bottom:2px}
+    .mso-desc{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.3px}
+    .motion-length-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+    .motion-len-btn{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:8px 14px;cursor:pointer;transition:all .2s}
+    .motion-len-btn:hover{border-color:var(--muted2);color:var(--text)}
+    .motion-len-btn.active{border-color:var(--red);color:var(--red);background:rgba(224,22,26,.08)}
   </style>
 </head>
 <body>
@@ -464,6 +514,11 @@
         <div class="qa-label">Create Thread</div>
         <div class="qa-desc">Write without a gig</div>
       </div>
+      <div class="qa-card" onclick="showPage('pageMotionScript')" style="border-color:rgba(245,166,35,.25);background:linear-gradient(135deg,var(--surface),rgba(245,166,35,.04))">
+        <div class="qa-icon" style="background:rgba(245,166,35,.12);color:var(--accent2)"><i class="fa-solid fa-film"></i></div>
+        <div class="qa-label">Motion Script</div>
+        <div class="qa-desc">AI video scene scripts</div>
+      </div>
     </div>
 
     <!-- Transaction History -->
@@ -515,6 +570,24 @@
             <div id="manualBriefArea" style="display:none;margin-top:10px">
               <textarea id="manualBriefText" placeholder="Paste the full task description here..." style="width:100%;min-height:100px;background:#111;border:1px solid #333;border-radius:10px;color:#ddd;font-family:var(--sans);font-size:13px;padding:10px;resize:vertical;outline:none"></textarea>
               <button onclick="applyManualBrief()" style="margin-top:8px;background:var(--red);border:none;color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:8px 16px;cursor:pointer;border-radius:8px">APPLY → UPDATE CONTEXT</button>
+            </div>
+          </div>
+
+          <!-- Task type mismatch warning -->
+          <div class="task-type-warning" id="taskTypeWarning">
+            <div class="ttw-header">
+              <div class="ttw-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+              <div class="ttw-label-wrap">
+                <div class="ttw-label">Wrong Tool Detected</div>
+                <div class="ttw-title" id="ttwTitle">This doesn't look like a thread gig</div>
+              </div>
+            </div>
+            <div class="ttw-body">
+              <div class="ttw-msg" id="ttwMsg">This gig requires a different output. Generating a thread here will waste your credits and won't match what the client wants.</div>
+              <div class="ttw-actions">
+                <button class="btn-ttw-primary" id="ttwActionBtn">Go to Motion Script →</button>
+                <button class="btn-ttw-ignore" onclick="document.getElementById('taskTypeWarning').classList.remove('visible')">I know what I'm doing, continue</button>
+              </div>
             </div>
           </div>
         </div>
@@ -760,6 +833,73 @@
         </div>
         <button class="btn-generate" id="infFinalBtn" style="margin-top:12px" onclick="infDownloadFinal()">&#8595; DOWNLOAD CLEAN HD</button>
       </div>
+    </div>
+    <div style="height:40px"></div>
+  </div>
+</div>
+
+<!-- ══ MOTION SCRIPT PAGE ══ -->
+<div id="pageMotionScript" class="app-page">
+  <div class="container">
+    <div class="page-header">
+      <button class="btn-back" onclick="showPage('pageHome')"><i class="fa fa-arrow-left"></i> Back</button>
+      <div class="page-title"><i class="fa-solid fa-film" style="color:var(--accent2)"></i> MOTION SCRIPT</div>
+    </div>
+    <div class="form-section">
+      <div class="step-label">Configure Video Script</div>
+      <div class="field">
+        <label>Project / Topic *</label>
+        <input type="text" id="ms-topic" placeholder="e.g. UI/UX frontend trailers for Perena" />
+      </div>
+      <div class="field">
+        <label>Context &amp; Brief (optional but improves output)</label>
+        <textarea id="ms-context" placeholder="Paste gig details, brand notes, target audience, key messages..."></textarea>
+      </div>
+      <div class="field">
+        <label>Video Length</label>
+        <div class="motion-length-row">
+          <button class="motion-len-btn" data-len="15" onclick="msSelectLen(this)">15s</button>
+          <button class="motion-len-btn active" data-len="30" onclick="msSelectLen(this)">30s</button>
+          <button class="motion-len-btn" data-len="60" onclick="msSelectLen(this)">60s</button>
+          <button class="motion-len-btn" data-len="90" onclick="msSelectLen(this)">90s</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Visual Style</label>
+        <div class="motion-style-row">
+          <button class="motion-style-opt active" data-style="cinematic" onclick="msSelectStyle(this)">
+            <div class="mso-name">Cinematic</div>
+            <div class="mso-desc">Dramatic pacing, strong contrast, premium feel</div>
+          </button>
+          <button class="motion-style-opt" data-style="energetic" onclick="msSelectStyle(this)">
+            <div class="mso-name">Energetic</div>
+            <div class="mso-desc">Fast cuts, bold typography, high-energy beats</div>
+          </button>
+          <button class="motion-style-opt" data-style="minimal" onclick="msSelectStyle(this)">
+            <div class="mso-name">Minimal</div>
+            <div class="mso-desc">Clean, white space, subtle motion, refined</div>
+          </button>
+          <button class="motion-style-opt" data-style="technical" onclick="msSelectStyle(this)">
+            <div class="mso-name">Technical</div>
+            <div class="mso-desc">Data-driven, UI reveals, dev/product focus</div>
+          </button>
+        </div>
+      </div>
+      <button class="btn-generate" id="msGenerateBtn" onclick="handleMsGenerateClick()">GENERATE SCRIPT</button>
+      <div class="loading-bar" id="msLoadingBar"></div>
+      <div class="error-box" id="msErrorBox"></div>
+    </div>
+
+    <!-- Script Output -->
+    <div class="scene-section" id="msSceneSection">
+      <div class="scene-header">
+        <div>
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:4px">GENERATED SCRIPT</div>
+          <div class="scene-count-label" id="msSceneCountLabel">0 scenes</div>
+        </div>
+        <button class="btn-dl-script" onclick="msDownloadScript()">↓ Download Script</button>
+      </div>
+      <div class="scene-list" id="msSceneList"></div>
     </div>
     <div style="height:40px"></div>
   </div>
@@ -1427,25 +1567,209 @@ function autofillFromBrief(b){
   if(b.topic||b.title)document.getElementById("topic").value=b.topic||b.title;
   const parts=[];if(b.task)parts.push(`Task: ${b.task}`);if(b.requirements)parts.push(`Requirements: ${b.requirements}`);if(b.audience)parts.push(`Target audience: ${b.audience}`);
   if(parts.length)document.getElementById("context").value=parts.join("\n\n");
-  // Detect thin brief: task/requirements are missing, too short, or boilerplate
+  // Detect thin brief
   const boilerplate = ["create and submit","content creation skills","content creation","skills needed","—",""];
   const taskThin = !b.task || b.task.length < 40 || boilerplate.some(p => b.task.toLowerCase().trim() === p);
   const reqThin  = !b.requirements || b.requirements.length < 30 || boilerplate.some(p => b.requirements.toLowerCase().trim() === p);
-  const isThin   = taskThin || reqThin;
-  document.getElementById("thinBriefWarning").style.display = isThin ? "block" : "none";
+  document.getElementById("thinBriefWarning").style.display = (taskThin || reqThin) ? "block" : "none";
+  // Detect task type mismatch
+  detectAndWarnTaskType(b);
+}
+
+// ── Task type detection ──────────────────────────────────────────────────────
+function detectAndWarnTaskType(b){
+  const txt = [b.title||"", b.task||"", b.requirements||""].join(" ").toLowerCase();
+  const warning = document.getElementById("taskTypeWarning");
+  const ttwTitle = document.getElementById("ttwTitle");
+  const ttwMsg   = document.getElementById("ttwMsg");
+  const ttwBtn   = document.getElementById("ttwActionBtn");
+
+  // Motion / video / animation
+  if(txt.match(/motion\s*(design|graphic)|animation|animate|after\s*effects|premiere|video|trailer|reel|film|vfx|3d\s*render|blender|cinema\s*4d|motion\s*graphics/)){
+    ttwTitle.textContent = "This is a Motion Design / Video gig";
+    ttwMsg.textContent   = "This gig asks for motion graphics or video — not a Twitter thread. Generating a thread here wastes credits and won't match the brief. Use Motion Script instead.";
+    ttwBtn.textContent   = "Go to Motion Script →";
+    ttwBtn.onclick = () => { msPreFillFromBrief(b); showPage("pageMotionScript"); warning.classList.remove("visible"); };
+    warning.classList.add("visible"); return;
+  }
+  // Pure design (no writing component)
+  if(txt.match(/figma|illustrat|graphic\s*design|visual\s*design|brand\s*(identity|design)|logo\s*design|ui\s*design|ux\s*design|poster|flyer/) && !txt.match(/thread|tweet|write|content\s*creat|copywrite|copy\s*writing/)){
+    ttwTitle.textContent = "This looks like a Design gig";
+    ttwMsg.textContent   = "This gig is asking for visual design work, not a written thread. A thread won't fulfil this brief.";
+    ttwBtn.textContent   = "I understand, go back";
+    ttwBtn.onclick = () => showPage("pageHome");
+    warning.classList.add("visible"); return;
+  }
+  // Development (no content component)
+  if(txt.match(/smart\s*contract|solidity|rust\s*(developer|engineer)|backend\s*(develop|engineer)|frontend\s*(develop|engineer)|full\s*stack|web3\s*(develop|engineer)|build\s*(a\s*)?(dapp|app|platform|protocol)/) && !txt.match(/thread|tweet|write|content|social\s*media/)){
+    ttwTitle.textContent = "This looks like a Development gig";
+    ttwMsg.textContent   = "This gig requires building or coding something — not writing a thread. Generating here won't give you what the client wants.";
+    ttwBtn.textContent   = "I understand, go back";
+    ttwBtn.onclick = () => showPage("pageHome");
+    warning.classList.add("visible"); return;
+  }
+  // Audio / music
+  if(txt.match(/music|audio|sound\s*design|beat|mix(ing)?|master(ing)?|podcast\s*(edit|produc)/)){
+    ttwTitle.textContent = "This looks like an Audio / Music gig";
+    ttwMsg.textContent   = "This gig requires audio production work, not a Twitter thread.";
+    ttwBtn.textContent   = "I understand, go back";
+    ttwBtn.onclick = () => showPage("pageHome");
+    warning.classList.add("visible"); return;
+  }
+  // All clear — hide warning
+  warning.classList.remove("visible");
 }
 
 function applyManualBrief(){
   const text = document.getElementById("manualBriefText").value.trim();
   if(!text) return;
   const existing = document.getElementById("context").value.trim();
-  // Append or replace context with the pasted brief
   document.getElementById("context").value = existing ? existing + "\n\n" + text : text;
   document.getElementById("manualBriefArea").style.display = "none";
   document.getElementById("thinBriefWarning").style.display = "none";
 }
-function clearBrief(){currentBrief=null;document.getElementById("briefCard").classList.remove("visible");document.getElementById("gigUrl").value="";document.getElementById("topic").value="";document.getElementById("context").value="";}
+function clearBrief(){
+  currentBrief=null;
+  document.getElementById("briefCard").classList.remove("visible");
+  document.getElementById("gigUrl").value="";
+  document.getElementById("topic").value="";
+  document.getElementById("context").value="";
+  document.getElementById("taskTypeWarning").classList.remove("visible");
+}
 function setFetchLoading(active){const btn=document.getElementById("fetchBtn"),s=document.getElementById("fetchStatus");btn.disabled=active;btn.textContent=active?"...":"Analyse →";s.classList.toggle("visible",active);}
+
+// ══════════════════════════════════════════════════════
+// MOTION SCRIPT GENERATOR
+// ══════════════════════════════════════════════════════
+let msSelectedLen   = "30";
+let msSelectedStyle = "cinematic";
+
+function msSelectLen(btn){
+  document.querySelectorAll(".motion-len-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  msSelectedLen = btn.dataset.len;
+}
+function msSelectStyle(btn){
+  document.querySelectorAll(".motion-style-opt").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  msSelectedStyle = btn.dataset.style;
+}
+
+// Pre-fill Motion Script page from a brief (called from task type warning)
+function msPreFillFromBrief(b){
+  if(b.title||b.topic) document.getElementById("ms-topic").value = b.title||b.topic;
+  const parts=[];
+  if(b.task)         parts.push(`Task: ${b.task}`);
+  if(b.requirements) parts.push(`Requirements: ${b.requirements}`);
+  if(b.audience)     parts.push(`Target audience: ${b.audience}`);
+  if(parts.length)   document.getElementById("ms-context").value = parts.join("\n\n");
+}
+
+function handleMsGenerateClick(){
+  if(!currentUser){ document.getElementById("authScreen").classList.remove("hidden"); return; }
+  const topic = document.getElementById("ms-topic").value.trim();
+  if(!topic){ showMsError("Add a project topic first."); return; }
+  // Cost: ₦20/scene. 15s≈4 scenes, 30s≈7, 60s≈12, 90s≈16
+  const sceneMap = {"15":4,"30":7,"60":12,"90":16};
+  const sceneCount = sceneMap[msSelectedLen]||7;
+  const cost = sceneCount * 20;
+  if(userBalance < cost){ showBalanceToast(`Need ₦${cost} to generate — top up your wallet`); openTopup(); return; }
+  msGenerate(sceneCount, cost);
+}
+
+async function msGenerate(sceneCount, cost){
+  const topic   = document.getElementById("ms-topic").value.trim();
+  const context = document.getElementById("ms-context").value.trim();
+  const ok = await deduct(cost, `Motion Script — ${sceneCount} scenes`);
+  if(!ok) return;
+
+  const btn = document.getElementById("msGenerateBtn");
+  btn.disabled=true; btn.textContent="GENERATING...";
+  document.getElementById("msLoadingBar").classList.add("active");
+  document.getElementById("msErrorBox").classList.remove("visible");
+  document.getElementById("msSceneSection").classList.remove("visible");
+
+  try{
+    const res = await fetch("/api/generate",{
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ topic, context, tone: msSelectedStyle, length: msSelectedLen, mode:"motion" })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error||"Something went wrong");
+    msRenderScenes(data.scenes || data.tweets);
+  } catch(err){
+    await db.collection("users").doc(currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(cost)});
+    showMsError(err.message);
+  } finally{
+    btn.disabled=false; btn.textContent="GENERATE SCRIPT";
+    document.getElementById("msLoadingBar").classList.remove("active");
+  }
+}
+
+function msRenderScenes(scenes){
+  const list    = document.getElementById("msSceneList");
+  const section = document.getElementById("msSceneSection");
+  list.innerHTML = "";
+  document.getElementById("msSceneCountLabel").textContent = `${scenes.length} scenes`;
+
+  scenes.forEach((s, i) => {
+    // Support both object scenes and plain strings (graceful fallback)
+    const scene  = typeof s === "object" ? s : { scene:i+1, duration:"", visual:s, overlay:"", voiceover:"", mood:"" };
+    const card = document.createElement("div");
+    card.className = "scene-card"; card.style.setProperty("--i", i);
+
+    const fields = [
+      { cls:"lbl-visual",  icon:"fa-eye",        label:"VISUAL",    val: scene.visual    },
+      { cls:"lbl-overlay", icon:"fa-font",        label:"TEXT/OVERLAY", val: scene.overlay  },
+      { cls:"lbl-vo",      icon:"fa-microphone",  label:"VOICEOVER", val: scene.voiceover },
+      { cls:"lbl-mood",    icon:"fa-music",       label:"MOOD / SFX",val: scene.mood      },
+    ].filter(f => f.val);
+
+    const sceneText = fields.map(f=>`${f.label}:\n${f.val}`).join("\n\n");
+
+    card.innerHTML = `
+      <div class="scene-card-header">
+        <span class="scene-num">SCENE ${String(scene.scene||i+1).padStart(2,"0")}</span>
+        ${scene.duration ? `<span class="scene-dur">${scene.duration}</span>` : ""}
+        <button class="btn-copy-scene" onclick="(function(b,t){navigator.clipboard.writeText(t).then(()=>{b.textContent='copied ✓';b.classList.add('copied');setTimeout(()=>{b.textContent='copy';b.classList.remove('copied')},2000)})})(this,${JSON.stringify(sceneText)})">copy</button>
+      </div>
+      <div class="scene-body">
+        ${fields.map(f=>`
+          <div class="scene-field">
+            <div class="scene-field-label ${f.cls}"><i class="fa-solid ${f.icon}"></i> ${f.label}</div>
+            <div class="scene-field-value">${escapeHtml(f.val)}</div>
+          </div>`).join("")}
+      </div>`;
+    list.appendChild(card);
+  });
+
+  window._msScenes = scenes;
+  section.classList.add("visible");
+  section.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function msDownloadScript(){
+  const scenes = window._msScenes; if(!scenes) return;
+  const topic = document.getElementById("ms-topic").value.trim() || "Motion Script";
+  let txt = `MOTION SCRIPT — ${topic.toUpperCase()}\n`;
+  txt += `Style: ${msSelectedStyle} | Length: ${msSelectedLen}s\n`;
+  txt += `Generated by ThreadCraft\n${"─".repeat(50)}\n\n`;
+  scenes.forEach((s,i)=>{
+    const sc = typeof s==="object" ? s : {scene:i+1,duration:"",visual:s,overlay:"",voiceover:"",mood:""};
+    txt += `SCENE ${String(sc.scene||i+1).padStart(2,"0")}${sc.duration?" · "+sc.duration:""}\n`;
+    if(sc.visual)     txt += `VISUAL:\n${sc.visual}\n\n`;
+    if(sc.overlay)    txt += `TEXT/OVERLAY:\n${sc.overlay}\n\n`;
+    if(sc.voiceover)  txt += `VOICEOVER:\n${sc.voiceover}\n\n`;
+    if(sc.mood)       txt += `MOOD / SFX:\n${sc.mood}\n\n`;
+    txt += "─".repeat(40)+"\n\n";
+  });
+  const a = document.createElement("a");
+  a.download = `motion-script-${topic.toLowerCase().replace(/\s+/g,"-").slice(0,30)}.txt`;
+  a.href = "data:text/plain;charset=utf-8," + encodeURIComponent(txt);
+  a.click();
+}
+
+function showMsError(m){ const b=document.getElementById("msErrorBox"); b.textContent=`// ${m}`; b.classList.add("visible"); }
 
 // ─── RENDER THREAD ────────────────────────────────────────────────────────────
 function renderThread(tweets){
