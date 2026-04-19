@@ -1813,211 +1813,648 @@ function msDownloadScript(){
 function showMsError(m){ const b=document.getElementById("msErrorBox"); b.textContent=`// ${m}`; b.classList.add("visible"); }
 
 // ══════════════════════════════════════════════════════
-// MOTION VIDEO RENDERER (Canvas → MediaRecorder → .webm)
+// MOTION VIDEO RENDERER v2 — Scene-specific animations
 // ══════════════════════════════════════════════════════
 let _msVideoBlob = null;
+
+// ── Detect scene type from visual description keywords ──
+function msDetectSceneType(scene) {
+  const v = (scene.visual || "").toLowerCase();
+  const o = (scene.overlay || "").toLowerCase();
+  if (v.includes("logo") || v.includes("brand") || v.includes("particle") || v.includes("materializ")) return "logo";
+  if (v.includes("dashboard") || v.includes("chart") || v.includes("graph") || v.includes("metric") || v.includes("ui")) return "dashboard";
+  if (v.includes("code") || v.includes("snippet") || v.includes("line") && v.includes("scroll")) return "code";
+  if (v.includes("network") || v.includes("node") || v.includes("connection") || v.includes("map")) return "network";
+  if (v.includes("wallet") || v.includes("transaction") || v.includes("timeline") || v.includes("payment")) return "transaction";
+  if (v.includes("globe") || v.includes("orbit") || v.includes("planet") || v.includes("space")) return "globe";
+  if (v.includes("cta") || o.includes("start") || o.includes("get") || o.includes("join") || o.includes("try")) return "cta";
+  return "title";
+}
+
+// ── Easing ──
+function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+function easeIn(t)  { return t * t * t; }
+function easeInOut(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; }
+
+// ── Draw overlay text centered with word-by-word reveal ──
+function drawOverlay(ctx, text, W, H, t, pal, yFrac=0.78, sizeFrac=0.072) {
+  if (!text) return;
+  const words = text.split(" ");
+  const visibleWords = Math.ceil(words.length * Math.min(1, t * 3));
+  const shown = words.slice(0, visibleWords).join(" ");
+  ctx.save();
+  ctx.font = `700 ${H * sizeFrac}px Arial, sans-serif`;
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  // Shadow glow
+  ctx.shadowColor = pal.accent;
+  ctx.shadowBlur = 18;
+  ctx.fillText(shown, W/2, H * yFrac);
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
+// ── Draw bottom HUD bar ──
+function drawHUD(ctx, W, H, pal, sceneNum, totalScenes, t) {
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, t * 4) * 0.7;
+  // bottom line
+  ctx.fillStyle = pal.accent;
+  ctx.fillRect(0, H - 3, W * Math.min(1, t * 2), 3);
+  // labels
+  ctx.font = `400 ${H*0.022}px "Courier New", monospace`;
+  ctx.fillStyle = pal.sub;
+  ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  ctx.fillText("THREADCRAFT", 40, H - 14);
+  ctx.textAlign = "right";
+  ctx.fillText(`${sceneNum} / ${totalScenes}`, W - 40, H - 14);
+  ctx.restore();
+}
+
+// ── SCENE RENDERERS ──
+
+function renderSceneGlobe(ctx, W, H, t, pal, scene) {
+  // Dark bg + radial glow
+  ctx.fillStyle = "#080d14"; ctx.fillRect(0,0,W,H);
+  const cx = W*0.5, cy = H*0.45;
+  // Orbit rings
+  ctx.save();
+  for (let r = 0; r < 3; r++) {
+    const radius = 90 + r * 70 + Math.sin(t * Math.PI * 2 + r) * 8;
+    const alpha = 0.15 + r * 0.06;
+    ctx.globalAlpha = alpha * easeOut(t);
+    ctx.strokeStyle = pal.accent;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, radius, radius * 0.35, -0.3 + r * 0.4, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.restore();
+  // Globe circle
+  ctx.save();
+  const globeR = 110 * easeOut(Math.min(1, t * 2));
+  const gGrad = ctx.createRadialGradient(cx - 30, cy - 30, 10, cx, cy, globeR);
+  gGrad.addColorStop(0, "#1e3a5f");
+  gGrad.addColorStop(0.5, "#0d2240");
+  gGrad.addColorStop(1, "#060f1e");
+  ctx.globalAlpha = easeOut(Math.min(1, t * 2));
+  ctx.fillStyle = gGrad;
+  ctx.beginPath(); ctx.arc(cx, cy, globeR, 0, Math.PI*2); ctx.fill();
+  // Grid lines on globe
+  ctx.strokeStyle = `rgba(59,130,246,0.3)`;
+  ctx.lineWidth = 1;
+  ctx.globalAlpha = easeOut(Math.min(1, t * 2)) * 0.5;
+  for (let lat = -2; lat <= 2; lat++) {
+    const latY = cy + lat * (globeR / 2.5);
+    const halfW = Math.sqrt(Math.max(0, globeR*globeR - Math.pow(latY-cy, 2)));
+    if (halfW > 0) { ctx.beginPath(); ctx.ellipse(cx, latY, halfW, halfW * 0.2, 0, 0, Math.PI*2); ctx.stroke(); }
+  }
+  for (let lon = 0; lon < 5; lon++) {
+    ctx.beginPath(); ctx.ellipse(cx, cy, globeR * 0.25 + lon * globeR * 0.15, globeR, lon * 0.35, 0, Math.PI*2); ctx.stroke();
+  }
+  ctx.restore();
+  // Data stream dots orbiting
+  ctx.save();
+  for (let d = 0; d < 12; d++) {
+    const angle = (d / 12) * Math.PI * 2 + t * Math.PI * 1.5;
+    const orbitR = 145;
+    const dx = cx + Math.cos(angle) * orbitR;
+    const dy = cy + Math.sin(angle) * orbitR * 0.3;
+    ctx.globalAlpha = (0.3 + 0.7 * Math.abs(Math.cos(angle))) * easeOut(t);
+    ctx.fillStyle = pal.accent;
+    ctx.beginPath(); ctx.arc(dx, dy, 3, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+  drawOverlay(ctx, scene.overlay, W, H, t, pal, 0.82);
+}
+
+function renderSceneDashboard(ctx, W, H, t, pal, scene) {
+  ctx.fillStyle = "#0a0f1a"; ctx.fillRect(0,0,W,H);
+  // Grid bg
+  ctx.save();
+  ctx.strokeStyle = "rgba(59,130,246,0.06)"; ctx.lineWidth = 1;
+  for (let gx = 0; gx < W; gx += 60) { ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,H); ctx.stroke(); }
+  for (let gy = 0; gy < H; gy += 60) { ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke(); }
+  ctx.restore();
+  // Main dashboard card
+  const reveal = easeOut(Math.min(1, t * 2));
+  const cardX = W*0.05, cardW = W*0.9;
+  const cardY = H*0.08 + (1 - reveal) * 40, cardH = H*0.65;
+  ctx.save();
+  ctx.globalAlpha = reveal;
+  // Card bg
+  ctx.fillStyle = "#111827";
+  ctx.strokeStyle = "rgba(59,130,246,0.4)"; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.roundRect(cardX, cardY, cardW, cardH, 12); ctx.fill(); ctx.stroke();
+  // Card header bar
+  ctx.fillStyle = "#1f2937";
+  ctx.beginPath(); ctx.roundRect(cardX, cardY, cardW, 44, [12,12,0,0]); ctx.fill();
+  // Header dots
+  ["#ef4444","#f59e0b","#22c55e"].forEach((c,i) => {
+    ctx.fillStyle = c; ctx.beginPath(); ctx.arc(cardX+20+i*20, cardY+22, 6, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.fillStyle = "#6b7280"; ctx.font = `400 ${H*0.022}px "Courier New",monospace`;
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText("LIVE ANALYTICS DASHBOARD", W/2, cardY+22);
+  // Animated bar chart
+  const bars = [0.65, 0.82, 0.45, 0.91, 0.73, 0.58, 0.88, 0.76];
+  const barAreaX = cardX + 40, barAreaY = cardY + 60, barAreaH = cardH - 110, barAreaW = cardW - 80;
+  const bw = (barAreaW / bars.length) - 8;
+  bars.forEach((val, i) => {
+    const animVal = val * easeOut(Math.min(1, Math.max(0, t * 3 - i * 0.1)));
+    const bx = barAreaX + i * (bw + 8);
+    const bh = barAreaH * animVal;
+    const by = barAreaY + barAreaH - bh;
+    // Bar bg
+    ctx.fillStyle = "rgba(59,130,246,0.1)";
+    ctx.beginPath(); ctx.roundRect(bx, barAreaY, bw, barAreaH, 4); ctx.fill();
+    // Bar fill
+    const barGrad = ctx.createLinearGradient(0, by, 0, by+bh);
+    barGrad.addColorStop(0, "#3b82f6"); barGrad.addColorStop(1, "#1d4ed8");
+    ctx.fillStyle = barGrad;
+    ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, [4,4,0,0]); ctx.fill();
+    // Value label
+    ctx.fillStyle = "#9ca3af"; ctx.font = `400 ${H*0.018}px Arial,sans-serif`;
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    ctx.fillText((val*100).toFixed(0)+"%", bx+bw/2, barAreaY + barAreaH + 6);
+  });
+  // Live indicator
+  const pulse = 0.5 + 0.5 * Math.sin(t * Math.PI * 8);
+  ctx.fillStyle = `rgba(34,197,94,${pulse})`; ctx.beginPath(); ctx.arc(cardX+cardW-20, cardY+22, 5, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+  // Stat pills below chart
+  const stats = [["TVL","$2.4B"], ["APY","8.7%"], ["Users","142K"]];
+  stats.forEach((s, i) => {
+    const px = W*0.1 + i*(W*0.27), py = cardY + cardH + 14;
+    ctx.save(); ctx.globalAlpha = easeOut(Math.min(1, Math.max(0, t*3 - 0.4 - i*0.15)));
+    ctx.fillStyle = "#1f2937"; ctx.strokeStyle = "rgba(59,130,246,0.3)"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.roundRect(px, py, W*0.22, 44, 8); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#6b7280"; ctx.font=`400 ${H*0.018}px "Courier New",monospace`; ctx.textAlign="left"; ctx.textBaseline="middle";
+    ctx.fillText(s[0], px+12, py+14);
+    ctx.fillStyle="#3b82f6"; ctx.font=`700 ${H*0.028}px Arial,sans-serif`;
+    ctx.fillText(s[1], px+12, py+32);
+    ctx.restore();
+  });
+  drawOverlay(ctx, scene.overlay, W, H, t, pal, 0.94, 0.045);
+}
+
+function renderSceneCode(ctx, W, H, t, pal, scene) {
+  ctx.fillStyle = "#0d1117"; ctx.fillRect(0,0,W,H);
+  const lines = [
+    "import { Jupiter } from '@jup-ag/core';",
+    "const jup = await Jupiter.load({ connection });",
+    "const routes = await jup.computeRoutes({",
+    "  inputMint: SOL_MINT,",
+    "  outputMint: USDC_MINT,",
+    "  amount: 1_000_000,",
+    "  slippageBps: 50,",
+    "});",
+    "const { execute } = await jup.exchange({",
+    "  routeInfo: routes.routesInfos[0],",
+    "});",
+    "const result = await execute();",
+    "console.log('Swap success:', result.txid);",
+  ];
+  const scrollOffset = t * H * 0.4;
+  const lineH = H * 0.058;
+  const startY = H * 0.12 - scrollOffset;
+  const colors = { keyword:"#ff7b72", string:"#a5d6ff", func:"#d2a8ff", num:"#79c0ff", plain:"#c9d1d9", comment:"#8b949e" };
+  // Terminal window
+  ctx.save();
+  ctx.fillStyle = "#161b22"; ctx.strokeStyle = "rgba(48,54,61,0.8)"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.roundRect(W*0.04, H*0.06, W*0.92, H*0.82, 10); ctx.fill(); ctx.stroke();
+  // Title bar
+  ctx.fillStyle = "#21262d";
+  ctx.beginPath(); ctx.roundRect(W*0.04, H*0.06, W*0.92, 36, [10,10,0,0]); ctx.fill();
+  ["#ef4444","#f59e0b","#22c55e"].forEach((c,i) => { ctx.fillStyle=c; ctx.beginPath(); ctx.arc(W*0.06+i*20, H*0.06+18, 5, 0, Math.PI*2); ctx.fill(); });
+  ctx.fillStyle="#6b7280"; ctx.font=`400 ${H*0.02}px "Courier New",monospace`; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText("jupiter-lend.ts", W/2, H*0.06+18);
+  // Clip to code area
+  ctx.rect(W*0.04, H*0.06+36, W*0.92, H*0.82-36); ctx.clip();
+  lines.forEach((line, i) => {
+    const ly = startY + i * lineH;
+    if (ly < H*0.06 || ly > H) return;
+    const revealT = Math.min(1, Math.max(0, (t * lines.length * 1.5) - i));
+    ctx.globalAlpha = easeOut(revealT);
+    // Highlight current line
+    if (Math.floor(t * lines.length * 1.2) === i) {
+      ctx.fillStyle = "rgba(59,130,246,0.12)";
+      ctx.fillRect(W*0.04, ly - lineH*0.2, W*0.92, lineH);
+    }
+    // Line number
+    ctx.fillStyle = "#484f58"; ctx.font=`400 ${H*0.028}px "Courier New",monospace`; ctx.textAlign="right"; ctx.textBaseline="top";
+    ctx.fillText(i+1, W*0.12, ly);
+    // Code with basic syntax coloring
+    let cx2 = W*0.13, lineText = line;
+    const isKeyword = /^(import|const|await|return|console)/.test(line.trim());
+    const col = i===0||i===1 ? colors.keyword : i===2||i===8 ? colors.func : i===5||i===6 ? colors.num : colors.plain;
+    ctx.fillStyle = col; ctx.textAlign="left";
+    ctx.fillText(lineText, cx2, ly);
+  });
+  // Cursor blink
+  const cursorLine = Math.min(lines.length-1, Math.floor(t * lines.length * 1.2));
+  const cursorY = startY + cursorLine * lineH;
+  if (cursorY > H*0.1 && cursorY < H && Math.sin(t * Math.PI * 8) > 0) {
+    ctx.globalAlpha = 0.8;
+    ctx.fillStyle = "#3b82f6";
+    ctx.fillRect(W*0.13 + ctx.measureText(lines[cursorLine]||"").width, cursorY, 2, lineH * 0.85);
+  }
+  ctx.restore();
+  drawOverlay(ctx, scene.overlay, W, H, t, pal, 0.94, 0.045);
+}
+
+function renderSceneNetwork(ctx, W, H, t, pal, scene) {
+  ctx.fillStyle = "#070b14"; ctx.fillRect(0,0,W,H);
+  // Nodes
+  const nodes = [
+    {x:W*0.5, y:H*0.42, r:22, label:"JUP", color:"#3b82f6"},
+    {x:W*0.25, y:H*0.25, r:14, label:"SOL", color:"#9945ff"},
+    {x:W*0.75, y:H*0.25, r:14, label:"USDC", color:"#2775ca"},
+    {x:W*0.15, y:H*0.58, r:12, label:"mSOL", color:"#00d9a3"},
+    {x:W*0.82, y:H*0.55, r:12, label:"ETH", color:"#627eea"},
+    {x:W*0.38, y:H*0.68, r:10, label:"BTC", color:"#f7931a"},
+    {x:W*0.65, y:H*0.7, r:10, label:"RAY", color:"#5bc7f5"},
+    {x:W*0.5, y:H*0.18, r:10, label:"BONK", color:"#f59e0b"},
+  ];
+  const edges = [[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[1,2],[2,4],[3,5]];
+  const reveal = easeOut(Math.min(1, t * 1.5));
+  // Draw edges
+  ctx.save();
+  edges.forEach(([a,b]) => {
+    const na=nodes[a], nb=nodes[b];
+    const edgeReveal = easeOut(Math.min(1, Math.max(0, t*4 - a*0.3)));
+    ctx.globalAlpha = 0.25 * edgeReveal;
+    ctx.strokeStyle = pal.accent; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(na.x, na.y); ctx.lineTo(nb.x, nb.y); ctx.stroke();
+    // Animated data packet travelling along edge
+    const pkt = (t * 2 + a * 0.3) % 1;
+    const px = na.x + (nb.x-na.x)*pkt, py = na.y + (nb.y-na.y)*pkt;
+    ctx.globalAlpha = 0.8 * edgeReveal;
+    ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.restore();
+  // Draw nodes
+  nodes.forEach((n, i) => {
+    const nodeReveal = easeOut(Math.min(1, Math.max(0, t*3 - i*0.2)));
+    ctx.save(); ctx.globalAlpha = nodeReveal;
+    // Pulse ring
+    const pulse = 0.4 + 0.3 * Math.sin(t * Math.PI * 4 + i);
+    ctx.strokeStyle = n.color; ctx.lineWidth = 1.5;
+    ctx.globalAlpha = nodeReveal * pulse;
+    ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 10 + pulse*5, 0, Math.PI*2); ctx.stroke();
+    ctx.globalAlpha = nodeReveal;
+    // Node circle
+    const ng = ctx.createRadialGradient(n.x-n.r*0.3, n.y-n.r*0.3, 2, n.x, n.y, n.r);
+    ng.addColorStop(0, n.color+"cc"); ng.addColorStop(1, n.color+"44");
+    ctx.fillStyle = ng; ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = n.color+"aa"; ctx.lineWidth=1.5; ctx.stroke();
+    // Label
+    ctx.fillStyle = "#ffffff"; ctx.font=`700 ${Math.max(10, n.r*0.75)}px Arial,sans-serif`;
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(n.label, n.x, n.y);
+    ctx.restore();
+  });
+  drawOverlay(ctx, scene.overlay, W, H, t, pal, 0.88);
+}
+
+function renderSceneTransaction(ctx, W, H, t, pal, scene) {
+  ctx.fillStyle = "#080d14"; ctx.fillRect(0,0,W,H);
+  // Wallet card
+  const cardW = W*0.7, cardH = H*0.22;
+  const cardX = (W-cardW)/2, cardY = H*0.06;
+  const cardReveal = easeOut(Math.min(1, t*2));
+  ctx.save(); ctx.globalAlpha = cardReveal;
+  const wg = ctx.createLinearGradient(cardX,cardY,cardX+cardW,cardY+cardH);
+  wg.addColorStop(0,"#1f2937"); wg.addColorStop(1,"#111827");
+  ctx.fillStyle=wg; ctx.strokeStyle="rgba(59,130,246,0.5)"; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.roundRect(cardX,cardY,cardW,cardH,14); ctx.fill(); ctx.stroke();
+  ctx.fillStyle="#6b7280"; ctx.font=`400 ${H*0.02}px "Courier New",monospace`; ctx.textAlign="left"; ctx.textBaseline="top";
+  ctx.fillText("WALLET BALANCE", cardX+20, cardY+14);
+  // Animated balance counter
+  const targetBal = 24.87;
+  const dispBal = (targetBal * easeOut(Math.min(1, t*2.5))).toFixed(2);
+  ctx.fillStyle="#ffffff"; ctx.font=`700 ${H*0.07}px Arial,sans-serif`; ctx.textBaseline="top";
+  ctx.fillText(`${dispBal} SOL`, cardX+20, cardY+38);
+  ctx.fillStyle="#22c55e"; ctx.font=`400 ${H*0.022}px Arial,sans-serif`; ctx.textBaseline="top";
+  ctx.fillText("↑ +12.4% today", cardX+20, cardY+cardH-28);
+  ctx.restore();
+  // Transaction timeline
+  const txns = [
+    {label:"Deposit SOL",  amt:"+5.00", color:"#22c55e", time:"2s ago"},
+    {label:"Swap → USDC",  amt:"-2.50", color:"#ef4444", time:"18s ago"},
+    {label:"Earn Interest", amt:"+0.02", color:"#3b82f6", time:"1m ago"},
+    {label:"Lend mSOL",    amt:"-8.00", color:"#f59e0b", time:"3m ago"},
+  ];
+  const tlY = cardY + cardH + 24;
+  txns.forEach((tx, i) => {
+    const txReveal = easeOut(Math.min(1, Math.max(0, t*3.5 - i*0.3)));
+    const rowY = tlY + i * (H*0.115);
+    const rowX = W*0.15;
+    ctx.save(); ctx.globalAlpha = txReveal;
+    // Slide in from left
+    const slideX = rowX - (1-txReveal)*60;
+    ctx.fillStyle="#111827"; ctx.strokeStyle="rgba(75,85,99,0.4)"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.roundRect(slideX, rowY, W*0.7, H*0.1, 8); ctx.fill(); ctx.stroke();
+    // Color indicator
+    ctx.fillStyle=tx.color; ctx.beginPath(); ctx.roundRect(slideX+0, rowY, 4, H*0.1, [8,0,0,8]); ctx.fill();
+    // Label
+    ctx.fillStyle="#e5e7eb"; ctx.font=`600 ${H*0.03}px Arial,sans-serif`; ctx.textAlign="left"; ctx.textBaseline="middle";
+    ctx.fillText(tx.label, slideX+18, rowY + H*0.05);
+    // Amount
+    ctx.fillStyle=tx.color; ctx.font=`700 ${H*0.032}px Arial,sans-serif`; ctx.textAlign="right";
+    ctx.fillText(tx.amt+" SOL", slideX + W*0.7 - 12, rowY + H*0.05);
+    // Time
+    ctx.fillStyle="#6b7280"; ctx.font=`400 ${H*0.02}px "Courier New",monospace`; ctx.textAlign="left"; ctx.textBaseline="bottom";
+    ctx.fillText(tx.time, slideX+18, rowY + H*0.1 - 8);
+    ctx.restore();
+  });
+  drawOverlay(ctx, scene.overlay, W, H, t, pal, 0.95, 0.04);
+}
+
+function renderSceneLogo(ctx, W, H, t, pal, scene) {
+  ctx.fillStyle = "#050810"; ctx.fillRect(0,0,W,H);
+  const cx = W/2, cy = H*0.44;
+  // Particle field converging to center
+  const seed = 42;
+  for (let p = 0; p < 120; p++) {
+    const angle = (p / 120) * Math.PI * 2 + p * 2.4;
+    const maxR = 350;
+    const progress = easeOut(Math.min(1, t * 2));
+    const r = maxR * (1 - progress) + (p % 5) * 3;
+    const px2 = cx + Math.cos(angle) * r;
+    const py2 = cy + Math.sin(angle) * r * 0.6;
+    const alpha = progress * (0.3 + 0.7 * (1 - r/maxR));
+    ctx.save(); ctx.globalAlpha = alpha;
+    ctx.fillStyle = p % 3 === 0 ? pal.accent : p % 3 === 1 ? "#6366f1" : "#22c55e";
+    ctx.beginPath(); ctx.arc(px2, py2, 1.5 + (p%3), 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  // Brand name reveal
+  const textReveal = easeOut(Math.max(0, (t - 0.3) / 0.5));
+  if (textReveal > 0) {
+    ctx.save();
+    ctx.globalAlpha = textReveal;
+    const overlay = scene.overlay || "BRAND";
+    // Glow layers
+    ctx.font = `700 ${H*0.14}px Arial, sans-serif`;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.shadowColor = pal.accent; ctx.shadowBlur = 40 * textReveal;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(overlay.toUpperCase(), cx, cy);
+    ctx.shadowBlur = 0;
+    // Underline accent
+    const textW = ctx.measureText(overlay.toUpperCase()).width;
+    ctx.fillStyle = pal.accent;
+    ctx.fillRect(cx - textW/2 * textReveal, cy + H*0.09, textW * textReveal, 3);
+    ctx.restore();
+  }
+  // Lens flare
+  const flareT = Math.max(0, t - 0.5);
+  if (flareT > 0) {
+    ctx.save();
+    const fg = ctx.createRadialGradient(cx + W*0.15, cy - H*0.1, 0, cx + W*0.15, cy - H*0.1, 120);
+    fg.addColorStop(0, `rgba(255,255,255,${0.6 * easeOut(flareT * 2) * Math.max(0, 1-flareT*3)})`);
+    fg.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = fg; ctx.fillRect(0,0,W,H);
+    ctx.restore();
+  }
+  // Voiceover subtitle
+  if (scene.voiceover && t > 0.5) {
+    ctx.save(); ctx.globalAlpha = easeOut((t-0.5)*4);
+    ctx.fillStyle = "#9ca3af"; ctx.font=`400 italic ${H*0.032}px Arial,sans-serif`;
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(`"${scene.voiceover}"`, cx, H*0.72);
+    ctx.restore();
+  }
+}
+
+function renderSceneTitle(ctx, W, H, t, pal, scene) {
+  // Generic kinetic title scene
+  ctx.fillStyle = "#080d14"; ctx.fillRect(0,0,W,H);
+  // Animated accent line
+  const lineReveal = easeOut(Math.min(1, t * 3));
+  ctx.save();
+  ctx.fillStyle = pal.accent;
+  ctx.fillRect(W*0.08, H*0.42, W*0.84 * lineReveal, 2);
+  ctx.fillRect(W*0.08, H*0.62, W*0.5 * lineReveal, 2);
+  ctx.restore();
+  // Main overlay text
+  const overlay = scene.overlay || "";
+  const words = overlay.split(" ");
+  words.forEach((word, i) => {
+    const wordT = easeOut(Math.min(1, Math.max(0, t*4 - i*0.4)));
+    if (wordT <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = wordT;
+    ctx.font = `700 ${H*0.1}px Arial, sans-serif`;
+    ctx.fillStyle = i === 0 ? "#ffffff" : pal.accent;
+    ctx.textAlign = "left"; ctx.textBaseline = "top";
+    // Simple layout: stack words
+    const rowsPerLine = 3;
+    const col = i % rowsPerLine;
+    const row = Math.floor(i / rowsPerLine);
+    ctx.fillText(word, W*0.08 + col * W*0.3, H*0.22 + row * H*0.12 + (1-wordT)*20);
+    ctx.restore();
+  });
+  // Voiceover subtitle
+  if (scene.voiceover && t > 0.4) {
+    ctx.save(); ctx.globalAlpha = easeOut((t-0.4)*3);
+    ctx.fillStyle="#6b7280"; ctx.font=`400 ${H*0.03}px Arial,sans-serif`;
+    ctx.textAlign="left"; ctx.textBaseline="top";
+    ctx.fillText(`"${scene.voiceover}"`, W*0.08, H*0.68);
+    ctx.restore();
+  }
+}
+
+function renderSceneCTA(ctx, W, H, t, pal, scene) {
+  ctx.fillStyle = "#050810"; ctx.fillRect(0,0,W,H);
+  // Radial glow bg
+  const glow = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, H*0.7);
+  glow.addColorStop(0, `rgba(59,130,246,${0.12 * easeOut(t)})`);
+  glow.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = glow; ctx.fillRect(0,0,W,H);
+  // Big overlay text
+  const overlay = scene.overlay || "";
+  const reveal = easeOut(Math.min(1, t*2));
+  ctx.save(); ctx.globalAlpha = reveal;
+  ctx.font = `700 ${H*0.13}px Arial, sans-serif`;
+  ctx.fillStyle = "#ffffff"; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.shadowColor = pal.accent; ctx.shadowBlur = 30;
+  ctx.fillText(overlay, W/2, H*0.4 + (1-reveal)*30);
+  ctx.shadowBlur = 0;
+  ctx.restore();
+  // CTA button
+  if (t > 0.4) {
+    const btnReveal = easeOut((t-0.4)*4);
+    const btnW=280, btnH=60, btnX=(W-btnW)/2, btnY=H*0.56;
+    ctx.save(); ctx.globalAlpha = btnReveal;
+    const bg = ctx.createLinearGradient(btnX,btnY,btnX+btnW,btnY+btnH);
+    bg.addColorStop(0,"#3b82f6"); bg.addColorStop(1,"#1d4ed8");
+    ctx.fillStyle=bg;
+    ctx.beginPath(); ctx.roundRect(btnX,btnY,btnW,btnH,30); ctx.fill();
+    ctx.fillStyle="#ffffff"; ctx.font=`700 ${H*0.04}px Arial,sans-serif`;
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText("Get Started →", W/2, btnY+btnH/2);
+    ctx.restore();
+  }
+  // Voiceover
+  if (scene.voiceover && t > 0.5) {
+    ctx.save(); ctx.globalAlpha = easeOut((t-0.5)*3);
+    ctx.fillStyle="#9ca3af"; ctx.font=`400 italic ${H*0.03}px Arial,sans-serif`;
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(`"${scene.voiceover}"`, W/2, H*0.8);
+    ctx.restore();
+  }
+}
 
 async function msRenderVideo() {
   const scenes = window._msScenes;
   if (!scenes || !scenes.length) return;
 
-  const btn = document.getElementById("msRenderVideoBtn");
-  const progressBox = document.getElementById("msVideoProgress");
-  const progressBar = document.getElementById("msVideoProgressBar");
-  const progressLabel = document.getElementById("msVideoProgressLabel");
-  const previewSec = document.getElementById("msVideoPreview");
-  const videoEl = document.getElementById("msVideoEl");
+  const btn          = document.getElementById("msRenderVideoBtn");
+  const progressBox  = document.getElementById("msVideoProgress");
+  const progressBar  = document.getElementById("msVideoProgressBar");
+  const progressLabel= document.getElementById("msVideoProgressLabel");
+  const previewSec   = document.getElementById("msVideoPreview");
+  const videoEl      = document.getElementById("msVideoEl");
 
   btn.disabled = true; btn.textContent = "⏳ Rendering…";
   progressBox.style.display = "block";
-  previewSec.style.display = "none";
+  previewSec.style.display  = "none";
   _msVideoBlob = null;
 
-  // Canvas setup — 1280×720 for wide compatibility
   const W = 1280, H = 720;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d");
 
-  // Parse scene duration string e.g. "0:04 – 0:08" → seconds
-  function parseDurSecs(scene, idx, total, totalSecs) {
+  // ── Parse duration from scene.duration string ──
+  function parseDur(scene) {
     try {
-      const raw = scene.duration || "";
-      const parts = raw.split("–").map(s => s.trim());
-      if (parts.length === 2) {
-        const toSec = t => { const [m,s] = t.split(":").map(Number); return m*60+s; };
-        const dur = toSec(parts[1]) - toSec(parts[0]);
-        if (dur > 0) return dur;
+      const parts = (scene.duration||"").split(/[–\-—]/).map(s=>s.trim());
+      if (parts.length===2) {
+        const toS = s => { const [m,sec]=(s||"0:0").split(":").map(Number); return m*60+(sec||0); };
+        const d = toS(parts[1]) - toS(parts[0]);
+        if (d > 0) return d;
       }
     } catch(e){}
-    return Math.round(totalSecs / total) || 4;
+    return null;
   }
 
-  // Detect total video length from page selection
+  // ── Lock total to user-selected length ──
   const totalSecs = parseInt(msSelectedLen) || 30;
   const fps = 30;
 
-  // Style palette based on visual style
+  // Compute per-scene durations, always summing to totalSecs exactly
+  const rawDurs = scenes.map(s => parseDur(typeof s==="object"?s:{}) || 0);
+  const rawSum  = rawDurs.reduce((a,b)=>a+b,0);
+  let sceneDurs;
+  if (rawSum > 0) {
+    // Scale parsed durations to match totalSecs
+    sceneDurs = rawDurs.map(d => d > 0 ? (d/rawSum)*totalSecs : totalSecs/scenes.length);
+  } else {
+    sceneDurs = scenes.map(() => totalSecs / scenes.length);
+  }
+  // Fix floating point: adjust last scene so sum === totalSecs exactly
+  const sumDurs = sceneDurs.reduce((a,b)=>a+b,0);
+  sceneDurs[sceneDurs.length-1] += totalSecs - sumDurs;
+
   const styleColors = {
-    cinematic:  { bg1:"#0a0a0a", bg2:"#1a0a0a", accent:"#e0161a", text:"#f0f0f0", sub:"#888888" },
-    energetic:  { bg1:"#0d0014", bg2:"#0a1a00", accent:"#f97316", text:"#ffffff", sub:"#aaaaaa" },
-    minimal:    { bg1:"#f5f5f3", bg2:"#e8e8e4", accent:"#e0161a", text:"#111111", sub:"#666666" },
-    technical:  { bg1:"#0d1117", bg2:"#0a1a2e", accent:"#3b82f6", text:"#e0e0e0", sub:"#6b7280" },
+    cinematic: { bg1:"#0a0a0a", bg2:"#1a0a0a", accent:"#e0161a", text:"#f0f0f0", sub:"#888888" },
+    energetic: { bg1:"#0d0014", bg2:"#0a1a00", accent:"#f97316", text:"#ffffff",  sub:"#aaaaaa" },
+    minimal:   { bg1:"#f5f5f3", bg2:"#e8e8e4", accent:"#e0161a", text:"#111111",  sub:"#666666" },
+    technical: { bg1:"#0d1117", bg2:"#0a1a2e", accent:"#3b82f6", text:"#e0e0e0",  sub:"#6b7280" },
   };
   const pal = styleColors[msSelectedStyle] || styleColors.cinematic;
 
-  // Check MediaRecorder support
   const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
     ? "video/webm;codecs=vp9"
-    : MediaRecorder.isTypeSupported("video/webm")
-    ? "video/webm"
-    : null;
+    : MediaRecorder.isTypeSupported("video/webm") ? "video/webm" : null;
 
   if (!mimeType) {
-    btn.disabled = false; btn.textContent = "RENDER MOTION VIDEO";
-    progressBox.style.display = "none";
-    showMsError("Your browser doesn't support video recording. Use Chrome or Edge.");
+    btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-film"></i> &nbsp;RENDER MOTION VIDEO';
+    progressBox.style.display="none";
+    showMsError("Browser doesn't support video recording — use Chrome or Edge.");
     return;
   }
 
-  const stream = canvas.captureStream(fps);
-  const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 4_000_000 });
-  const chunks = [];
-  recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+  const stream   = canvas.captureStream(fps);
+  const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 6_000_000 });
+  const chunks   = [];
+  recorder.ondataavailable = e => { if (e.data.size>0) chunks.push(e.data); };
 
   recorder.onstop = () => {
-    _msVideoBlob = new Blob(chunks, { type: "video/webm" });
-    const url = URL.createObjectURL(_msVideoBlob);
-    videoEl.src = url;
+    _msVideoBlob = new Blob(chunks, { type:"video/webm" });
+    videoEl.src  = URL.createObjectURL(_msVideoBlob);
     previewSec.style.display = "block";
-    btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-film"></i> &nbsp;RE-RENDER VIDEO';
     progressBox.style.display = "none";
-    previewSec.scrollIntoView({ behavior: "smooth", block: "start" });
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-film"></i> &nbsp;RE-RENDER VIDEO';
+    previewSec.scrollIntoView({ behavior:"smooth", block:"start" });
   };
 
-  recorder.start();
+  recorder.start(100); // collect data every 100ms
 
-  // Render scenes frame by frame
+  const sceneRenderers = {
+    globe:       renderSceneGlobe,
+    dashboard:   renderSceneDashboard,
+    code:        renderSceneCode,
+    network:     renderSceneNetwork,
+    transaction: renderSceneTransaction,
+    logo:        renderSceneLogo,
+    title:       renderSceneTitle,
+    cta:         renderSceneCTA,
+  };
+
   for (let si = 0; si < scenes.length; si++) {
-    const scene = typeof scenes[si] === "object" ? scenes[si]
-      : { scene: si+1, duration:"", visual:"", overlay: scenes[si], voiceover:"", mood:"" };
-    const sceneDur = parseDurSecs(scene, si, scenes.length, totalSecs);
-    const totalFrames = sceneDur * fps;
+    const raw   = scenes[si];
+    const scene = typeof raw==="object" ? raw : {scene:si+1,duration:"",visual:"",overlay:raw,voiceover:"",mood:""};
+    const type  = msDetectSceneType(scene);
+    const renderFn = sceneRenderers[type] || renderSceneTitle;
+    const dur   = sceneDurs[si];
+    const frames= Math.round(dur * fps);
 
-    progressLabel.textContent = `Rendering scene ${si+1} of ${scenes.length}…`;
-    progressBar.style.width = `${Math.round((si / scenes.length) * 100)}%`;
+    progressLabel.textContent = `Scene ${si+1}/${scenes.length} — ${type}`;
+    progressBar.style.width = `${Math.round((si/scenes.length)*100)}%`;
 
-    const sceneNumStr = String(scene.scene || si+1).padStart(2, "0");
-    const overlayText = scene.overlay || "";
-    const durLabel = scene.duration || "";
+    for (let f = 0; f < frames; f++) {
+      const t = f / frames; // 0→1
 
-    for (let f = 0; f < totalFrames; f++) {
-      const t = f / totalFrames; // 0→1 progress within scene
-      // Fade: in 0–15%, hold 15–80%, out 80–100%
-      const fadeIn  = Math.min(1, t / 0.15);
-      const fadeOut = t > 0.8 ? Math.max(0, 1 - (t - 0.8) / 0.2) : 1;
-      const alpha   = Math.min(fadeIn, fadeOut);
+      // Cross-fade transition: last 8% of scene fades out, first 8% fades in
+      const fadeIn  = t < 0.08 ? easeIn(t/0.08) : 1;
+      const fadeOut = t > 0.92 ? easeIn((1-t)/0.08) : 1;
+      const masterAlpha = Math.min(fadeIn, fadeOut);
 
-      // Background gradient
-      const grad = ctx.createLinearGradient(0, 0, W, H);
-      grad.addColorStop(0, pal.bg1);
-      grad.addColorStop(1, pal.bg2);
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, W, H);
+      // Render the scene
+      renderFn(ctx, W, H, t, pal, scene);
 
-      // Subtle grid lines (technical style) or grain overlay
-      if (pal === styleColors.technical) {
-        ctx.strokeStyle = "rgba(59,130,246,0.06)";
-        ctx.lineWidth = 1;
-        for (let gx = 0; gx < W; gx += 80) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
-        for (let gy = 0; gy < H; gy += 80) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
+      // Transition overlay (cross-fade)
+      if (masterAlpha < 1) {
+        ctx.save();
+        ctx.globalAlpha = 1 - masterAlpha;
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0,0,W,H);
+        ctx.restore();
       }
 
-      // Accent bar on left
-      ctx.globalAlpha = alpha * 0.9;
-      ctx.fillStyle = pal.accent;
-      ctx.fillRect(64, H*0.28, 4, H*0.44);
-      ctx.globalAlpha = 1;
+      // HUD always on top
+      drawHUD(ctx, W, H, pal, si+1, scenes.length, t);
 
-      // Scene number
-      ctx.globalAlpha = alpha * 0.35;
-      ctx.font = `700 ${H * 0.52}px "Arial", sans-serif`;
-      ctx.fillStyle = pal.text;
-      ctx.textAlign = "right";
-      ctx.textBaseline = "middle";
-      ctx.fillText(sceneNumStr, W - 60, H * 0.5);
-      ctx.globalAlpha = 1;
-
-      // SCENE label
-      ctx.globalAlpha = alpha;
-      ctx.font = `400 ${H * 0.028}px "Courier New", monospace`;
-      ctx.fillStyle = pal.accent;
-      ctx.textAlign = "left";
-      ctx.textBaseline = "alphabetic";
-      ctx.fillText("SCENE " + sceneNumStr, 80, H * 0.32);
-
-      // Duration pill
-      if (durLabel) {
-        ctx.font = `400 ${H * 0.022}px "Courier New", monospace`;
-        ctx.fillStyle = pal.sub;
-        ctx.fillText(durLabel, 80, H * 0.355);
-      }
-
-      // Overlay text — wrap at ~28 chars per line
-      if (overlayText) {
-        const words = overlayText.split(" ");
-        const lines = [];
-        let cur = "";
-        words.forEach(w => {
-          if ((cur + " " + w).trim().length > 28 && cur) { lines.push(cur); cur = w; }
-          else cur = cur ? cur + " " + w : w;
-        });
-        if (cur) lines.push(cur);
-        const lineH = H * 0.072;
-        const startY = H * 0.42;
-        ctx.font = `700 ${H * 0.062}px "Arial", sans-serif`;
-        ctx.fillStyle = pal.text;
-        ctx.textAlign = "left";
-        ctx.textBaseline = "top";
-        lines.slice(0, 4).forEach((ln, li) => {
-          ctx.fillText(ln, 80, startY + li * lineH);
-        });
-      } else {
-        // If no overlay, show "Visual" description truncated
-        const visual = (scene.visual || "").slice(0, 80) + ((scene.visual||"").length > 80 ? "…" : "");
-        ctx.font = `400 ${H * 0.032}px "Arial", sans-serif`;
-        ctx.fillStyle = pal.sub;
-        ctx.textAlign = "left";
-        ctx.textBaseline = "top";
-        ctx.fillText(visual, 80, H * 0.44, W - 200);
-      }
-
-      // Bottom brand strip
-      ctx.globalAlpha = alpha * 0.6;
-      ctx.fillStyle = pal.sub;
-      ctx.font = `400 ${H * 0.022}px "Courier New", monospace`;
-      ctx.textAlign = "left";
-      ctx.textBaseline = "alphabetic";
-      ctx.fillText("THREADCRAFT · MOTION SCRIPT", 80, H - 36);
-      ctx.textAlign = "right";
-      ctx.fillText(`${si+1} / ${scenes.length}`, W - 80, H - 36);
-      ctx.globalAlpha = 1;
-
-      // Yield to browser every 5 frames to avoid freeze
-      if (f % 5 === 0) await new Promise(r => setTimeout(r, 0));
+      if (f % 4 === 0) await new Promise(r => setTimeout(r, 0));
     }
   }
 
   progressBar.style.width = "100%";
   progressLabel.textContent = "Finalising…";
-  await new Promise(r => setTimeout(r, 100));
+  await new Promise(r => setTimeout(r, 200));
   recorder.stop();
 }
 
 function msDownloadVideo() {
   if (!_msVideoBlob) return;
   const topic = document.getElementById("ms-topic").value.trim() || "motion-video";
-  const slug = topic.toLowerCase().replace(/\s+/g, "-").slice(0, 30);
+  const slug  = topic.toLowerCase().replace(/\s+/g,"-").slice(0,30);
   const a = document.createElement("a");
   a.download = `${slug}.webm`;
   a.href = URL.createObjectURL(_msVideoBlob);
