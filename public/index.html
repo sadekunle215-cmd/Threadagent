@@ -2324,17 +2324,22 @@ async function msRenderVideo() {
   previewSec.style.display  = "none";
   _msVideoBlob = null;
 
+  // ── Two canvases: offscreen for rendering, live for capture ──
   const W = 1280, H = 720;
-  const canvas = document.createElement("canvas");
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext("2d");
+  const offCanvas = document.createElement("canvas");
+  offCanvas.width = W; offCanvas.height = H;
+  const offCtx = offCanvas.getContext("2d");
 
-  // ── Parse duration from scene.duration string ──
-  function parseDur(scene) {
+  const liveCanvas = document.createElement("canvas");
+  liveCanvas.width = W; liveCanvas.height = H;
+  const liveCtx = liveCanvas.getContext("2d");
+
+  // ── Helpers ──
+  function parseDur(s) {
     try {
-      const parts = (scene.duration||"").split(/[–\-—]/).map(s=>s.trim());
+      const parts = (s.duration||"").split(/[–\-—]/).map(x=>x.trim());
       if (parts.length===2) {
-        const toS = s => { const [m,sec]=(s||"0:0").split(":").map(Number); return m*60+(sec||0); };
+        const toS = x => { const [m,sec]=(x||"0:0").split(":").map(Number); return m*60+(sec||0); };
         const d = toS(parts[1]) - toS(parts[0]);
         if (d > 0) return d;
       }
@@ -2342,23 +2347,19 @@ async function msRenderVideo() {
     return null;
   }
 
-  // ── Lock total to user-selected length ──
   const totalSecs = parseInt(msSelectedLen) || 30;
-  const fps = 30;
+  const fps = 25; // 25fps is more reliable for MediaRecorder timing
 
-  // Compute per-scene durations, always summing to totalSecs exactly
+  // Scale durations to exactly totalSecs
   const rawDurs = scenes.map(s => parseDur(typeof s==="object"?s:{}) || 0);
   const rawSum  = rawDurs.reduce((a,b)=>a+b,0);
-  let sceneDurs;
-  if (rawSum > 0) {
-    // Scale parsed durations to match totalSecs
-    sceneDurs = rawDurs.map(d => d > 0 ? (d/rawSum)*totalSecs : totalSecs/scenes.length);
-  } else {
-    sceneDurs = scenes.map(() => totalSecs / scenes.length);
-  }
-  // Fix floating point: adjust last scene so sum === totalSecs exactly
-  const sumDurs = sceneDurs.reduce((a,b)=>a+b,0);
-  sceneDurs[sceneDurs.length-1] += totalSecs - sumDurs;
+  let sceneDurs = rawSum > 0
+    ? rawDurs.map(d => (d/rawSum) * totalSecs)
+    : scenes.map(() => totalSecs / scenes.length);
+  // Correct for floating point so frames sum exactly
+  let totalFrames = sceneDurs.reduce((a,d) => a + Math.round(d*fps), 0);
+  const wantFrames = Math.round(totalSecs * fps);
+  sceneDurs[sceneDurs.length-1] += (wantFrames - totalFrames) / fps;
 
   const styleColors = {
     cinematic: { bg1:"#0a0a0a", bg2:"#1a0a0a", accent:"#e0161a", text:"#f0f0f0", sub:"#888888" },
@@ -2367,6 +2368,58 @@ async function msRenderVideo() {
     technical: { bg1:"#0d1117", bg2:"#0a1a2e", accent:"#3b82f6", text:"#e0e0e0",  sub:"#6b7280" },
   };
   const pal = styleColors[msSelectedStyle] || styleColors.cinematic;
+
+  const sceneRenderers = {
+    globe: renderSceneGlobe, dashboard: renderSceneDashboard,
+    code: renderSceneCode, network: renderSceneNetwork,
+    transaction: renderSceneTransaction, logo: renderSceneLogo,
+    title: renderSceneTitle, cta: renderSceneCTA,
+  };
+
+  // ── PHASE 1: Pre-render every frame into ImageData array ──
+  progressLabel.textContent = "Pre-rendering frames…";
+  const allFrames = []; // array of ImageData
+
+  for (let si = 0; si < scenes.length; si++) {
+    const raw    = scenes[si];
+    const scene  = typeof raw==="object" ? raw : {scene:si+1,duration:"",visual:"",overlay:raw,voiceover:"",mood:""};
+    const type   = msDetectSceneType(scene);
+    const renderFn = sceneRenderers[type] || renderSceneTitle;
+    const frames = Math.round(sceneDurs[si] * fps);
+
+    for (let f = 0; f < frames; f++) {
+      const t = f / frames;
+      const fadeIn  = t < 0.08 ? easeIn(t/0.08) : 1;
+      const fadeOut = t > 0.92 ? easeIn((1-t)/0.08) : 1;
+      const fade    = Math.min(fadeIn, fadeOut);
+
+      renderFn(offCtx, W, H, t, pal, scene);
+
+      if (fade < 1) {
+        offCtx.save();
+        offCtx.globalAlpha = 1 - fade;
+        offCtx.fillStyle = "#000";
+        offCtx.fillRect(0,0,W,H);
+        offCtx.restore();
+      }
+      drawHUD(offCtx, W, H, pal, si+1, scenes.length, t);
+
+      allFrames.push(offCtx.getImageData(0, 0, W, H));
+
+      // Update progress bar during pre-render
+      const done = allFrames.length;
+      const total = wantFrames;
+      progressBar.style.width = `${Math.round((done/total)*50)}%`; // first 50% = pre-render
+      progressLabel.textContent = `Pre-rendering… scene ${si+1}/${scenes.length} (${Math.round(done/total*100)}%)`;
+
+      // Yield every 10 frames so UI stays responsive
+      if (f % 10 === 0) await new Promise(r => setTimeout(r, 0));
+    }
+  }
+
+  // ── PHASE 2: Play frames back at exact fps into MediaRecorder ──
+  progressLabel.textContent = "Recording…";
+  progressBar.style.width = "50%";
 
   const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
     ? "video/webm;codecs=vp9"
@@ -2379,76 +2432,44 @@ async function msRenderVideo() {
     return;
   }
 
-  const stream   = canvas.captureStream(fps);
+  const stream   = liveCanvas.captureStream(fps);
   const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 6_000_000 });
   const chunks   = [];
   recorder.ondataavailable = e => { if (e.data.size>0) chunks.push(e.data); };
 
-  recorder.onstop = () => {
-    _msVideoBlob = new Blob(chunks, { type:"video/webm" });
-    videoEl.src  = URL.createObjectURL(_msVideoBlob);
-    previewSec.style.display = "block";
-    progressBox.style.display = "none";
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-film"></i> &nbsp;RE-RENDER VIDEO';
-    previewSec.scrollIntoView({ behavior:"smooth", block:"start" });
-  };
+  await new Promise(resolve => {
+    recorder.onstop = resolve;
 
-  recorder.start(100); // collect data every 100ms
+    let frameIdx = 0;
+    const msPerFrame = 1000 / fps;
 
-  const sceneRenderers = {
-    globe:       renderSceneGlobe,
-    dashboard:   renderSceneDashboard,
-    code:        renderSceneCode,
-    network:     renderSceneNetwork,
-    transaction: renderSceneTransaction,
-    logo:        renderSceneLogo,
-    title:       renderSceneTitle,
-    cta:         renderSceneCTA,
-  };
+    recorder.start(200);
 
-  for (let si = 0; si < scenes.length; si++) {
-    const raw   = scenes[si];
-    const scene = typeof raw==="object" ? raw : {scene:si+1,duration:"",visual:"",overlay:raw,voiceover:"",mood:""};
-    const type  = msDetectSceneType(scene);
-    const renderFn = sceneRenderers[type] || renderSceneTitle;
-    const dur   = sceneDurs[si];
-    const frames= Math.round(dur * fps);
+    // Draw first frame immediately so stream has content before interval fires
+    liveCtx.putImageData(allFrames[0], 0, 0);
 
-    progressLabel.textContent = `Scene ${si+1}/${scenes.length} — ${type}`;
-    progressBar.style.width = `${Math.round((si/scenes.length)*100)}%`;
-
-    for (let f = 0; f < frames; f++) {
-      const t = f / frames; // 0→1
-
-      // Cross-fade transition: last 8% of scene fades out, first 8% fades in
-      const fadeIn  = t < 0.08 ? easeIn(t/0.08) : 1;
-      const fadeOut = t > 0.92 ? easeIn((1-t)/0.08) : 1;
-      const masterAlpha = Math.min(fadeIn, fadeOut);
-
-      // Render the scene
-      renderFn(ctx, W, H, t, pal, scene);
-
-      // Transition overlay (cross-fade)
-      if (masterAlpha < 1) {
-        ctx.save();
-        ctx.globalAlpha = 1 - masterAlpha;
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(0,0,W,H);
-        ctx.restore();
+    const interval = setInterval(() => {
+      if (frameIdx >= allFrames.length) {
+        clearInterval(interval);
+        setTimeout(() => recorder.stop(), 300);
+        return;
       }
+      liveCtx.putImageData(allFrames[frameIdx], 0, 0);
+      frameIdx++;
 
-      // HUD always on top
-      drawHUD(ctx, W, H, pal, si+1, scenes.length, t);
+      const pct = 50 + Math.round((frameIdx / allFrames.length) * 50);
+      progressBar.style.width = `${pct}%`;
+      progressLabel.textContent = `Recording… ${Math.round(frameIdx/fps)}s / ${totalSecs}s`;
+    }, msPerFrame);
+  });
 
-      if (f % 4 === 0) await new Promise(r => setTimeout(r, 0));
-    }
-  }
-
-  progressBar.style.width = "100%";
-  progressLabel.textContent = "Finalising…";
-  await new Promise(r => setTimeout(r, 200));
-  recorder.stop();
+  _msVideoBlob = new Blob(chunks, { type:"video/webm" });
+  videoEl.src  = URL.createObjectURL(_msVideoBlob);
+  previewSec.style.display  = "block";
+  progressBox.style.display = "none";
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa-solid fa-film"></i> &nbsp;RE-RENDER VIDEO';
+  previewSec.scrollIntoView({ behavior:"smooth", block:"start" });
 }
 
 function msDownloadVideo() {
