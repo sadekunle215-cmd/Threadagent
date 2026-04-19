@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <script src="https://js.paystack.co/v2/inline.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -261,20 +261,21 @@
     .page-header{display:flex;align-items:center;gap:14px;padding:20px 0 16px;border-bottom:1px solid var(--border);margin-bottom:24px}
     .btn-back{background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-family:var(--mono);font-size:11px;padding:7px 12px;cursor:pointer;transition:all .2s;white-space:nowrap}
     .btn-back:hover{border-color:var(--red);color:var(--red)}
-    .page-title{font-family:var(--display);font-size:22px;letter-spacing:2px;color:var(--text)}
+    .page-title{font-family:var(--display);font-size:22px;letter-spacing:2px;color:var(--text);display:flex;align-items:center;gap:10px}.page-title i{color:var(--red);font-size:18px}
 
     /* ══ HOME HERO — WELCOME CARD ══ */
     .home-hero{background:linear-gradient(135deg,var(--surface) 0%,rgba(224,22,26,.1) 100%);border:1px solid rgba(224,22,26,.25);border-radius:20px;padding:28px 24px;margin:20px 0 24px;position:relative;overflow:hidden;box-shadow:0 0 40px rgba(224,22,26,.07)}
     .home-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(224,22,26,.18) 0%,transparent 70%);pointer-events:none}
     .home-hero::after{content:'';position:absolute;bottom:-40px;left:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(245,166,35,.08) 0%,transparent 70%);pointer-events:none}
-    .home-welcome-text{font-family:var(--mono);font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted2);margin-bottom:6px}
+    .home-welcome-text{font-family:var(--mono);font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted2);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+    .home-welcome-text i{color:var(--red);font-size:13px}
     .home-email-display{font-family:var(--sans);font-size:15px;font-weight:700;color:var(--text);letter-spacing:.3px;margin-bottom:20px;word-break:break-all}
     .home-balance-row{display:flex;align-items:stretch;gap:12px}
     .home-balance-card{flex:1;background:rgba(0,0,0,.45);border:1px solid rgba(224,22,26,.2);border-radius:14px;padding:16px 18px;backdrop-filter:blur(4px)}
-    .home-balance-lbl{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:5px}
-    .home-balance-lbl::before{content:'💰'}
+    .home-balance-lbl{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+    .home-balance-lbl i{color:var(--accent2)}
     .home-balance-amount{font-family:var(--display);font-size:36px;letter-spacing:3px;color:var(--accent2);line-height:1;text-shadow:0 0 20px rgba(245,166,35,.25)}
-    .home-topup-btn{background:linear-gradient(135deg,var(--red2),var(--red3));color:#fff;border:none;border-radius:14px;font-family:var(--display);font-size:15px;letter-spacing:2px;padding:0 22px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .2s;box-shadow:0 4px 20px rgba(224,22,26,.35);min-height:72px;display:flex;align-items:center;justify-content:center}
+    .home-topup-btn{background:linear-gradient(135deg,var(--red2),var(--red3));color:#fff;border:none;border-radius:14px;font-family:var(--display);font-size:15px;letter-spacing:2px;padding:0 22px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .2s;box-shadow:0 4px 20px rgba(224,22,26,.35);min-height:72px;display:flex;align-items:center;justify-content:center;gap:8px}
     .home-topup-btn:hover{opacity:.9;transform:translateY(-2px);box-shadow:0 8px 28px rgba(224,22,26,.45)}
 
     /* ══ QUICK ACTION GRID ══ */
@@ -282,7 +283,7 @@
     .qa-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 14px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:6px}
     .qa-card:hover{border-color:var(--red);background:var(--surface2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(224,22,26,.1)}
     .qa-card:active{transform:translateY(0)}
-    .qa-icon{font-size:1.6rem;line-height:1}
+    .qa-icon{font-size:1.5rem;line-height:1;color:var(--red);width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:rgba(224,22,26,.1);border-radius:10px}
     .qa-label{font-family:var(--display);font-size:16px;letter-spacing:1.5px;color:var(--text)}
     .qa-desc{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.5px}
 
@@ -381,7 +382,7 @@
 </div>
 
 <!-- ══ BALANCE TOAST ══ -->
-<div id="balanceToast">&#9888; Insufficient balance — please top up to continue</div>
+<div id="balanceToast">⚠ Insufficient balance — please top up</div>
 
 
 <div id="appRoot">
@@ -391,36 +392,36 @@
   <div class="container">
     <!-- Hero Welcome -->
     <div class="home-hero">
-      <div class="home-welcome-text">WELCOME BACK 👋</div>
+      <div class="home-welcome-text"><i class="fa-solid fa-circle-user"></i> WELCOME BACK</div>
       <div class="home-email-display" id="homeEmail">—</div>
       <div class="home-balance-row">
         <div class="home-balance-card">
-          <div class="home-balance-lbl">Wallet Balance</div>
+          <div class="home-balance-lbl"><i class="fa-solid fa-coins"></i> Wallet Balance</div>
           <div class="home-balance-amount" id="homeBalanceVal">&#8358;0</div>
         </div>
-        <button class="home-topup-btn" onclick="openTopup()">&#8679; Top Up</button>
+        <button class="home-topup-btn" onclick="openTopup()"><i class="fa-solid fa-arrow-up"></i> Top Up</button>
       </div>
     </div>
 
     <!-- Quick Action Grid -->
     <div class="qa-grid">
       <div class="qa-card" onclick="showPage('pageSolveGig')">
-        <div class="qa-icon">🎯</div>
+        <div class="qa-icon"><i class="fa-solid fa-bullseye"></i></div>
         <div class="qa-label">Solve Gig</div>
         <div class="qa-desc">Analyse &amp; build threads</div>
       </div>
       <div class="qa-card" onclick="showPage('pageCreateGraphics')">
-        <div class="qa-icon">🎨</div>
+        <div class="qa-icon"><i class="fa-solid fa-palette"></i></div>
         <div class="qa-label">Create Graphics</div>
         <div class="qa-desc">Standalone text cards</div>
       </div>
       <div class="qa-card" onclick="showPage('pageCreateInfographic')">
-        <div class="qa-icon">📊</div>
+        <div class="qa-icon"><i class="fa-solid fa-chart-column"></i></div>
         <div class="qa-label">Infographics</div>
         <div class="qa-desc">AI-powered visuals</div>
       </div>
       <div class="qa-card" onclick="showPage('pageCreateThread')">
-        <div class="qa-icon">🧵</div>
+        <div class="qa-icon"><i class="fa-solid fa-pen-nib"></i></div>
         <div class="qa-label">Create Thread</div>
         <div class="qa-desc">Write without a gig</div>
       </div>
@@ -441,7 +442,7 @@
   <div class="container">
     <div class="page-header">
       <button class="btn-back" onclick="showPage('pageHome')"><i class="fa fa-arrow-left"></i> Back</button>
-      <div class="page-title">🎯 SOLVE GIG</div>
+      <div class="page-title"><i class="fa-solid fa-bullseye"></i> SOLVE GIG</div>
     </div>
     <div class="form-section">
       <div class="step-label">Step 1 — Paste your gig URL</div>
@@ -452,7 +453,7 @@
         </div>
         <div class="fetch-status" id="fetchStatus">
           <div class="fetch-dot"></div>
-          <span>Fetching page and extracting brief, please wait...</span>
+          <span>Fetching page and extracting brief...</span>
         </div>
         <div class="brief-card" id="briefCard">
           <div class="brief-card-header">
@@ -470,7 +471,7 @@
           </div>
           <div id="thinBriefWarning" style="display:none;margin-top:14px;padding:12px 14px;background:#1a1200;border:1px solid #ff6b3555;border-radius:10px">
             <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:#ff6b35;margin-bottom:6px">⚠ DETAILS INCOMPLETE</div>
-            <div style="font-size:12px;color:#888;margin-bottom:10px">This page loads dynamically — the scraper couldn't retrieve all the task details. Paste the bounty description below so the AI can write the right content.</div>
+            <div style="font-size:12px;color:#888;margin-bottom:10px">This page loads via JavaScript — the scraper missed the task details. Paste the bounty description below so the AI writes the right thing.</div>
             <button onclick="var a=document.getElementById('manualBriefArea');a.style.display=a.style.display==='none'?'block':'none'" style="background:transparent;border:1px solid #333;border-radius:8px;color:#aaa;font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:6px 12px;cursor:pointer">+ PASTE BRIEF DETAILS</button>
             <div id="manualBriefArea" style="display:none;margin-top:10px">
               <textarea id="manualBriefText" placeholder="Paste the full task description here..." style="width:100%;min-height:100px;background:#111;border:1px solid #333;border-radius:10px;color:#ddd;font-family:var(--sans);font-size:13px;padding:10px;resize:vertical;outline:none"></textarea>
@@ -483,7 +484,7 @@
       <div class="step-label">Step 2 — Configure your thread</div>
       <div class="field">
         <label>Topic *</label>
-        <input type="text" id="topic" placeholder="e.g. Why most developers never ship their side projects" />
+        <input type="text" id="topic" placeholder="e.g. Why most devs never ship their side projects" />
       </div>
       <div class="field">
         <label>Extra context (optional)</label>
@@ -562,13 +563,13 @@
   <div class="container">
     <div class="page-header">
       <button class="btn-back" onclick="showPage('pageHome')"><i class="fa fa-arrow-left"></i> Back</button>
-      <div class="page-title">🧵 CREATE THREAD</div>
+      <div class="page-title"><i class="fa-solid fa-pen-nib"></i> CREATE THREAD</div>
     </div>
     <div class="form-section">
       <div class="step-label">Configure your thread</div>
       <div class="field">
         <label>Topic *</label>
-        <input type="text" id="ct-topic" placeholder="e.g. Why most developers never ship their side projects" />
+        <input type="text" id="ct-topic" placeholder="e.g. Why most devs never ship their side projects" />
       </div>
       <div class="field">
         <label>Extra context (optional)</label>
@@ -647,7 +648,7 @@
   <div class="container">
     <div class="page-header">
       <button class="btn-back" onclick="showPage('pageHome')"><i class="fa fa-arrow-left"></i> Back</button>
-      <div class="page-title">🎨 CREATE GRAPHICS</div>
+      <div class="page-title"><i class="fa-solid fa-palette"></i> CREATE GRAPHICS</div>
     </div>
     <div class="form-section">
       <div class="step-label">Configure your text card</div>
@@ -692,13 +693,13 @@
   <div class="container">
     <div class="page-header">
       <button class="btn-back" onclick="showPage('pageHome')"><i class="fa fa-arrow-left"></i> Back</button>
-      <div class="page-title">📊 CREATE INFOGRAPHIC</div>
+      <div class="page-title"><i class="fa-solid fa-chart-column"></i> CREATE INFOGRAPHIC</div>
     </div>
     <div class="form-section">
       <div class="step-label">Configure your infographic</div>
       <div class="field">
         <label>Topic / Tweet Text *</label>
-        <textarea id="inf-text" placeholder="Describe what you'd like the infographic to visualise..." style="min-height:120px"></textarea>
+        <textarea id="inf-text" placeholder="Describe what you want the infographic to visualise..." style="min-height:120px"></textarea>
       </div>
       <div class="brand-color-row">
         <label>Card Style</label>
@@ -1449,9 +1450,9 @@ auth.onAuthStateChanged(async user => {
     currentUser = user;
     document.getElementById("authScreen").classList.add("hidden");
     document.getElementById("walletBar").classList.add("visible");
+    await ensureUserDoc(user);
     const homeEmailEl = document.getElementById("homeEmail");
     if (homeEmailEl) homeEmailEl.textContent = user.email;
-    await ensureUserDoc(user);
     listenBalance(user.uid);
     loadTransactions(user.uid);
   } else {
@@ -1488,11 +1489,11 @@ function loadTransactions(uid) {
     .orderBy("createdAt","desc").limit(20)
     .onSnapshot(snap => {
       const list = document.getElementById("txList");
-      if (snap.empty) { list.innerHTML = '<div class="tx-empty">No transactions yet — top up your wallet to get started.</div>'; return; }
+      if (snap.empty) { list.innerHTML = '<div class="tx-empty">No transactions yet. Top up your wallet to get started.</div>'; return; }
       list.innerHTML = snap.docs.map(doc => {
         const d = doc.data();
         const isCredit = d.amount > 0;
-        const icon = isCredit ? "💳" : "⚡";
+        const icon = isCredit ? '<i class="fa-solid fa-credit-card"></i>' : '<i class="fa-solid fa-bolt"></i>';
         const cls  = isCredit ? "credit" : "debit";
         const amtCls = isCredit ? "plus" : "minus";
         const sign = isCredit ? "+" : "";
@@ -1551,7 +1552,7 @@ async function doLogout() {
 
 // ── Wallet deduction ──
 async function deduct(amount, description) {
-  if (!currentUser) { showBalanceToast("Please log in to continue."); return false; }
+  if (!currentUser) { showBalanceToast("Please log in."); return false; }
   if (userBalance < amount) {
     showBalanceToast(`Insufficient balance — need \u20A6${amount}, you have \u20A6${userBalance}`);
     openTopup();
@@ -1567,7 +1568,7 @@ async function deduct(amount, description) {
     });
     return true;
   } catch(e) {
-    showBalanceToast("Transaction failed — please try again.");
+    showBalanceToast("Transaction failed — try again.");
     return false;
   }
 }
@@ -1605,7 +1606,7 @@ function selectTopup(amount, btn) {
 
 function doTopup() {
   if (!selectedTopup || !currentUser) return;
-  if (typeof PaystackPop === 'undefined') {
+  if (typeof PaystackPop === "undefined") {
     showBalanceToast("Payment system not loaded — please refresh the page.");
     return;
   }
@@ -1613,35 +1614,33 @@ function doTopup() {
   payBtn.disabled = true;
   payBtn.textContent = "Opening payment...";
   try {
-    const handler = PaystackPop.setup({
+    const popup = new PaystackPop();
+    popup.newTransaction({
       key: "pk_live_6c1cdedbdf2881240c8c6bebe10d846d8019f6e4",
       email: currentUser.email,
       amount: selectedTopup * 100,
       currency: "NGN",
       ref: "TC-TOPUP-" + Date.now(),
-      metadata: { custom_fields: [{ display_name: "Top-up", variable_name: "topup", value: selectedTopup }] },
-      onClose() {
-        payBtn.disabled = false;
-        payBtn.textContent = `Pay \u20A6${selectedTopup.toLocaleString()} \u2192`;
-      },
-      async callback(response) {
+      onSuccess: async function(transaction) {
         payBtn.textContent = "Confirming...";
-        // Credit wallet
         await db.collection("users").doc(currentUser.uid).update({
           balance: firebase.firestore.FieldValue.increment(selectedTopup)
         });
         await db.collection("users").doc(currentUser.uid).collection("transactions").add({
-          amount: selectedTopup, description: "Wallet top-up", ref: response.reference,
+          amount: selectedTopup, description: "Wallet top-up", ref: transaction.reference,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         closeTopup();
-        showBalanceToast(`\u20A6${selectedTopup.toLocaleString()} added to your wallet!`, true);
+        showBalanceToast("\u20A6" + selectedTopup.toLocaleString() + " added to your wallet!", true);
+      },
+      onCancel: function() {
+        payBtn.disabled = false;
+        payBtn.textContent = "Pay \u20A6" + selectedTopup.toLocaleString() + " \u2192";
       }
     });
-    handler.openIframe();
   } catch(e) {
     payBtn.disabled = false;
-    payBtn.textContent = `Pay \u20A6${selectedTopup.toLocaleString()} \u2192`;
+    payBtn.textContent = "Pay \u20A6" + selectedTopup.toLocaleString() + " \u2192";
     showBalanceToast("Payment failed to open — check your connection.");
   }
 }
