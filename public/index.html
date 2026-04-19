@@ -20,10 +20,14 @@
     body{background:var(--black);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
     body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4}
     .container{max-width:780px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
-    header{padding:48px 0 32px;border-bottom:1px solid var(--border);margin-bottom:48px}
+    header{padding:48px 0 32px;border-bottom:1px solid var(--border);margin-bottom:48px;position:relative}
+    header::before{content:'';position:absolute;top:-40px;left:-40px;width:500px;height:300px;background:radial-gradient(ellipse at 30% 40%,rgba(99,102,241,0.12) 0%,rgba(168,85,247,0.06) 40%,transparent 70%);pointer-events:none;z-index:0}
+    header::after{content:'';position:absolute;top:0;right:-20px;width:300px;height:200px;background:radial-gradient(ellipse at 70% 30%,rgba(255,107,53,0.07) 0%,transparent 60%);pointer-events:none;z-index:0}
     .logo-row{display:flex;align-items:baseline;gap:12px;margin-bottom:8px}
-    .logo{font-family:"Inter",sans-serif;font-weight:700;font-size:48px;letter-spacing:-1px;color:#a5b4fc;line-height:1}
+    .logo{font-family:"Inter",sans-serif;font-weight:800;font-size:52px;letter-spacing:-1px;color:#c7d2fe;line-height:1;text-shadow:0 0 30px rgba(165,180,252,0.7),0 0 60px rgba(165,180,252,0.35),0 0 100px rgba(165,180,252,0.15);animation:logoGlow 3s ease-in-out infinite alternate}
+    @keyframes logoGlow{0%{text-shadow:0 0 20px rgba(165,180,252,0.5),0 0 50px rgba(165,180,252,0.25)}100%{text-shadow:0 0 40px rgba(165,180,252,0.9),0 0 80px rgba(165,180,252,0.5),0 0 120px rgba(165,180,252,0.2)}}
     .logo-tag{font-family:var(--mono);font-size:11px;color:var(--muted2);letter-spacing:3px;text-transform:uppercase;border:1px solid var(--border2);padding:3px 8px}
+    .logo-accent{color:#ff6b35;text-shadow:0 0 20px rgba(255,107,53,0.8),0 0 50px rgba(255,107,53,0.4)}
     .tagline{font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:.5px}
     .step-label{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:20px;display:flex;align-items:center;gap:10px}
     .step-label::after{content:'';flex:1;height:1px;background:var(--border)}
@@ -88,17 +92,17 @@
     .btn-copy-all:hover{border-color:#6366f1;color:#a5b4fc}
     .btn-dl-all:hover{border-color:var(--accent2);color:var(--accent2)}
     .tweet-list{display:flex;flex-direction:column}
-    .tweet-card{background:var(--surface);border:1px solid var(--border);border-top:none;padding:20px;transition:background .15s;animation:fadeUp .3s ease forwards;animation-delay:calc(var(--i)*.04s);opacity:0}
+    .tweet-card{background:var(--surface);border:1px solid var(--border);border-top:none;padding:24px;transition:background .15s;animation:fadeUp .3s ease forwards;animation-delay:calc(var(--i)*.04s);opacity:0}
     .tweet-card:first-child{border-top:1px solid var(--border)}
-    .tweet-card:hover{background:#131313}
-    .tweet-card.hook{border-left:3px solid #6366f1}
-    .tweet-card.cta{border-left:3px solid var(--accent2)}
-    .tweet-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-    .tweet-num{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:1px}
+    .tweet-card:hover{background:#141414}
+    .tweet-card.hook{border-left:3px solid #6366f1;box-shadow:inset 4px 0 20px rgba(99,102,241,0.05)}
+    .tweet-card.cta{border-left:3px solid var(--accent2);box-shadow:inset 4px 0 20px rgba(255,107,53,0.05)}
+    .tweet-num{font-family:var(--mono);font-size:11px;color:#666;letter-spacing:1px}
+    .tweet-text{font-size:16px;line-height:1.8;color:#e8e8e8;white-space:pre-wrap;word-break:break-word;margin-top:4px;font-weight:400}
+    .tweet-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
     .tweet-badge{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:2px 7px;border:1px solid}
     .tweet-badge.hook-badge{color:#a5b4fc;border-color:#6366f1}
     .tweet-badge.cta-badge{color:var(--accent2);border-color:var(--accent2)}
-    .tweet-text{font-size:15px;line-height:1.7;color:var(--text);white-space:pre-wrap;word-break:break-word}
     .tweet-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
     .tweet-footer-right{display:flex;align-items:center;gap:4px}
     .char-count{font-family:var(--mono);font-size:11px;color:var(--muted)}
@@ -111,6 +115,10 @@
     .btn-ai-graphic{background:transparent;border:none;color:var(--muted2);font-family:var(--mono);font-size:11px;cursor:pointer;padding:4px 8px;transition:color .2s;letter-spacing:1px}
     .btn-ai-graphic:hover{color:#a5b4fc}
     .btn-ai-graphic:disabled{opacity:.4;cursor:not-allowed}
+    .locked-infographic{background:transparent;border:1px solid #2a1a1a;color:#c0392b;font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:4px 10px;cursor:pointer;transition:all .2s}
+    .locked-infographic:hover{background:#1a0808;border-color:#c0392b;box-shadow:0 0 10px rgba(192,57,43,0.3)}
+    .locked-infographic.generating{color:#555;cursor:not-allowed;border-color:#222}
+    .locked-infographic.done{color:#22c55e;border-color:#22c55e33;cursor:default}
 
     /* ── Gradient Style Picker ── */
     .brand-color-row{background:var(--surface);border:1px solid var(--border);padding:16px;margin-bottom:20px}
@@ -153,12 +161,13 @@
     .pricing-pill{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:#555;border:1px solid #1e1e1e;padding:6px 12px;text-align:right;line-height:1.8}
     .pricing-pill span{color:#c0392b}
     .hero-divider{height:1px;background:linear-gradient(90deg,transparent,#c0392b44,#c0392b22,transparent);margin:0 0 24px}
-    .hero-stats{display:flex;gap:0;border:1px solid #1a1a1a}
-    .hero-stat{flex:1;padding:14px 20px;border-right:1px solid #1a1a1a;position:relative}
+    .hero-stats{display:flex;gap:0;border:1px solid #2a1a1a}
+    .hero-stat{flex:1;padding:14px 20px;border-right:1px solid #2a1a1a;position:relative;background:linear-gradient(135deg,#0f0f0f 0%,#1a0a0a 100%);transition:all .3s;box-shadow:inset 0 0 30px rgba(192,57,43,0.04)}
+    .hero-stat:hover{box-shadow:0 0 20px rgba(192,57,43,0.2),inset 0 0 30px rgba(192,57,43,0.08);border-color:#3a1a1a}
     .hero-stat:last-child{border-right:none}
-    .hero-stat-val{font-family:var(--display);font-size:26px;color:#fff;letter-spacing:1px;line-height:1}
-    .hero-stat-val em{color:#c0392b;font-style:normal}
-    .hero-stat-lbl{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#444;margin-top:4px}
+    .hero-stat-val{font-family:var(--display);font-size:28px;color:#fff;letter-spacing:1px;line-height:1;font-weight:700}
+    .hero-stat-val em{color:#ff4444;font-style:normal;text-shadow:0 0 15px rgba(255,68,68,0.6)}
+    .hero-stat-lbl{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#555;margin-top:6px}
 
     /* ══ PRICING MODAL ══ */
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
@@ -212,30 +221,22 @@
 <div class="modal-overlay" id="payModal">
   <div class="modal">
     <div class="modal-title">CONFIRM ORDER</div>
-    <div class="modal-sub">// review your selections before paying</div>
+    <div class="modal-sub">// pay for your thread — infographics are per-tweet after</div>
 
     <div class="modal-section">
-      <div class="modal-label">Thread Images</div>
-      <div class="modal-toggle-row">
-        <span>Generate an image for <strong>every tweet</strong>?</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="allImagesToggle" onchange="onToggleAllImages()" />
-          <span class="toggle-slider"></span>
-        </label>
+      <div class="modal-label">Thread Generation</div>
+      <div class="modal-toggle-row" style="cursor:default">
+        <span>Tweets × <strong id="modalTweetCount">—</strong> at &#8358;30 each</span>
+        <span style="font-family:var(--mono);font-size:12px;color:#6366f1">THREAD ONLY</span>
       </div>
-      <div class="modal-img-count" id="imgCountRow">
-        <span>Or choose how many images:</span>
-        <div class="img-count-ctrl">
-          <button onclick="adjustImgCount(-1)">−</button>
-          <div class="img-count-val" id="imgCountVal">0</div>
-          <button onclick="adjustImgCount(1)">+</button>
-        </div>
+      <div style="font-family:var(--mono);font-size:10px;color:#444;letter-spacing:1px;padding:10px 0 0">
+        ✦ Infographics unlocked per-tweet after generation — &#8358;200 each
       </div>
     </div>
 
     <div class="price-breakdown" id="priceBreakdown">
       <div class="price-row"><span>Tweets</span><span class="price-val" id="priceTweets">—</span></div>
-      <div class="price-row"><span>Images (₦200 each)</span><span class="price-val" id="priceImgs">—</span></div>
+      <div class="price-row"><span>Infographics</span><span class="price-val" id="priceImgs">pay per tweet</span></div>
       <div class="price-row total"><span>Total</span><span class="price-val" id="priceTotal">—</span></div>
     </div>
 
@@ -255,19 +256,19 @@
       </div>
       <div class="hero-right">
         <div class="pricing-pill">
-          <span>₦40</span> / tweet<br>
-          <span>₦200</span> / infographic
+          <span>&#8358;30</span> / tweet<br>
+          <span>&#8358;200</span> / infographic
         </div>
       </div>
     </div>
     <div class="hero-divider"></div>
     <div class="hero-stats">
       <div class="hero-stat">
-        <div class="hero-stat-val"><em>40</em></div>
+        <div class="hero-stat-val"><em>&#8358;30</em></div>
         <div class="hero-stat-lbl">Naira per tweet</div>
       </div>
       <div class="hero-stat">
-        <div class="hero-stat-val"><em>200</em></div>
+        <div class="hero-stat-val"><em>&#8358;200</em></div>
         <div class="hero-stat-lbl">Naira per image</div>
       </div>
       <div class="hero-stat">
@@ -845,6 +846,40 @@ function drawTextCard(id, text, idx, total, isHook, isCTA) {
   const TEXT_MED=darkText?"#475569":"rgba(255,255,255,0.7)";
   const ACCENT=darkText?c1:"#ffffff";
   ctx.fillStyle=makeGrad(ctx,W,H,c1,c2); ctx.fillRect(0,0,W,H);
+
+  // ── Context-aware background watermark ──
+  const lower = text.toLowerCase();
+  ctx.save();
+  ctx.globalAlpha = 0.06;
+  ctx.fillStyle = darkText ? "#000" : "#fff";
+  if (lower.includes("pay") || lower.includes("bill") || lower.includes("₦") || lower.includes("naira") || lower.includes("money") || lower.includes("payment") || lower.includes("transfer") || lower.includes("cash")) {
+    // Bill payment: draw ₦ symbols scattered
+    ctx.font = "bold 220px 'Inter',sans-serif";
+    ctx.textBaseline = "middle"; ctx.textAlign = "center";
+    [[W*0.82, H*0.5],[W*0.15, H*0.75],[W*0.65, H*0.2]].forEach(([x,y]) => ctx.fillText("₦", x, y));
+    // Draw simple phone outline
+    ctx.strokeStyle = darkText ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.07)";
+    ctx.lineWidth = 8;
+    ctx.beginPath(); ctx.roundRect(W*0.75, H*0.1, 120, 200, 16); ctx.stroke();
+  } else if (lower.includes("solana") || lower.includes("sol") || lower.includes("blockchain") || lower.includes("crypto") || lower.includes("defi") || lower.includes("token") || lower.includes("wallet")) {
+    // Crypto/Solana: draw hexagon network nodes
+    ctx.strokeStyle = darkText ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.08)";
+    ctx.lineWidth = 3;
+    const nodes = [[W*0.78,H*0.25],[W*0.88,H*0.55],[W*0.72,H*0.7],[W*0.15,H*0.3],[W*0.2,H*0.65]];
+    nodes.forEach(([x,y]) => { ctx.beginPath(); ctx.arc(x,y,30,0,Math.PI*2); ctx.stroke(); });
+    for(let i=0;i<nodes.length-1;i++){ctx.beginPath();ctx.moveTo(nodes[i][0],nodes[i][1]);ctx.lineTo(nodes[i+1][0],nodes[i+1][1]);ctx.stroke();}
+  } else if (lower.includes("write") || lower.includes("content") || lower.includes("thread") || lower.includes("story") || lower.includes("article")) {
+    // Writing: draw subtle lines like notebook paper
+    ctx.strokeStyle = darkText ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.05)";
+    ctx.lineWidth = 2;
+    for(let y=120;y<H-80;y+=60){ctx.beginPath();ctx.moveTo(W*0.6,y);ctx.lineTo(W*0.95,y);ctx.stroke();}
+  } else if (lower.includes("nig") || lower.includes("lagos") || lower.includes("africa") || lower.includes("naija")) {
+    // Nigeria: draw map-like curved lines
+    ctx.strokeStyle = darkText ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.07)";
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(W*0.85, H*0.45, 180, 0, Math.PI*1.4); ctx.stroke();
+  }
+  ctx.restore();
   ctx.fillStyle=darkText?"rgba(255,255,255,0.6)":"rgba(0,0,0,0.2)"; ctx.fillRect(0,0,W,72);
   ctx.font="500 14px 'DM Mono',monospace"; ctx.fillStyle=TEXT_MED; ctx.textBaseline="middle";
   ctx.fillText(`${String(idx+1).padStart(2,"0")} / ${String(total).padStart(2,"0")}`,40,36);
@@ -961,10 +996,15 @@ async function generateGraphic(btn, index) {
     dlBtn.textContent = "↓ Download Infographic (1600×900)";
     dlBtn.onclick = () => downloadGraphic(index);
     wrap.appendChild(dlBtn);
+    // Mark the pay button as done
+    const infobtn = document.getElementById(`infobtn-${index}`);
+    if (infobtn) { infobtn.textContent = "✓ done"; infobtn.classList.add("done"); infobtn.classList.remove("generating"); infobtn.onclick = null; }
     btn.textContent = "✦ regenerate"; btn.disabled = false;
 
   } catch(err) {
     loading.classList.remove("visible");
+    const infobtn2 = document.getElementById(`infobtn-${index}`);
+    if (infobtn2) { infobtn2.textContent = "\u20A6200 retry"; infobtn2.classList.remove("generating"); infobtn2.onclick = () => payForInfographic(index); paidInfographics.delete(index); }
     btn.textContent = "✦ infographic"; btn.disabled = false;
     showError(`Graphic ${index+1}: ${err.message}`);
   }
@@ -1070,7 +1110,7 @@ function renderThread(tweets){
         <div class="tweet-footer-right">
           <button class="btn-copy-tweet" onclick="copyTweet(this,${i})">copy</button>
           <button class="btn-dl-card" onclick="toggleCard(this,${i})">↓ text card</button>
-          <button class="btn-ai-graphic" onclick="generateGraphic(this,${i})">✦ infographic</button>
+          <button class="btn-ai-graphic locked-infographic" onclick="payForInfographic(${i})" id="infobtn-${i}">&#8358;200 infographic</button>
         </div>
       </div>
       <div class="tweet-visual" id="visual-${i}">
@@ -1100,7 +1140,7 @@ document.getElementById("gigUrl").addEventListener("keydown",e=>{if(e.key==="Ent
 document.getElementById("topic").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey)handleGenerateClick();});
 
 // ─── PAYMENT STATE ────────────────────────────────────────────────────────────
-const PRICE_TWEET = 40;   // ₦40 per tweet
+const PRICE_TWEET = 30;   // ₦30 per tweet
 const PRICE_IMAGE = 200;  // ₦200 per image
 let paymentState = {
   paid: false,
@@ -1134,9 +1174,8 @@ function openPayModal(tweetCount) {
   paymentState.tweetCount = tweetCount;
   paymentState.imageCount = 0;
   paymentState.allImages = false;
-  document.getElementById("allImagesToggle").checked = false;
-  document.getElementById("imgCountRow").classList.remove("visible");
-  document.getElementById("imgCountVal").textContent = "0";
+  const mc = document.getElementById("modalTweetCount");
+  if (mc) mc.textContent = tweetCount;
   updatePriceBreakdown();
   document.getElementById("payModal").classList.add("visible");
 }
@@ -1145,43 +1184,18 @@ function closeModal() {
   document.getElementById("payModal").classList.remove("visible");
 }
 
-function onToggleAllImages() {
-  const checked = document.getElementById("allImagesToggle").checked;
-  paymentState.allImages = checked;
-  const row = document.getElementById("imgCountRow");
-  if (checked) {
-    paymentState.imageCount = paymentState.tweetCount;
-    document.getElementById("imgCountVal").textContent = paymentState.tweetCount;
-    row.classList.remove("visible");
-  } else {
-    row.classList.add("visible");
-  }
-  updatePriceBreakdown();
-}
-
-function adjustImgCount(delta) {
-  const max = paymentState.tweetCount;
-  paymentState.imageCount = Math.max(0, Math.min(max, paymentState.imageCount + delta));
-  document.getElementById("imgCountVal").textContent = paymentState.imageCount;
-  updatePriceBreakdown();
-}
-
 function updatePriceBreakdown() {
   const tc = paymentState.tweetCount;
-  const ic = paymentState.allImages ? tc : paymentState.imageCount;
   const tweetCost = tc * PRICE_TWEET;
-  const imgCost   = ic * PRICE_IMAGE;
-  const total     = tweetCost + imgCost;
-  document.getElementById("priceTweets").textContent = `₦${tweetCost.toLocaleString()}`;
-  document.getElementById("priceImgs").textContent   = ic > 0 ? `₦${imgCost.toLocaleString()}` : "₦0";
-  document.getElementById("priceTotal").textContent  = `₦${total.toLocaleString()}`;
-  document.getElementById("btnPay").textContent = `PAY ₦${total.toLocaleString()} WITH PAYSTACK`;
+  document.getElementById("priceTweets").textContent = `\u20A6${tweetCost.toLocaleString()}`;
+  document.getElementById("priceImgs").textContent   = `\u20A60 (pay per tweet)`;
+  document.getElementById("priceTotal").textContent  = `\u20A6${tweetCost.toLocaleString()}`;
+  document.getElementById("btnPay").textContent = `PAY \u20A6${tweetCost.toLocaleString()} WITH PAYSTACK`;
 }
 
 function initiatePayment() {
-  const tc   = paymentState.tweetCount;
-  const ic   = paymentState.allImages ? tc : paymentState.imageCount;
-  const total = (tc * PRICE_TWEET + ic * PRICE_IMAGE) * 100; // kobo
+  const tc    = paymentState.tweetCount;
+  const total = tc * PRICE_TWEET * 100; // kobo — threads only
 
   const emailInput = prompt("Enter your email for payment receipt:");
   if (!emailInput || !emailInput.includes("@")) {
@@ -1189,9 +1203,7 @@ function initiatePayment() {
     return;
   }
   paymentState.email = emailInput;
-
-  // Save intent so we can restore after bank redirect (OPay/3DS)
-  savePaymentIntent(tc, ic, emailInput);
+  savePaymentIntent(tc, 0, emailInput);
 
   const handler = PaystackPop.setup({
     key: "pk_live_6c1cdedbdf2881240c8c6bebe10d846d8019f6e4",
@@ -1202,20 +1214,52 @@ function initiatePayment() {
     redirect_url: window.location.href.split("?")[0],
     metadata: {
       custom_fields: [
-        { display_name: "Tweets", variable_name: "tweets", value: tc },
-        { display_name: "Images", variable_name: "images", value: ic }
+        { display_name: "Tweets", variable_name: "tweets", value: tc }
       ]
     },
-    onClose() {
-      // user closed without paying — do nothing
-    },
+    onClose() {},
     callback(response) {
-      // Payment successful
       paymentState.paid = true;
-      paymentState.imageCount = ic;
-      paymentState.allImages = ic === tc;
       closeModal();
       unlockGenerate();
+    }
+  });
+  handler.openIframe();
+}
+
+// ─── PER-INFOGRAPHIC PAYMENT ───────────────────────────────────────────────
+const paidInfographics = new Set(); // track which tweet indices have been paid
+
+function payForInfographic(index) {
+  const btn = document.getElementById(`infobtn-${index}`);
+  if (paidInfographics.has(index)) return; // already paid
+
+  const emailInput = paymentState.email || prompt("Enter your email for receipt:");
+  if (!emailInput || !emailInput.includes("@")) {
+    alert("A valid email is required.");
+    return;
+  }
+  paymentState.email = emailInput;
+
+  const handler = PaystackPop.setup({
+    key: "pk_live_6c1cdedbdf2881240c8c6bebe10d846d8019f6e4",
+    email: emailInput,
+    amount: PRICE_IMAGE * 100, // ₦200 in kobo
+    currency: "NGN",
+    ref: "TC-IMG-" + index + "-" + Date.now(),
+    metadata: {
+      custom_fields: [
+        { display_name: "Infographic Tweet", variable_name: "tweet_index", value: index + 1 }
+      ]
+    },
+    onClose() {},
+    callback(response) {
+      paidInfographics.add(index);
+      btn.textContent = "✦ generating...";
+      btn.classList.add("generating");
+      btn.onclick = null;
+      // Trigger generation
+      generateGraphic(btn, index);
     }
   });
   handler.openIframe();
