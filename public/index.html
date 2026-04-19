@@ -1084,22 +1084,27 @@ function _list(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c
     wrapText(ctx,d.headline,pX,cY+hs+12,TEXT_MAX_X-pX,hs*1.3,cY+hs*2.8);
   }
   const top=cY+170, availH=cH-175;
-  const itemH=Math.min(116,availH/Math.max(pts.length,1));
+  // Fill all available space — no artificial 116px cap
+  const itemH=Math.floor(availH/Math.max(pts.length,1));
   pts.forEach((pt,i)=>{
     const iy=top+i*itemH;
     ctx.fillStyle=CARD_BG;
-    ctx.beginPath(); ctx.roundRect(pX,iy,TEXT_MAX_X-pX,itemH-10,8); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(pX,iy,TEXT_MAX_X-pX,itemH-12,8); ctx.fill();
     ctx.fillStyle=ACCENT;
-    ctx.beginPath(); ctx.roundRect(pX,iy,5,itemH-10,{upperLeft:8,lowerLeft:8,upperRight:0,lowerRight:0}); ctx.fill();
-    ctx.font=`700 ${Math.min(38,itemH*.38)}px 'Bebas Neue',sans-serif`;
+    ctx.beginPath(); ctx.roundRect(pX,iy,6,itemH-12,{upperLeft:8,lowerLeft:8,upperRight:0,lowerRight:0}); ctx.fill();
+    // Number badge — scale with row height, no arbitrary cap
+    const numFS=Math.min(52,Math.floor(itemH*0.42));
+    ctx.font=`700 ${numFS}px 'Bebas Neue',sans-serif`;
     ctx.fillStyle=ACCENT; ctx.textBaseline="middle"; ctx.textAlign="center";
-    ctx.fillText(String(i+1).padStart(2,"0"), pX+44, iy+(itemH-10)/2);
+    ctx.fillText(String(i+1).padStart(2,"0"), pX+52, iy+(itemH-12)/2);
     ctx.textAlign="left";
-    ctx.font=`400 ${Math.min(26,itemH*.26)}px 'DM Sans',sans-serif`; ctx.fillStyle=TEXT;
-    wrapText(ctx,pt,pX+76,iy+(itemH-10)/2-(itemH>80?12:6),TEXT_MAX_X-pX-100,itemH*.3,iy+itemH-10);
+    // Text — scale up proportionally; max 44px keeps it clean for 1-2 items
+    const textFS=Math.min(44,Math.floor(itemH*0.3));
+    ctx.font=`400 ${textFS}px 'DM Sans',sans-serif`; ctx.fillStyle=TEXT;
+    wrapText(ctx,pt,pX+92,iy+(itemH-12)/2-(itemH>100?textFS*0.5:textFS*0.35),TEXT_MAX_X-pX-110,textFS*1.35,iy+itemH-12);
     ctx.textBaseline="alphabetic";
   });
-  if(d.subtext){ctx.font="300 17px 'DM Mono',monospace"; ctx.fillStyle=TEXT_LOW; ctx.textBaseline="alphabetic"; ctx.fillText(d.subtext.toUpperCase(),pX,top+pts.length*itemH+18);}
+  if(d.subtext){ctx.font="300 17px 'DM Mono',monospace"; ctx.fillStyle=TEXT_LOW; ctx.textBaseline="alphabetic"; ctx.fillText(d.subtext.toUpperCase(),pX,top+pts.length*itemH+20);}
 }
 
 function _data(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c2,darkText,W,cY,cH,pX,TEXT_MAX_X){
@@ -1127,37 +1132,72 @@ function _data(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c
 
 function _comp(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c2,darkText,W,cY,cH,pX,TEXT_MAX_X){
   TEXT_MAX_X=TEXT_MAX_X||Math.round(W*0.58);
-  if(d.headline){
-    ctx.font="700 52px 'DM Sans',sans-serif"; ctx.fillStyle=TEXT; ctx.textBaseline="alphabetic";
-    ctx.textAlign="center"; ctx.fillText(d.headline,W/2,cY+60); ctx.textAlign="left";
-  }
-  const ct=cY+88,ch=cH-96,mid=W/2;
   const left=d.leftCol||{label:"Before",points:[]}, right=d.rightCol||{label:"After",points:[]};
-  // Left card
+  const maxItems=Math.max((left.points||[]).length,(right.points||[]).length,1);
+
+  // ── Dynamic sizing: bigger font when fewer items, tighter when many ──
+  const ptFS  = maxItems<=2?46:maxItems===3?38:maxItems===4?30:24;
+  const lineH = ptFS*1.5;
+  const labelH= 60, hdrFS=20;
+  const ct=cY+88, ch=cH-96, mid=W/2;
+  // Evenly distribute rows across the available body height
+  const bodyH = ch - labelH - 20;
+  const rowH  = Math.floor(bodyH / maxItems);
+
+  // Headline
+  if(d.headline){
+    const hfs=d.headline.length>50?38:d.headline.length>35?44:52;
+    ctx.font=`700 ${hfs}px 'DM Sans',sans-serif`; ctx.fillStyle=TEXT; ctx.textBaseline="alphabetic";
+    ctx.textAlign="center"; ctx.fillText(d.headline,W/2,cY+64); ctx.textAlign="left";
+  }
+
+  // ── Left card ──
+  const lw=mid-pX-16;
   ctx.fillStyle=darkText?"rgba(0,0,0,0.05)":"rgba(255,255,255,0.1)";
-  ctx.beginPath(); ctx.roundRect(pX,ct,mid-pX-16,ch,10); ctx.fill();
-  ctx.fillStyle=TEXT_LOW; ctx.beginPath(); ctx.roundRect(pX,ct,mid-pX-16,52,{upperLeft:10,upperRight:10,lowerLeft:0,lowerRight:0}); ctx.fill();
-  ctx.font="700 16px 'DM Mono',monospace"; ctx.fillStyle=TEXT_MED; ctx.textBaseline="middle"; ctx.textAlign="center";
-  ctx.fillText((left.label||"").toUpperCase(), pX+(mid-pX-16)/2, ct+26);
+  ctx.beginPath(); ctx.roundRect(pX,ct,lw,ch,10); ctx.fill();
+  ctx.fillStyle=TEXT_LOW;
+  ctx.beginPath(); ctx.roundRect(pX,ct,lw,labelH,{upperLeft:10,upperRight:10,lowerLeft:0,lowerRight:0}); ctx.fill();
+  ctx.font=`700 ${hdrFS}px 'DM Mono',monospace`; ctx.fillStyle=TEXT_MED; ctx.textBaseline="middle"; ctx.textAlign="center";
+  ctx.fillText((left.label||"").toUpperCase(), pX+lw/2, ct+labelH/2); ctx.textAlign="left";
   (left.points||[]).slice(0,5).forEach((pt,i)=>{
-    ctx.font="400 22px 'DM Sans',sans-serif"; ctx.fillStyle=TEXT_MED; ctx.textAlign="left"; ctx.textBaseline="alphabetic";
-    ctx.fillText("✕  "+pt, pX+20, ct+80+i*58);
+    const iy=ct+labelH+10+i*rowH+rowH/2;
+    ctx.font=`400 ${ptFS}px 'DM Sans',sans-serif`; ctx.fillStyle=TEXT_MED;
+    ctx.textAlign="left"; ctx.textBaseline="middle";
+    _compWrap(ctx,"✕  "+pt,pX+24,iy,lw-48,lineH);
   });
-  // Right card (highlighted)
+
+  // ── Right card (highlighted) ──
+  const rw=W-mid-16-pX;
   ctx.fillStyle=darkText?"rgba(255,255,255,0.65)":"rgba(255,255,255,0.18)";
-  ctx.beginPath(); ctx.roundRect(mid+16,ct,W-mid-16-pX,ch,10); ctx.fill();
-  ctx.fillStyle=ACCENT; ctx.beginPath(); ctx.roundRect(mid+16,ct,W-mid-16-pX,52,{upperLeft:10,upperRight:10,lowerLeft:0,lowerRight:0}); ctx.fill();
-  ctx.font="700 16px 'DM Mono',monospace"; ctx.fillStyle=darkText?"#fff":c1; ctx.textBaseline="middle"; ctx.textAlign="center";
-  ctx.fillText((right.label||"").toUpperCase(), mid+16+(W-mid-16-pX)/2, ct+26);
+  ctx.beginPath(); ctx.roundRect(mid+16,ct,rw,ch,10); ctx.fill();
+  ctx.fillStyle=ACCENT;
+  ctx.beginPath(); ctx.roundRect(mid+16,ct,rw,labelH,{upperLeft:10,upperRight:10,lowerLeft:0,lowerRight:0}); ctx.fill();
+  ctx.font=`700 ${hdrFS}px 'DM Mono',monospace`; ctx.fillStyle=darkText?"#fff":c1; ctx.textBaseline="middle"; ctx.textAlign="center";
+  ctx.fillText((right.label||"").toUpperCase(), mid+16+rw/2, ct+labelH/2); ctx.textAlign="left";
   (right.points||[]).slice(0,5).forEach((pt,i)=>{
-    ctx.font="400 22px 'DM Sans',sans-serif"; ctx.fillStyle=TEXT; ctx.textAlign="left"; ctx.textBaseline="alphabetic";
-    ctx.fillText("✓  "+pt, mid+36, ct+80+i*58);
+    const iy=ct+labelH+10+i*rowH+rowH/2;
+    ctx.font=`400 ${ptFS}px 'DM Sans',sans-serif`; ctx.fillStyle=TEXT;
+    ctx.textAlign="left"; ctx.textBaseline="middle";
+    _compWrap(ctx,"✓  "+pt,mid+36,iy,rw-52,lineH);
   });
-  // VS
+
+  // ── VS badge ──
   ctx.fillStyle=darkText?"rgba(0,0,0,0.08)":"rgba(255,255,255,0.18)";
-  ctx.beginPath(); ctx.arc(W/2,ct+ch/2,38,0,Math.PI*2); ctx.fill();
-  ctx.font="700 26px 'Bebas Neue',sans-serif"; ctx.fillStyle=TEXT_LOW; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.beginPath(); ctx.arc(W/2,ct+ch/2,42,0,Math.PI*2); ctx.fill();
+  ctx.font="700 30px 'Bebas Neue',sans-serif"; ctx.fillStyle=TEXT_LOW; ctx.textAlign="center"; ctx.textBaseline="middle";
   ctx.fillText("VS",W/2,ct+ch/2); ctx.textAlign="left"; ctx.textBaseline="alphabetic";
+}
+
+// Wraps text inside a comp card cell, vertically centred around centerY
+function _compWrap(ctx,text,x,centerY,maxW,lineH){
+  const words=text.split(" "); let line=""; const lines=[];
+  for(const w of words){
+    const t=line?line+" "+w:w;
+    if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else{line=t;}
+  }
+  if(line)lines.push(line);
+  const startY=centerY-(lines.length*lineH)/2+lineH*0.75;
+  lines.forEach((l,i)=>{ctx.fillText(l,x,startY+i*lineH);});
 }
 
 function _quote(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c2,darkText,W,cY,cH,pX,TEXT_MAX_X){
