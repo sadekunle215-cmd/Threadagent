@@ -263,17 +263,19 @@
     .btn-back:hover{border-color:var(--red);color:var(--red)}
     .page-title{font-family:var(--display);font-size:22px;letter-spacing:2px;color:var(--text)}
 
-    /* ══ HOME HERO ══ */
-    .home-hero{background:linear-gradient(135deg,var(--surface) 0%,rgba(224,22,26,.06) 100%);border:1px solid rgba(224,22,26,.15);border-radius:16px;padding:24px 20px;margin:16px 0 20px;position:relative;overflow:hidden}
-    .home-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(224,22,26,.15) 0%,transparent 70%);pointer-events:none}
-    .home-logo{font-family:var(--display);font-size:2.8rem;letter-spacing:4px;color:var(--text);line-height:1;margin-bottom:8px}
-    .home-logo span{color:var(--red)}
-    .home-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--muted);border:1px solid var(--border);border-radius:20px;padding:4px 10px;margin-bottom:12px}
-    .live-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 2s infinite;flex-shrink:0}
-    .home-tagline{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px}
-    .home-tagline em{color:var(--red);font-style:normal}
-    .home-pricing-pill{font-family:var(--mono);font-size:10px;color:var(--muted2);line-height:1.8}
-    .home-pricing-pill span{color:var(--red)}
+    /* ══ HOME HERO — WELCOME CARD ══ */
+    .home-hero{background:linear-gradient(135deg,var(--surface) 0%,rgba(224,22,26,.1) 100%);border:1px solid rgba(224,22,26,.25);border-radius:20px;padding:28px 24px;margin:20px 0 24px;position:relative;overflow:hidden;box-shadow:0 0 40px rgba(224,22,26,.07)}
+    .home-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(224,22,26,.18) 0%,transparent 70%);pointer-events:none}
+    .home-hero::after{content:'';position:absolute;bottom:-40px;left:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(245,166,35,.08) 0%,transparent 70%);pointer-events:none}
+    .home-welcome-text{font-family:var(--mono);font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted2);margin-bottom:6px}
+    .home-email-display{font-family:var(--sans);font-size:15px;font-weight:700;color:var(--text);letter-spacing:.3px;margin-bottom:20px;word-break:break-all}
+    .home-balance-row{display:flex;align-items:stretch;gap:12px}
+    .home-balance-card{flex:1;background:rgba(0,0,0,.45);border:1px solid rgba(224,22,26,.2);border-radius:14px;padding:16px 18px;backdrop-filter:blur(4px)}
+    .home-balance-lbl{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+    .home-balance-lbl::before{content:'💰'}
+    .home-balance-amount{font-family:var(--display);font-size:36px;letter-spacing:3px;color:var(--accent2);line-height:1;text-shadow:0 0 20px rgba(245,166,35,.25)}
+    .home-topup-btn{background:linear-gradient(135deg,var(--red2),var(--red3));color:#fff;border:none;border-radius:14px;font-family:var(--display);font-size:15px;letter-spacing:2px;padding:0 22px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .2s;box-shadow:0 4px 20px rgba(224,22,26,.35);min-height:72px;display:flex;align-items:center;justify-content:center}
+    .home-topup-btn:hover{opacity:.9;transform:translateY(-2px);box-shadow:0 8px 28px rgba(224,22,26,.45)}
 
     /* ══ QUICK ACTION GRID ══ */
     .qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px}
@@ -329,7 +331,7 @@
 <div id="authScreen">
   <div class="auth-box">
     <div class="auth-logo">THREAD<span>CRAFT</span></div>
-    <div class="auth-sub">// AI Thread Agent · v2</div>
+    <div class="auth-sub">Sign in to your account</div>
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
       <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
@@ -366,7 +368,7 @@
   <div class="topup-box">
     <div class="topup-handle"></div>
     <div class="topup-title">Top Up Wallet</div>
-    <div class="topup-sub">// select amount — funds added instantly after payment</div>
+    <div class="topup-sub">Select an amount — funds are added instantly after payment.</div>
     <div class="topup-amounts">
       <button class="topup-amt" onclick="selectTopup(500, this)">&#8358;500</button>
       <button class="topup-amt" onclick="selectTopup(1000, this)">&#8358;1,000</button>
@@ -379,7 +381,7 @@
 </div>
 
 <!-- ══ BALANCE TOAST ══ -->
-<div id="balanceToast">⚠ Insufficient balance — please top up</div>
+<div id="balanceToast">&#9888; Insufficient balance — please top up to continue</div>
 
 
 <div id="appRoot">
@@ -389,13 +391,14 @@
   <div class="container">
     <!-- Hero Welcome -->
     <div class="home-hero">
-      <div class="home-hero-inner">
-        <div class="home-logo">THREAD<span>CRAFT</span></div>
-        <div class="home-badge"><span class="live-dot"></span> AI THREAD AGENT &nbsp;·&nbsp; V2</div>
-        <p class="home-tagline">Paste a gig link. Build threads that <em>actually hit.</em><br>Powered by GPT-4o + DALL-E 3.</p>
-        <div class="home-pricing-pill">
-          <span>&#8358;30</span> / tweet &nbsp;·&nbsp; <span>&#8358;100</span> / text card &nbsp;·&nbsp; <span>&#8358;200</span> / infographic
+      <div class="home-welcome-text">WELCOME BACK 👋</div>
+      <div class="home-email-display" id="homeEmail">—</div>
+      <div class="home-balance-row">
+        <div class="home-balance-card">
+          <div class="home-balance-lbl">Wallet Balance</div>
+          <div class="home-balance-amount" id="homeBalanceVal">&#8358;0</div>
         </div>
+        <button class="home-topup-btn" onclick="openTopup()">&#8679; Top Up</button>
       </div>
     </div>
 
@@ -427,7 +430,7 @@
     <div class="tx-section">
       <div class="tx-section-title">RECENT TRANSACTIONS</div>
       <div id="txList" class="tx-list">
-        <div class="tx-empty">No transactions yet — top up your wallet to get started.</div>
+        <div class="tx-empty">No transactions yet. Top up your wallet to get started.</div>
       </div>
     </div>
   </div>
@@ -441,15 +444,15 @@
       <div class="page-title">🎯 SOLVE GIG</div>
     </div>
     <div class="form-section">
-      <div class="step-label">Step 01 — Paste Gig Link</div>
+      <div class="step-label">Step 1 — Paste your gig URL</div>
       <div class="url-block">
         <div class="url-input-row">
           <input type="text" id="gigUrl" placeholder="https://earn.superteam.fun/listing/..." autocomplete="off" spellcheck="false" />
-          <button class="btn-fetch" id="fetchBtn" onclick="fetchBrief()">ANALYSE →</button>
+          <button class="btn-fetch" id="fetchBtn" onclick="fetchBrief()">ANALYSE</button>
         </div>
         <div class="fetch-status" id="fetchStatus">
           <div class="fetch-dot"></div>
-          <span>Fetching page and extracting brief...</span>
+          <span>Fetching page and extracting brief, please wait...</span>
         </div>
         <div class="brief-card" id="briefCard">
           <div class="brief-card-header">
@@ -467,7 +470,7 @@
           </div>
           <div id="thinBriefWarning" style="display:none;margin-top:14px;padding:12px 14px;background:#1a1200;border:1px solid #ff6b3555;border-radius:10px">
             <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:#ff6b35;margin-bottom:6px">⚠ DETAILS INCOMPLETE</div>
-            <div style="font-size:12px;color:#888;margin-bottom:10px">This page loads via JavaScript — the scraper missed the task details. Paste the bounty description below so the AI writes the right thing.</div>
+            <div style="font-size:12px;color:#888;margin-bottom:10px">This page loads dynamically — the scraper couldn't retrieve all the task details. Paste the bounty description below so the AI can write the right content.</div>
             <button onclick="var a=document.getElementById('manualBriefArea');a.style.display=a.style.display==='none'?'block':'none'" style="background:transparent;border:1px solid #333;border-radius:8px;color:#aaa;font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:6px 12px;cursor:pointer">+ PASTE BRIEF DETAILS</button>
             <div id="manualBriefArea" style="display:none;margin-top:10px">
               <textarea id="manualBriefText" placeholder="Paste the full task description here..." style="width:100%;min-height:100px;background:#111;border:1px solid #333;border-radius:10px;color:#ddd;font-family:var(--sans);font-size:13px;padding:10px;resize:vertical;outline:none"></textarea>
@@ -476,15 +479,15 @@
           </div>
         </div>
       </div>
-      <div class="or-divider"><span>or write manually</span></div>
-      <div class="step-label">Step 02 — Configure Thread</div>
+      <div class="or-divider"><span>or write from scratch</span></div>
+      <div class="step-label">Step 2 — Configure your thread</div>
       <div class="field">
         <label>Topic *</label>
-        <input type="text" id="topic" placeholder="e.g. Why most devs never ship their side projects" />
+        <input type="text" id="topic" placeholder="e.g. Why most developers never ship their side projects" />
       </div>
       <div class="field">
         <label>Extra context (optional)</label>
-        <textarea id="context" placeholder="Add details, talking points, or notes for the AI..."></textarea>
+        <textarea id="context" placeholder="Add supporting details, key points, or notes for the AI to consider..."></textarea>
       </div>
       <div class="brand-color-row">
         <label>Card Style</label>
@@ -562,14 +565,14 @@
       <div class="page-title">🧵 CREATE THREAD</div>
     </div>
     <div class="form-section">
-      <div class="step-label">Configure Thread</div>
+      <div class="step-label">Configure your thread</div>
       <div class="field">
         <label>Topic *</label>
-        <input type="text" id="ct-topic" placeholder="e.g. Why most devs never ship their side projects" />
+        <input type="text" id="ct-topic" placeholder="e.g. Why most developers never ship their side projects" />
       </div>
       <div class="field">
         <label>Extra context (optional)</label>
-        <textarea id="ct-context" placeholder="Add details, talking points, or notes for the AI..."></textarea>
+        <textarea id="ct-context" placeholder="Add supporting details, key points, or notes for the AI to consider..."></textarea>
       </div>
       <div class="brand-color-row">
         <label>Card Style</label>
@@ -647,7 +650,7 @@
       <div class="page-title">🎨 CREATE GRAPHICS</div>
     </div>
     <div class="form-section">
-      <div class="step-label">Configure Text Card</div>
+      <div class="step-label">Configure your text card</div>
       <div class="field">
         <label>Tweet Text *</label>
         <textarea id="gfx-text" placeholder="Enter the tweet text for your graphic card..." style="min-height:120px"></textarea>
@@ -692,10 +695,10 @@
       <div class="page-title">📊 CREATE INFOGRAPHIC</div>
     </div>
     <div class="form-section">
-      <div class="step-label">Configure Infographic</div>
+      <div class="step-label">Configure your infographic</div>
       <div class="field">
         <label>Topic / Tweet Text *</label>
-        <textarea id="inf-text" placeholder="Describe what you want the infographic to visualise..." style="min-height:120px"></textarea>
+        <textarea id="inf-text" placeholder="Describe what you'd like the infographic to visualise..." style="min-height:120px"></textarea>
       </div>
       <div class="brand-color-row">
         <label>Card Style</label>
@@ -1446,6 +1449,8 @@ auth.onAuthStateChanged(async user => {
     currentUser = user;
     document.getElementById("authScreen").classList.add("hidden");
     document.getElementById("walletBar").classList.add("visible");
+    const homeEmailEl = document.getElementById("homeEmail");
+    if (homeEmailEl) homeEmailEl.textContent = user.email;
     await ensureUserDoc(user);
     listenBalance(user.uid);
     loadTransactions(user.uid);
@@ -1471,6 +1476,8 @@ function listenBalance(uid) {
       const el = document.getElementById("walletBalance");
       el.textContent = `\u20A6${userBalance.toLocaleString()}`;
       el.style.color = userBalance < 100 ? "var(--accent2)" : "var(--red)";
+      const homeEl = document.getElementById("homeBalanceVal");
+      if (homeEl) homeEl.textContent = `\u20A6${userBalance.toLocaleString()}`;
     }
   });
 }
@@ -1544,7 +1551,7 @@ async function doLogout() {
 
 // ── Wallet deduction ──
 async function deduct(amount, description) {
-  if (!currentUser) { showBalanceToast("Please log in."); return false; }
+  if (!currentUser) { showBalanceToast("Please log in to continue."); return false; }
   if (userBalance < amount) {
     showBalanceToast(`Insufficient balance — need \u20A6${amount}, you have \u20A6${userBalance}`);
     openTopup();
@@ -1560,7 +1567,7 @@ async function deduct(amount, description) {
     });
     return true;
   } catch(e) {
-    showBalanceToast("Transaction failed — try again.");
+    showBalanceToast("Transaction failed — please try again.");
     return false;
   }
 }
@@ -1598,6 +1605,10 @@ function selectTopup(amount, btn) {
 
 function doTopup() {
   if (!selectedTopup || !currentUser) return;
+  if (typeof PaystackPop === 'undefined') {
+    showBalanceToast("Payment system not loaded — please refresh the page.");
+    return;
+  }
   const payBtn = document.getElementById("btnPayTopup");
   payBtn.disabled = true;
   payBtn.textContent = "Opening payment...";
@@ -1693,7 +1704,7 @@ async function ctGenerateThread() {
   const context = document.getElementById("ct-context").value.trim();
   const tone    = document.getElementById("ct-tone").value;
   const length  = document.getElementById("ct-length").value;
-  if (!topic) { document.getElementById("ctErrorBox").textContent="// Drop a topic first."; document.getElementById("ctErrorBox").classList.add("visible"); return; }
+  if (!topic) { document.getElementById("ctErrorBox").textContent="Please enter a topic to continue."; document.getElementById("ctErrorBox").classList.add("visible"); return; }
   const tweetCount = length==="short"?6:length==="long"?15:10;
   const cost = tweetCount * PRICE_TWEET;
   const ok = await deduct(cost, `Thread — ${tweetCount} tweets`);
@@ -1763,7 +1774,7 @@ async function ctDownloadAllCards(){const tweets=window._ctTweets;if(!tweets)ret
 async function generateStandaloneGraphic() {
   if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
   const text = document.getElementById("gfx-text").value.trim();
-  if (!text) { document.getElementById("gfxErrorBox").textContent="// Enter tweet text first."; document.getElementById("gfxErrorBox").classList.add("visible"); return; }
+  if (!text) { document.getElementById("gfxErrorBox").textContent="Please enter tweet text first."; document.getElementById("gfxErrorBox").classList.add("visible"); return; }
   const ok = await deduct(PRICE_TEXTCARD, "Standalone text card");
   if (!ok) return;
   document.getElementById("gfxErrorBox").classList.remove("visible");
@@ -1783,7 +1794,7 @@ function downloadStandaloneGraphic(){const c=document.getElementById("gfxCanvas"
 async function generateStandaloneInfographic() {
   if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
   const text = document.getElementById("inf-text").value.trim();
-  if (!text) { document.getElementById("infErrorBox").textContent="// Describe your infographic first."; document.getElementById("infErrorBox").classList.add("visible"); return; }
+  if (!text) { document.getElementById("infErrorBox").textContent="Please describe what you'd like the infographic to show."; document.getElementById("infErrorBox").classList.add("visible"); return; }
   const ok = await deduct(PRICE_IMAGE, "Standalone infographic");
   if (!ok) return;
   document.getElementById("infErrorBox").classList.remove("visible");
@@ -1827,7 +1838,7 @@ const paidTextCards    = new Set();
 function handleGenerateClick() {
   if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
   const tweetCount = estimateTweetCount();
-  if (tweetCount === 0) { showError("Configure your thread first."); return; }
+  if (tweetCount === 0) { showError("Please configure your thread settings first."); return; }
   const cost = tweetCount * PRICE_TWEET;
   if (userBalance < cost) {
     showBalanceToast(`Need \u20A6${cost} to generate — top up your wallet`);
@@ -1851,7 +1862,7 @@ async function generateThread() {
   const context = document.getElementById("context").value.trim();
   const tone    = document.getElementById("tone").value;
   const length  = document.getElementById("length").value;
-  if (!topic) { showError("Drop a topic first."); return; }
+  if (!topic) { showError("Please enter a topic to continue."); return; }
 
   const tweetCount = estimateTweetCount();
   const cost = tweetCount * PRICE_TWEET;
