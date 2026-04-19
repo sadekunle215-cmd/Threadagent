@@ -3,7 +3,7 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { topic, context, tone, length } = req.body;
+  const { topic, context, tone, length, mode } = req.body;
 
   if (!topic) {
     return res.status(400).json({ error: "Topic is required" });
@@ -14,8 +14,12 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: "OpenAI API key not configured" });
   }
 
-  // Exact tweet counts — no ranges (ranges let the AI get lazy)
-  const tweetCount = length === "short" ? 6 : length === "long" ? 15 : 10;
+  // ── Route to Motion Script generator ─────────────────────────────────
+  if (mode === "motion") {
+    return handleMotionScript(req, res, { topic, context, tone, length, OPENAI_API_KEY });
+  }
+
+  // ── Thread generation (existing flow) ────────────────────────────────
 
   // ─── Niche detection ────────────────────────────────────────────────
   // Gives the AI domain-specific grounding so it writes with insider precision
@@ -228,3 +232,115 @@ FINAL CHECK before outputting: Read tweet 1 out loud. If you could scroll past i
     return res.status(500).json({ error: err.message });
   }
 };
+
+// ══════════════════════════════════════════════════════════════════════
+// MOTION SCRIPT HANDLER
+// ══════════════════════════════════════════════════════════════════════
+async function handleMotionScript(req, res, { topic, context, tone, length, OPENAI_API_KEY }) {
+
+  // Map video length to scene count
+  const sceneCounts = { "15": 4, "30": 7, "60": 12, "90": 16 };
+  const sceneCount  = sceneCounts[length] || 7;
+
+  // Style descriptions
+  const styleGuides = {
+    cinematic:  "Dramatic pacing. Long-hold shots. High contrast. Premium product feel. Silence and sound used deliberately. Text reveals are slow and weighty.",
+    energetic:  "Fast cuts (1-2s per scene). Bold kinetic typography. High-energy electronic or hip-hop soundtrack. Lots of motion blur and speed ramps.",
+    minimal:    "Clean white/dark backgrounds. Subtle animations only. Generous white space. Typography does the heavy lifting. Ambient/lo-fi audio.",
+    technical:  "UI/dashboard reveals. Code or data visualization. Screen recordings mixed with motion graphics. Precise, functional, developer-focused.",
+  };
+  const styleGuide = styleGuides[tone] || styleGuides.cinematic;
+
+  const systemPrompt = `
+You are an expert motion graphics director and video script writer. You write scene-by-scene video scripts that a motion designer can pick up and execute directly in After Effects, Premiere, or CapCut.
+
+Your scripts are:
+- Visually specific: describe exactly what's on screen, camera movement, and transition style
+- Practically executable: no impossible requests, every scene is buildable by a skilled motion designer
+- Tonally consistent: every scene reinforces the visual style selected
+- Timed precisely: durations add up to the target video length
+
+OUTPUT FORMAT:
+Return ONLY a raw JSON array of scene objects. No markdown fences. No explanation. No preamble.
+
+Each scene object must have exactly these fields:
+{
+  "scene": <number>,
+  "duration": "<start> – <end>" (e.g. "0:00 – 0:04"),
+  "visual": "<what's on screen — describe motion, camera, colours, assets, transitions>",
+  "overlay": "<text/title/caption that appears on screen, or empty string if none>",
+  "voiceover": "<narration or spoken words, or empty string if none>",
+  "mood": "<music genre/tempo/SFX notes>"
+}
+
+Example:
+[
+  {
+    "scene": 1,
+    "duration": "0:00 – 0:03",
+    "visual": "Black screen. Brand logo materialises from particles, centre frame. Subtle lens flare. Camera slowly pulls back.",
+    "overlay": "Perena",
+    "voiceover": "",
+    "mood": "Low cinematic drone fades in. Single deep bass hit on logo reveal."
+  }
+]
+`.trim();
+
+  const userPrompt = `
+Write a ${sceneCount}-scene motion video script for: ${topic}
+${context ? `\nCONTEXT / BRIEF:\n${context}` : ""}
+
+VIDEO LENGTH: ${length} seconds
+VISUAL STYLE: ${tone || "cinematic"}
+STYLE GUIDE: ${styleGuide}
+
+REQUIREMENTS:
+- Scene durations must sum to exactly ${length} seconds
+- Every scene must have a clear visual description a motion designer can execute
+- Overlay text should feel designed, not just written — short, punchy, typographic
+- Voiceover lines should be short and punchy — or omitted if the style is silent/music-led
+- Mood/SFX notes should reference real music genres, BPM ranges, or specific sound types
+- Build a narrative arc: open strong, build value in the middle, close with CTA or brand moment
+
+Return ONLY the JSON array.
+`.trim();
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        temperature: 0.78,
+        max_tokens: 3000,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user",   content: userPrompt   },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      return res.status(500).json({ error: err.error?.message || "OpenAI error" });
+    }
+
+    const data  = await response.json();
+    const raw   = data.choices[0].message.content.trim();
+    let scenes;
+    try {
+      const cleaned = raw.replace(/^```json\s*/i, "").replace(/```\s*$/,"").trim();
+      scenes = JSON.parse(cleaned);
+    } catch {
+      return res.status(500).json({ error: "Failed to parse motion script output", raw });
+    }
+
+    return res.status(200).json({ scenes });
+
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+}
