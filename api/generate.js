@@ -19,6 +19,11 @@ module.exports = async function handler(req, res) {
     return handleMotionScript(req, res, { topic, context, tone, length, OPENAI_API_KEY });
   }
 
+  // ── Route to Single Post generator ────────────────────────────────────
+  if (mode === "single") {
+    return handleSinglePost(req, res, { topic, context, tone, format: req.body.format, OPENAI_API_KEY });
+  }
+
   // ── Thread generation (existing flow) ────────────────────────────────
 
   // ─── Niche detection ────────────────────────────────────────────────
@@ -173,6 +178,9 @@ Every string is one tweet. Every tweet is under 280 characters. Count carefully.
 ["Tweet one.", "Tweet two.", "Tweet three."]
 `.trim();
 
+  // ─── Tweet count (was missing — caused ReferenceError crash) ────────
+  const tweetCount = length === "short" ? 6 : length === "long" ? 15 : 10;
+
   // ─── User prompt ─────────────────────────────────────────────────────
   const userPrompt = `
 Write a ${tweetCount}-tweet X/Twitter thread about: ${topic}
@@ -232,6 +240,61 @@ FINAL CHECK before outputting: Read tweet 1 out loud. If you could scroll past i
     return res.status(500).json({ error: err.message });
   }
 };
+
+// ══════════════════════════════════════════════════════════════════════
+// SINGLE POST HANDLER
+// ══════════════════════════════════════════════════════════════════════
+async function handleSinglePost(req, res, { topic, context, tone, format, OPENAI_API_KEY }) {
+  const formatGuides = {
+    tweet:         "Write a single tweet. Max 280 characters. Hard limit — count carefully. No thread numbering. Must be a self-contained, punchy standalone post.",
+    short_article: "Write a short article of ~300 words. 3–5 paragraphs. No headers. No bullet lists. Flowing prose. Conversational but authoritative. Reads like a great LinkedIn post.",
+    long_article:  "Write a long-form article of ~600 words. 5–8 paragraphs. No headers. No bullet lists. Deep, well-argued, with specific examples and concrete details. Reads like a published essay.",
+  };
+  const guide = formatGuides[format] || formatGuides.short_article;
+
+  const systemPrompt = `
+You are a world-class writer who produces single standalone posts and articles for X/Twitter and LinkedIn.
+You write from direct experience. Every sentence earns its place. No filler, no corporate speak.
+BANNED: "game-changer", "seamlessly", "revolutionize", "leverage", "dive in", "let's explore", "it's important to note", "in today's world"
+`.trim();
+
+  const userPrompt = `
+Write a single post about: ${topic}
+${context ? `\nCONTEXT:\n${context}` : ""}
+TONE: ${tone || "conversational"}
+FORMAT: ${guide}
+
+Return ONLY the post text. No JSON. No quotes around it. No preamble or explanation.
+`.trim();
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${OPENAI_API_KEY}` },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        temperature: 0.8,
+        max_tokens: 1200,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user",   content: userPrompt   },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      return res.status(500).json({ error: err.error?.message || "OpenAI error" });
+    }
+
+    const data = await response.json();
+    const post = data.choices[0].message.content.trim();
+    return res.status(200).json({ post });
+
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+}
 
 // ══════════════════════════════════════════════════════════════════════
 // MOTION SCRIPT HANDLER
