@@ -237,8 +237,53 @@
     .post-char{font-family:var(--mono);font-size:11px;color:var(--muted)}
     .post-actions{display:flex;gap:8px}
 
+    /* ══ WHAT CAN I CREATE — CHAT UI ══ */
+    .chat-page{display:flex;flex-direction:column;height:calc(100vh - 130px);min-height:500px}
+    .chat-messages{flex:1;overflow-y:auto;padding:16px 0 8px;display:flex;flex-direction:column;gap:12px}
+    .chat-bubble{max-width:88%;animation:fadeUp .25s ease forwards}
+    .chat-bubble.bot{align-self:flex-start}
+    .chat-bubble.user{align-self:flex-end}
+    .bubble-inner{padding:13px 16px;border-radius:16px;font-size:14px;line-height:1.7}
+    .chat-bubble.bot .bubble-inner{background:var(--surface2);border:1px solid var(--border);border-radius:16px 16px 16px 4px;color:var(--text)}
+    .chat-bubble.user .bubble-inner{background:linear-gradient(135deg,var(--red2),var(--red3));color:#fff;border-radius:16px 16px 4px 16px}
+    .chat-typing{display:flex;align-items:center;gap:5px;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:16px 16px 16px 4px;width:fit-content;align-self:flex-start}
+    .chat-typing span{width:7px;height:7px;background:var(--muted);border-radius:50%;animation:chatdot 1.2s ease-in-out infinite}
+    .chat-typing span:nth-child(2){animation-delay:.2s}
+    .chat-typing span:nth-child(3){animation-delay:.4s}
+    @keyframes chatdot{0%,80%,100%{transform:scale(0.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+    .chat-quick-replies{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 8px;align-self:flex-start;max-width:100%}
+    .qr-btn{font-family:var(--mono);font-size:11px;letter-spacing:.5px;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:8px 14px;cursor:pointer;transition:all .2s}
+    .qr-btn:hover,.qr-btn.selected{border-color:var(--red);color:var(--red);background:rgba(224,22,26,.08)}
+    .qr-btn.pill-yes{border-color:rgba(34,197,94,.4);color:var(--grn)}
+    .qr-btn.pill-yes:hover{background:rgba(34,197,94,.1)}
+    .qr-btn.pill-no{border-color:var(--border);color:var(--muted2)}
+    .chat-input-row{display:flex;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:8px;flex-shrink:0}
+    .chat-input{flex:1;background:var(--surface);border:none;color:var(--text);font-family:var(--sans);font-size:14px;padding:14px 16px;outline:none;resize:none;min-height:48px;max-height:120px}
+    .chat-input::placeholder{color:var(--muted);font-size:13px}
+    .chat-input:focus{background:var(--surface2)}
+    .chat-send-btn{background:linear-gradient(135deg,var(--red2),var(--red3));border:none;color:#fff;font-family:var(--display);font-size:13px;letter-spacing:1.5px;padding:0 20px;cursor:pointer;transition:opacity .15s;flex-shrink:0}
+    .chat-send-btn:hover{opacity:.85}
+    .chat-send-btn:disabled{opacity:.4;cursor:not-allowed}
+    .suggest-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin:4px 0;cursor:pointer;transition:all .2s;width:100%;text-align:left;display:block}
+    .suggest-card:hover{border-color:var(--red);background:rgba(224,22,26,.04);transform:translateX(3px)}
+    .suggest-card-num{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:4px}
+    .suggest-card-topic{font-size:14px;color:var(--text);line-height:1.5}
+    .suggest-card-meta{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px}
+    .chat-result-box{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:14px;padding:20px;margin-top:4px;width:100%;box-sizing:border-box}
+    .chat-result-label{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:12px}
+    .chat-result-text{font-size:14px;line-height:1.9;color:#e8e8e8;white-space:pre-wrap;word-break:break-word}
+    .chat-result-tweet{padding:10px 0;border-bottom:1px solid var(--border2);font-size:13px;line-height:1.75;color:#ddd}
+    .chat-result-tweet:last-of-type{border-bottom:none}
+    .chat-result-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+    .cr-btn{font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:8px 16px;border-radius:8px;cursor:pointer;transition:all .2s}
+    .cr-btn.primary{background:linear-gradient(135deg,var(--red2),var(--red3));color:#fff;border:none}
+    .cr-btn.secondary{background:transparent;border:1px solid var(--border);color:var(--muted2)}
+    .cr-btn.secondary:hover{border-color:var(--red);color:var(--red)}
+    #wcRestartBtn{font-family:var(--mono);font-size:11px;color:var(--muted);background:transparent;border:1px solid var(--border);border-radius:8px;padding:6px 14px;cursor:pointer;transition:all .2s;margin-top:4px;display:none}
+    #wcRestartBtn.visible{display:inline-block}
+    #wcRestartBtn:hover{color:var(--text);border-color:var(--muted2)}
+
     /* ══ AUTH SCREEN ══ */
-    #authScreen{position:fixed;inset:0;background:var(--black);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px}
     #authScreen.hidden{display:none}
     .auth-box{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px 28px}
     .auth-logo{font-family:var(--display);font-size:36px;letter-spacing:4px;color:var(--text);margin-bottom:4px}
@@ -572,6 +617,15 @@
 
     <!-- Quick Action Grid -->
     <div class="qa-grid">
+      <!-- ★ Featured card — full width -->
+      <div class="qa-card" onclick="showPage('pageWhatCreate')" style="grid-column:1/-1;flex-direction:row;align-items:center;gap:14px;padding:20px 18px;background:linear-gradient(135deg,var(--surface),rgba(224,22,26,.07));border-color:rgba(224,22,26,.35)">
+        <div class="qa-icon" style="background:rgba(224,22,26,.18);color:var(--red);font-size:1.5rem;width:48px;height:48px;flex-shrink:0"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <div style="flex:1">
+          <div class="qa-label" style="font-size:17px">What Can I Create Today?</div>
+          <div class="qa-desc" style="margin-top:3px">AI picks your next post based on your style &amp; platform</div>
+        </div>
+        <i class="fa-solid fa-chevron-right" style="color:var(--red);opacity:.6;flex-shrink:0"></i>
+      </div>
       <div class="qa-card" onclick="showPage('pageSolveGig')">
         <div class="qa-icon"><i class="fa-solid fa-bullseye"></i></div>
         <div class="qa-label">Solve Gig</div>
@@ -604,6 +658,28 @@
       <div class="tx-section-title">RECENT TRANSACTIONS</div>
       <div id="txList" class="tx-list">
         <div class="tx-empty">No transactions yet — top up your wallet to get started.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ WHAT CAN I CREATE TODAY PAGE ══ -->
+<div id="pageWhatCreate" class="app-page">
+  <div class="container" style="display:flex;flex-direction:column;height:100%">
+    <div class="page-header" style="flex-shrink:0">
+      <button class="btn-back" onclick="wcReset();showPage('pageHome')"><i class="fa fa-arrow-left"></i> Back</button>
+      <div class="page-title"><i class="fa-solid fa-wand-magic-sparkles"></i> WHAT CAN I CREATE</div>
+    </div>
+    <div class="chat-page">
+      <div class="chat-messages" id="wcMessages"></div>
+      <div style="flex-shrink:0">
+        <div class="chat-input-row" id="wcInputRow" style="display:none">
+          <textarea class="chat-input" id="wcInput" placeholder="Type your reply..." rows="1"
+            oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();wcSend();}"></textarea>
+          <button class="chat-send-btn" id="wcSendBtn" onclick="wcSend()">SEND</button>
+        </div>
+        <button id="wcRestartBtn" onclick="wcReset();wcStart()">↺ Start over</button>
       </div>
     </div>
   </div>
@@ -4287,6 +4363,384 @@ function setLoading(a) {
 }
 
 
+// ══════════════════════════════════════════════════════
+// WHAT CAN I CREATE TODAY — CONVERSATION ENGINE
+// ══════════════════════════════════════════════════════
+const WC_PLATFORMS = [
+  { id:"twitter",   label:"Twitter / X",  icon:"𝕏" },
+  { id:"linkedin",  label:"LinkedIn",     icon:"in" },
+  { id:"instagram", label:"Instagram",    icon:"📸" },
+  { id:"facebook",  label:"Facebook",     icon:"f" },
+  { id:"tiktok",    label:"TikTok",       icon:"♪" },
+];
+
+const WC = { step:0, platform:"", handle:"", examples:"", detectedStyle:null, chosenTopic:"", chosenFormat:"thread" };
+
+function wcReset() {
+  Object.assign(WC, { step:0, platform:"", handle:"", examples:"", detectedStyle:null, chosenTopic:"", chosenFormat:"thread" });
+  const msgs = document.getElementById("wcMessages"); if (msgs) msgs.innerHTML = "";
+  const row  = document.getElementById("wcInputRow");  if (row)  row.style.display = "none";
+  const rb   = document.getElementById("wcRestartBtn"); if (rb)  rb.classList.remove("visible");
+  _wcInputCallback = null;
+}
+
+function wcStart() {
+  wcReset();
+  wcBotMsg("Hey! 👋 Let's figure out what to create today.");
+  setTimeout(() => {
+    wcBotMsg("Which platform are you posting on?", 500);
+    setTimeout(() => {
+      wcShowQuickReplies(
+        WC_PLATFORMS.map(p => ({ label: `${p.icon} ${p.label}`, value: p.id })),
+        (val) => {
+          WC.platform = val;
+          const p = WC_PLATFORMS.find(x => x.id === val);
+          wcUserMsg(p ? `${p.icon} ${p.label}` : val);
+          wcStep2();
+        }
+      );
+    }, 700);
+  }, 400);
+}
+
+function wcStep2() {
+  WC.step = 2;
+  const pName = WC_PLATFORMS.find(p => p.id === WC.platform)?.label || WC.platform;
+  setTimeout(() => {
+    wcBotMsg(`Nice! What's your handle on ${pName}?`);
+    wcShowInput("e.g. @yourhandle", (val) => {
+      WC.handle = val.startsWith("@") ? val : "@" + val;
+      wcUserMsg(WC.handle);
+      wcStep3();
+    });
+  }, 600);
+}
+
+function wcStep3() {
+  WC.step = 3;
+  setTimeout(() => {
+    wcBotMsg(`Got it, ${WC.handle}! Now drop 1–3 examples of posts you've written — or describe what you usually post about. I'll detect your style from that.`);
+    setTimeout(() => {
+      wcBotMsg("If you're just starting out, just tell me your niche and what kind of content you enjoy making.", 300);
+      wcShowInput("Paste your posts or describe your usual content...", (val) => {
+        WC.examples = val;
+        wcUserMsg(val.length > 120 ? val.slice(0, 120) + "…" : val);
+        wcStep4Analyse();
+      }, true);
+    }, 500);
+  }, 600);
+}
+
+async function wcStep4Analyse() {
+  WC.step = 4;
+  wcHideInput();
+  wcShowTyping();
+  try {
+    const res  = await fetch("/api/suggest", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ platform: WC.platform, handle: WC.handle, examples: WC.examples }) });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) { throw new Error("Could not analyse your style — skipping to manual"); }
+    if (!res.ok) throw new Error(data.error || "Analysis failed");
+    WC.detectedStyle = data;
+    wcRemoveTyping();
+    wcStep5ShowSuggestions(data);
+  } catch(err) {
+    wcRemoveTyping();
+    wcBotMsg(`Hmm, couldn't auto-detect style right now. Let's go manual.`);
+    setTimeout(wcStep5Fallback, 700);
+  }
+}
+
+function wcStep5ShowSuggestions(data) {
+  WC.step = 5;
+  const tone = data.tone || "conversational";
+  const topicStr = (data.topics || []).slice(0, 2).join(" & ") || "your niche";
+  setTimeout(() => {
+    wcBotMsg(`Based on your examples, you post about <strong>${topicStr}</strong> with a <strong>${tone}</strong> tone. 🎯`);
+    setTimeout(() => {
+      wcBotMsg("Here are 3 fresh ideas that fit your style — tap one to use it:");
+      setTimeout(() => {
+        // Build suggestion cards as a single bot bubble
+        const container = document.createElement("div");
+        container.className = "chat-bubble bot";
+        container.style.cssText = "width:100%;max-width:100%";
+        const wrap = document.createElement("div");
+        wrap.style.cssText = "display:flex;flex-direction:column;gap:8px;width:100%";
+
+        const ideas = data.ideas || data.topics || [];
+        ideas.slice(0, 3).forEach((idea, i) => {
+          const card = document.createElement("button");
+          card.className = "suggest-card";
+          card.innerHTML = `<div class="suggest-card-num">IDEA ${i + 1}</div><div class="suggest-card-topic">${escapeHtml(idea)}</div><div class="suggest-card-meta">${tone} · tap to create →</div>`;
+          card.onclick = () => {
+            WC.chosenTopic = idea;
+            wrap.querySelectorAll(".suggest-card").forEach(c => { c.onclick = null; c.style.opacity = ".35"; c.style.transform = "none"; c.style.cursor = "default"; });
+            card.style.opacity = "1"; card.style.borderColor = "var(--red)";
+            wcUserMsg(`Idea ${i + 1}: ${idea.length > 90 ? idea.slice(0, 90) + "…" : idea}`);
+            wcStep6Format();
+          };
+          wrap.appendChild(card);
+        });
+
+        // "Something else" pill
+        const elseBtn = document.createElement("button");
+        elseBtn.className = "qr-btn pill-no";
+        elseBtn.style.marginTop = "4px";
+        elseBtn.textContent = "✏ I want to write about something else";
+        elseBtn.onclick = () => {
+          elseBtn.style.display = "none";
+          wcBotMsg("No problem — what do you want to write about?");
+          wcShowInput("Drop your topic here...", (val) => {
+            WC.chosenTopic = val;
+            wcUserMsg(val.length > 100 ? val.slice(0, 100) + "…" : val);
+            wcStep6Format();
+          });
+        };
+        wrap.appendChild(elseBtn);
+        container.appendChild(wrap);
+        document.getElementById("wcMessages").appendChild(container);
+        wcScrollBottom();
+      }, 400);
+    }, 700);
+  }, 300);
+}
+
+function wcStep5Fallback() {
+  WC.step = 5;
+  wcBotMsg("What do you want to write about today?");
+  wcShowInput("Drop your topic here...", (val) => {
+    WC.chosenTopic = val;
+    wcUserMsg(val.length > 100 ? val.slice(0, 100) + "…" : val);
+    wcStep6Format();
+  });
+}
+
+function wcStep6Format() {
+  WC.step = 6;
+  wcHideInput();
+  setTimeout(() => {
+    wcBotMsg("How do you want to publish this?");
+    setTimeout(() => {
+      wcShowQuickReplies([
+        { label: "🧵 Thread (multi-tweet)", value: "thread" },
+        { label: "📝 Single Post / Article", value: "single" },
+      ], (val) => {
+        WC.chosenFormat = val;
+        wcUserMsg(val === "thread" ? "🧵 Thread" : "📝 Single Post");
+        wcStep7Generate();
+      });
+    }, 300);
+  }, 600);
+}
+
+async function wcStep7Generate() {
+  WC.step = 7;
+  if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
+
+  const isThread = WC.chosenFormat === "thread";
+  const cost = isThread ? 10 * PRICE_TWEET : PRICE_TWEET;
+
+  if (userBalance < cost) {
+    wcBotMsg(`You need ₦${cost} to generate this. Top up your wallet and come back!`);
+    setTimeout(openTopup, 1000);
+    document.getElementById("wcRestartBtn").classList.add("visible");
+    return;
+  }
+
+  wcShowTyping();
+  const tone   = WC.detectedStyle?.tone || "conversational";
+  const context = [
+    `Platform: ${WC.platform}`,
+    WC.detectedStyle?.style_notes ? `Style: ${WC.detectedStyle.style_notes}` : "",
+    WC.examples ? `User examples: ${WC.examples.slice(0, 400)}` : "",
+  ].filter(Boolean).join("\n");
+
+  const ok = await deduct(cost, `What Can I Create — ${WC.chosenFormat}`);
+  if (!ok) { wcRemoveTyping(); return; }
+
+  try {
+    const body = { topic: WC.chosenTopic, context, tone, length: isThread ? "medium" : "single" };
+    if (!isThread) { body.mode = "single"; body.format = "short_article"; }
+
+    const res  = await fetch("/api/generate", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
+    const raw  = await res.text();
+    let data;
+    try { data = JSON.parse(raw); } catch(e) { throw new Error("Server error — please try again"); }
+    if (!res.ok) throw new Error(data.error || "Generation failed");
+
+    wcRemoveTyping();
+    if (isThread) {
+      wcRenderThreadResult(data.tweets);
+    } else {
+      wcRenderPostResult(data.post || (Array.isArray(data.tweets) ? data.tweets.join("\n\n") : ""));
+    }
+  } catch(err) {
+    wcRemoveTyping();
+    await db.collection("users").doc(currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(cost) });
+    wcBotMsg(`Something went wrong: ${err.message}`);
+    document.getElementById("wcRestartBtn").classList.add("visible");
+  }
+}
+
+function wcRenderThreadResult(tweets) {
+  wcBotMsg(`Done! Here's your ${tweets.length}-tweet thread 🧵`);
+  window._wcTweets = tweets;
+  setTimeout(() => {
+    const container = document.createElement("div");
+    container.className = "chat-bubble bot";
+    container.style.cssText = "width:100%;max-width:100%";
+    const box = document.createElement("div");
+    box.className = "chat-result-box";
+    box.innerHTML = `<div class="chat-result-label"><i class="fa-solid fa-list"></i> ${tweets.length} TWEETS · ${WC.platform.toUpperCase()}</div>`;
+    tweets.forEach((t, i) => {
+      const p = document.createElement("div");
+      p.className = "chat-result-tweet";
+      p.innerHTML = `<span style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-right:8px">${String(i+1).padStart(2,"0")}/${tweets.length}</span>${escapeHtml(t)}`;
+      box.appendChild(p);
+    });
+    const actions = document.createElement("div");
+    actions.className = "chat-result-actions";
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "cr-btn primary";
+    copyBtn.innerHTML = '<i class="fa-solid fa-copy"></i> Copy All';
+    copyBtn.onclick = () => {
+      navigator.clipboard.writeText(tweets.map((t,i)=>`${i+1}/${tweets.length}\n${t}`).join("\n\n"))
+        .then(()=>{ copyBtn.textContent="Copied ✓"; setTimeout(()=>{ copyBtn.innerHTML='<i class="fa-solid fa-copy"></i> Copy All'; },2000); });
+    };
+    const newBtn = document.createElement("button");
+    newBtn.className = "cr-btn secondary";
+    newBtn.textContent = "↺ Create Another";
+    newBtn.onclick = () => { wcReset(); wcStart(); };
+    actions.appendChild(copyBtn);
+    actions.appendChild(newBtn);
+    box.appendChild(actions);
+    container.appendChild(box);
+    document.getElementById("wcMessages").appendChild(container);
+    document.getElementById("wcRestartBtn").classList.add("visible");
+    wcScrollBottom();
+  }, 400);
+}
+
+function wcRenderPostResult(post) {
+  wcBotMsg("Done! Here's your post:");
+  window._wcPost = post;
+  setTimeout(() => {
+    const container = document.createElement("div");
+    container.className = "chat-bubble bot";
+    container.style.cssText = "width:100%;max-width:100%";
+    const box = document.createElement("div");
+    box.className = "chat-result-box";
+    box.innerHTML = `<div class="chat-result-label"><i class="fa-solid fa-align-left"></i> POST · ${WC.platform.toUpperCase()}</div><div class="chat-result-text">${escapeHtml(post)}</div>`;
+    const actions = document.createElement("div");
+    actions.className = "chat-result-actions";
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "cr-btn primary";
+    copyBtn.innerHTML = '<i class="fa-solid fa-copy"></i> Copy';
+    copyBtn.onclick = () => {
+      navigator.clipboard.writeText(post)
+        .then(()=>{ copyBtn.textContent="Copied ✓"; setTimeout(()=>{ copyBtn.innerHTML='<i class="fa-solid fa-copy"></i> Copy'; },2000); });
+    };
+    const newBtn = document.createElement("button");
+    newBtn.className = "cr-btn secondary";
+    newBtn.textContent = "↺ Create Another";
+    newBtn.onclick = () => { wcReset(); wcStart(); };
+    actions.appendChild(copyBtn);
+    actions.appendChild(newBtn);
+    box.appendChild(actions);
+    container.appendChild(box);
+    document.getElementById("wcMessages").appendChild(container);
+    document.getElementById("wcRestartBtn").classList.add("visible");
+    wcScrollBottom();
+  }, 400);
+}
+
+// ── Chat UI helpers ──────────────────────────────────
+function wcBotMsg(html, delay = 0) {
+  setTimeout(() => {
+    const el = document.createElement("div");
+    el.className = "chat-bubble bot";
+    el.innerHTML = `<div class="bubble-inner">${html}</div>`;
+    document.getElementById("wcMessages").appendChild(el);
+    wcScrollBottom();
+  }, delay);
+}
+function wcUserMsg(text) {
+  const el = document.createElement("div");
+  el.className = "chat-bubble user";
+  el.innerHTML = `<div class="bubble-inner">${escapeHtml(text)}</div>`;
+  document.getElementById("wcMessages").appendChild(el);
+  wcScrollBottom();
+}
+function wcShowTyping() {
+  const el = document.createElement("div");
+  el.id = "wcTyping"; el.className = "chat-typing";
+  el.innerHTML = "<span></span><span></span><span></span>";
+  document.getElementById("wcMessages").appendChild(el);
+  wcScrollBottom();
+}
+function wcRemoveTyping() { document.getElementById("wcTyping")?.remove(); }
+
+let _wcInputCallback = null;
+function wcShowInput(placeholder, onSubmit) {
+  const row = document.getElementById("wcInputRow");
+  const inp = document.getElementById("wcInput");
+  inp.placeholder = placeholder; inp.value = ""; inp.style.height = "auto";
+  row.style.display = "flex";
+  _wcInputCallback = onSubmit;
+  document.getElementById("wcSendBtn").disabled = false;
+  setTimeout(() => inp.focus(), 100);
+}
+function wcHideInput() {
+  document.getElementById("wcInputRow").style.display = "none";
+  _wcInputCallback = null;
+}
+function wcSend() {
+  const inp = document.getElementById("wcInput");
+  const val = inp.value.trim();
+  if (!val || !_wcInputCallback) return;
+  const cb = _wcInputCallback;
+  wcHideInput();
+  cb(val);
+}
+function wcShowQuickReplies(options, onSelect) {
+  wcHideInput();
+  const row = document.createElement("div");
+  row.className = "chat-quick-replies";
+  options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "qr-btn";
+    btn.textContent = opt.label;
+    btn.onclick = () => {
+      row.querySelectorAll(".qr-btn").forEach(b => b.disabled = true);
+      btn.classList.add("selected");
+      onSelect(opt.value);
+    };
+    row.appendChild(btn);
+  });
+  document.getElementById("wcMessages").appendChild(row);
+  wcScrollBottom();
+}
+function wcScrollBottom() {
+  const el = document.getElementById("wcMessages");
+  if (el) setTimeout(() => el.scrollTop = el.scrollHeight, 60);
+}
+
+// Auto-start when navigating to the page
+(function() {
+  const _orig = window.showPage;
+  window.showPage = function(id) {
+    if (typeof _orig === "function") _orig(id);
+    if (id === "pageWhatCreate" && WC.step === 0) setTimeout(wcStart, 200);
+  };
+  // Also patch if showPage is defined later
+  document.addEventListener("DOMContentLoaded", () => {
+    const orig2 = window.showPage;
+    window.showPage = function(id) {
+      orig2(id);
+      if (id === "pageWhatCreate" && WC.step === 0) setTimeout(wcStart, 200);
+    };
+  });
+})();
 
 
 </script>
