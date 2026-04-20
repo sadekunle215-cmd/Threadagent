@@ -325,7 +325,21 @@
     #balanceToast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid rgba(224,22,26,.5);border-radius:10px;color:#ff8080;font-family:var(--mono);font-size:12px;letter-spacing:1px;padding:12px 24px;z-index:9997;display:none;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5)}
     #balanceToast.visible{display:block;animation:fadeUp .3s ease}
 
-    /* ══ GFX INTERACTIVE EDITOR ══ */
+    /* ══ GFX DESIGN HUB ══ */
+    /* --- Shared canvas/template base --- */
+    .canvas-outer{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:8px}
+    .canvas-outer canvas{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none;-webkit-user-select:none;user-select:none}
+    .wm-badge{font-family:var(--mono);font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.5);background:rgba(0,0,0,.6);padding:3px 8px;position:absolute;top:8px;right:8px;border-radius:4px;pointer-events:none;border:1px solid rgba(255,255,255,.15)}
+    .canvas-hint{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;margin-bottom:12px;letter-spacing:.3px}
+    .editor-sec{margin-bottom:18px}
+    /* --- Hub layout tabs --- */
+    .hub-tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px}
+    .hub-tab{flex:1;background:transparent;border:none;color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:10px 6px;cursor:pointer;transition:all .2s;border-right:1px solid var(--border)}
+    .hub-tab:last-child{border-right:none}
+    .hub-tab.active{background:var(--red);color:#fff}
+    .hub-panel{display:none}
+    .hub-panel.active{display:block}
+    /* --- Template grid --- */
     .template-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
     .tmpl-card{border:2px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s;background:var(--surface)}
     .tmpl-card.active{border-color:var(--red);box-shadow:0 0 0 3px rgba(224,22,26,.2)}
@@ -333,15 +347,13 @@
     .tmpl-canvas{width:100%;height:auto;display:block}
     .tmpl-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:7px;background:var(--surface2);border-top:1px solid var(--border);text-align:center}
     .tmpl-card.active .tmpl-label{color:var(--red)}
+    /* --- Quick inputs --- */
     .quick-inputs{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
     .qi-row{display:flex;flex-direction:column;gap:4px}
     .qi-label{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
     .qi-input{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;width:100%;transition:border-color .2s;resize:none}
     .qi-input:focus{border-color:var(--red)}
-    .canvas-outer{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:8px}
-    .canvas-outer canvas{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none;-webkit-user-select:none;user-select:none}
-    .wm-badge{font-family:var(--mono);font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.5);background:rgba(0,0,0,.6);padding:3px 8px;position:absolute;top:8px;right:8px;border-radius:4px;pointer-events:none;border:1px solid rgba(255,255,255,.15)}
-    .canvas-hint{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;margin-bottom:12px;letter-spacing:.3px}
+    /* --- Element panel --- */
     .el-panel{background:var(--surface);border:1px solid rgba(224,22,26,.5);border-radius:12px;padding:16px;margin-bottom:14px;animation:fadeUp .2s ease}
     .el-panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
     .el-panel-name{font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--red)}
@@ -358,11 +370,58 @@
     .ep-fbtn.on{border-color:var(--red);color:var(--red);background:rgba(224,22,26,.08)}
     .ep-abtn{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted2);font-family:var(--mono);font-size:11px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer}
     .ep-abtn.on{border-color:var(--red);color:var(--red)}
+    /* --- BG presets --- */
     .bg-presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
     .bg-preset{display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-family:var(--mono);font-size:10px;padding:6px 10px;cursor:pointer;transition:all .15s}
     .bg-preset.on{border-color:var(--red);color:var(--red);background:rgba(224,22,26,.08)}
     .bg-dot{width:18px;height:18px;border-radius:4px;flex-shrink:0}
-    .editor-sec{margin-bottom:18px}
+    /* ══ IPHONE MOCKUP HUB ══ */
+    .mockup-section{display:flex;flex-direction:column;gap:16px}
+    /* device picker */
+    .device-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px}
+    .device-opt{border:2px solid var(--border);border-radius:10px;padding:10px 6px;cursor:pointer;transition:all .2s;text-align:center;background:var(--surface)}
+    .device-opt.active{border-color:var(--red);background:rgba(224,22,26,.07)}
+    .device-opt:hover:not(.active){border-color:var(--muted2)}
+    .device-icon{font-size:20px;margin-bottom:4px}
+    .device-name{font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+    .device-opt.active .device-name{color:var(--red)}
+    /* product type picker */
+    .product-picker{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px}
+    .product-opt{border:2px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;transition:all .2s;background:var(--surface);display:flex;align-items:center;gap:10px}
+    .product-opt.active{border-color:var(--red);background:rgba(224,22,26,.07)}
+    .product-opt:hover:not(.active){border-color:var(--muted2)}
+    .product-opt-icon{font-size:18px;flex-shrink:0}
+    .product-opt-info{display:flex;flex-direction:column;gap:2px}
+    .product-opt-name{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text)}
+    .product-opt-dim{font-family:var(--mono);font-size:9px;color:var(--muted)}
+    .product-opt.active .product-opt-name{color:var(--red)}
+    /* upload zone */
+    .upload-zone{border:2px dashed var(--border);border-radius:12px;padding:28px 16px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px;position:relative}
+    .upload-zone:hover,.upload-zone.drag-over{border-color:var(--red);background:rgba(224,22,26,.05)}
+    .upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .upload-icon{font-size:28px;color:var(--muted);margin-bottom:8px}
+    .upload-text{font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--muted);line-height:1.7}
+    .upload-text strong{color:var(--red);display:block;font-size:13px;margin-bottom:4px;font-family:var(--sans)}
+    /* mockup preview canvas area */
+    .mockup-preview-wrap{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:#0a0a0a;margin-bottom:10px}
+    .mockup-preview-wrap canvas{width:100%;height:auto;display:block}
+    /* mockup controls */
+    .mockup-controls{display:flex;flex-direction:column;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px}
+    .ctrl-row{display:flex;align-items:center;gap:10px}
+    .ctrl-label{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);min-width:60px}
+    .ctrl-slider{flex:1;-webkit-appearance:none;appearance:none;height:4px;background:var(--border);border-radius:2px;outline:none;cursor:pointer}
+    .ctrl-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--red);cursor:pointer;border:2px solid #fff}
+    .ctrl-val{font-family:var(--mono);font-size:10px;color:var(--muted2);min-width:32px;text-align:right}
+    /* mockup text overlays */
+    .mockup-text-inputs{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+    /* color accent row */
+    .accent-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+    .accent-swatch{width:28px;height:28px;border-radius:6px;border:2px solid transparent;cursor:pointer;transition:all .2s;flex-shrink:0}
+    .accent-swatch.on{border-color:#fff;box-shadow:0 0 0 2px var(--red)}
+    /* --- Canvas product selector --- */
+    .canvas-size-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+    .canvas-size-btn{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-family:var(--mono);font-size:9px;letter-spacing:.5px;padding:7px 10px;cursor:pointer;transition:all .15s;white-space:nowrap}
+    .canvas-size-btn.active{border-color:var(--red);color:var(--red);background:rgba(224,22,26,.08)}
 
     /* ══ TASK TYPE WARNING ══ */
     .task-type-warning{display:none;margin-top:14px;border-radius:12px;overflow:hidden;border:1px solid rgba(245,166,35,.35);background:linear-gradient(135deg,#1a1100,#120d00)}
@@ -760,43 +819,223 @@
   <div class="container">
     <div class="page-header">
       <button class="btn-back" onclick="showPage('pageHome')"><i class="fa fa-arrow-left"></i> Back</button>
-      <div class="page-title"><i class="fa-solid fa-palette"></i> CREATE GRAPHICS</div>
+      <div class="page-title"><i class="fa-solid fa-palette"></i> DESIGN HUB</div>
     </div>
 
-    <!-- Step 1: Template picker -->
-    <div class="editor-sec">
-      <div class="step-label">Choose a layout template</div>
-      <div class="template-grid" id="gfxTmplGrid"></div>
+    <!-- Hub mode tabs -->
+    <div class="hub-tabs">
+      <button class="hub-tab active" onclick="hubSwitch('canvas')" id="hubTabCanvas"><i class="fa fa-layer-group"></i> Canvas</button>
+      <button class="hub-tab" onclick="hubSwitch('mockup')" id="hubTabMockup"><i class="fa-brands fa-apple"></i> iPhone Mockup</button>
     </div>
 
-    <!-- Step 2: Quick content inputs (shown after template pick) -->
-    <div class="editor-sec" id="gfxInputsSec" style="display:none">
-      <div class="step-label">Edit your content</div>
-      <div class="quick-inputs" id="gfxQuickInputs"></div>
-      <div class="step-label" style="margin-bottom:8px">Background style</div>
-      <div class="bg-presets" id="gfxBgPresets">
-        <button class="bg-preset on" data-c1="#0d0d0d" data-c2="#1a0802" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#0d0d0d,#1a0802)"></span>Cinema</button>
-        <button class="bg-preset" data-c1="#07062a" data-c2="#100e5c" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#07062a,#100e5c)"></span>Navy</button>
-        <button class="bg-preset" data-c1="#0d1117" data-c2="#1a2332" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#0d1117,#1a2332)"></span>Slate</button>
-        <button class="bg-preset" data-c1="#0b1a0b" data-c2="#0d3b0d" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#0b1a0b,#0d3b0d)"></span>Forest</button>
-        <button class="bg-preset" data-c1="#f5f5f3" data-c2="#e0e0da" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#f5f5f3,#e0e0da);border:1px solid #ccc"></span>Light</button>
-        <button class="bg-preset" data-c1="#1a0020" data-c2="#3a0060" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#1a0020,#3a0060)"></span>Purple</button>
+    <!-- ── CANVAS PANEL ── -->
+    <div class="hub-panel active" id="hubPanelCanvas">
+      <!-- Canvas size / product picker -->
+      <div class="editor-sec">
+        <div class="step-label">Canvas size</div>
+        <div class="canvas-size-row" id="gfxSizeRow">
+          <button class="canvas-size-btn active" data-w="1600" data-h="900" onclick="gfxSetSize(this)">16:9 Banner (1600×900)</button>
+          <button class="canvas-size-btn" data-w="1080" data-h="1080" onclick="gfxSetSize(this)">Square Post (1080×1080)</button>
+          <button class="canvas-size-btn" data-w="1080" data-h="1920" onclick="gfxSetSize(this)">Story (1080×1920)</button>
+          <button class="canvas-size-btn" data-w="1200" data-h="628" onclick="gfxSetSize(this)">Facebook Ad (1200×628)</button>
+          <button class="canvas-size-btn" data-w="1500" data-h="500" onclick="gfxSetSize(this)">Twitter Header (1500×500)</button>
+          <button class="canvas-size-btn" data-w="2480" data-h="3508" onclick="gfxSetSize(this)">A4 Poster (2480×3508)</button>
+        </div>
       </div>
-    </div>
 
-    <!-- Step 3: Live preview -->
-    <div class="editor-sec" id="gfxPreviewSec" style="display:none">
-      <div class="step-label" style="margin-bottom:4px">Live preview</div>
-      <p class="canvas-hint"><i class="fa-solid fa-hand-pointer" style="color:var(--red)"></i> Tap any element to select &amp; edit · Drag to reposition</p>
-      <div class="canvas-outer">
-        <canvas id="gfxPrevCanvas" width="1600" height="900"></canvas>
-        <div class="wm-badge">WATERMARKED PREVIEW</div>
+      <!-- Template picker -->
+      <div class="editor-sec">
+        <div class="step-label">Choose a layout template</div>
+        <div class="template-grid" id="gfxTmplGrid"></div>
       </div>
-      <div class="el-panel" id="gfxElPanel" style="display:none"></div>
+
+      <!-- Quick content inputs -->
+      <div class="editor-sec" id="gfxInputsSec" style="display:none">
+        <div class="step-label">Edit your content</div>
+        <div class="quick-inputs" id="gfxQuickInputs"></div>
+        <div class="step-label" style="margin-bottom:8px">Background style</div>
+        <div class="bg-presets" id="gfxBgPresets">
+          <button class="bg-preset on" data-c1="#0d0d0d" data-c2="#1a0802" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#0d0d0d,#1a0802)"></span>Cinema</button>
+          <button class="bg-preset" data-c1="#07062a" data-c2="#100e5c" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#07062a,#100e5c)"></span>Navy</button>
+          <button class="bg-preset" data-c1="#0d1117" data-c2="#1a2332" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#0d1117,#1a2332)"></span>Slate</button>
+          <button class="bg-preset" data-c1="#0b1a0b" data-c2="#0d3b0d" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#0b1a0b,#0d3b0d)"></span>Forest</button>
+          <button class="bg-preset" data-c1="#f5f5f3" data-c2="#e0e0da" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#f5f5f3,#e0e0da);border:1px solid #ccc"></span>Light</button>
+          <button class="bg-preset" data-c1="#1a0020" data-c2="#3a0060" onclick="gfxSetBg(this)"><span class="bg-dot" style="background:linear-gradient(135deg,#1a0020,#3a0060)"></span>Purple</button>
+        </div>
+      </div>
+
+      <!-- Live preview -->
+      <div class="editor-sec" id="gfxPreviewSec" style="display:none">
+        <div class="step-label" style="margin-bottom:4px">Live preview</div>
+        <p class="canvas-hint"><i class="fa-solid fa-hand-pointer" style="color:var(--red)"></i> Tap element to select &amp; edit · Drag to reposition</p>
+        <div class="canvas-outer">
+          <canvas id="gfxPrevCanvas" width="1600" height="900"></canvas>
+          <div class="wm-badge">PREVIEW</div>
+        </div>
+        <div class="el-panel" id="gfxElPanel" style="display:none"></div>
+      </div>
+
+      <div class="error-box" id="gfxErrorBox"></div>
+      <button class="btn-generate" id="gfxGenBtn" style="display:none" onclick="gfxGenerate()">DOWNLOAD HD — FREE</button>
     </div>
 
-    <div class="error-box" id="gfxErrorBox"></div>
-    <button class="btn-generate" id="gfxGenBtn" style="display:none" onclick="gfxGenerate()">GENERATE HD — &#8358;100</button>
+    <!-- ── IPHONE MOCKUP PANEL ── -->
+    <div class="hub-panel" id="hubPanelMockup">
+
+      <!-- Step 1: Pick device model -->
+      <div class="editor-sec">
+        <div class="step-label">Choose iPhone model</div>
+        <div class="device-picker" id="mkDevicePicker">
+          <div class="device-opt active" data-device="15pro" onclick="mkSetDevice(this)">
+            <div class="device-icon">📱</div>
+            <div class="device-name">iPhone 15 Pro</div>
+          </div>
+          <div class="device-opt" data-device="15" onclick="mkSetDevice(this)">
+            <div class="device-icon">📱</div>
+            <div class="device-name">iPhone 15</div>
+          </div>
+          <div class="device-opt" data-device="14pro" onclick="mkSetDevice(this)">
+            <div class="device-icon">📱</div>
+            <div class="device-name">iPhone 14 Pro</div>
+          </div>
+          <div class="device-opt" data-device="14" onclick="mkSetDevice(this)">
+            <div class="device-icon">📱</div>
+            <div class="device-name">iPhone 14</div>
+          </div>
+          <div class="device-opt" data-device="se" onclick="mkSetDevice(this)">
+            <div class="device-icon">📱</div>
+            <div class="device-name">iPhone SE</div>
+          </div>
+          <div class="device-opt" data-device="fold" onclick="mkSetDevice(this)">
+            <div class="device-icon">📟</div>
+            <div class="device-name">Fold View</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Pick canvas product type -->
+      <div class="editor-sec">
+        <div class="step-label">Canvas product</div>
+        <div class="product-picker" id="mkProductPicker">
+          <div class="product-opt active" data-product="post" onclick="mkSetProduct(this)">
+            <div class="product-opt-icon">🖼️</div>
+            <div class="product-opt-info">
+              <div class="product-opt-name">Social Post</div>
+              <div class="product-opt-dim">1080 × 1080</div>
+            </div>
+          </div>
+          <div class="product-opt" data-product="story" onclick="mkSetProduct(this)">
+            <div class="product-opt-icon">📏</div>
+            <div class="product-opt-info">
+              <div class="product-opt-name">Story / Reel</div>
+              <div class="product-opt-dim">1080 × 1920</div>
+            </div>
+          </div>
+          <div class="product-opt" data-product="banner" onclick="mkSetProduct(this)">
+            <div class="product-opt-icon">🎨</div>
+            <div class="product-opt-info">
+              <div class="product-opt-name">Wide Banner</div>
+              <div class="product-opt-dim">1600 × 900</div>
+            </div>
+          </div>
+          <div class="product-opt" data-product="ad" onclick="mkSetProduct(this)">
+            <div class="product-opt-icon">📣</div>
+            <div class="product-opt-info">
+              <div class="product-opt-name">Ad Creative</div>
+              <div class="product-opt-dim">1200 × 628</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Upload screenshot -->
+      <div class="editor-sec">
+        <div class="step-label">Upload screenshot</div>
+        <div class="upload-zone" id="mkUploadZone">
+          <input type="file" accept="image/*" id="mkScreenFile" onchange="mkHandleFile(this)">
+          <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+          <div class="upload-text">
+            <strong>Drop or tap to upload</strong>
+            Screenshot from your phone · PNG / JPG accepted
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Accent + text overlays -->
+      <div class="editor-sec" id="mkOverlaySec" style="display:none">
+        <div class="step-label">Accent colour</div>
+        <div class="accent-row" id="mkAccentRow">
+          <div class="accent-swatch on" style="background:#e0161a" data-col="#e0161a" onclick="mkSetAccent(this)"></div>
+          <div class="accent-swatch" style="background:#3b82f6" data-col="#3b82f6" onclick="mkSetAccent(this)"></div>
+          <div class="accent-swatch" style="background:#22c55e" data-col="#22c55e" onclick="mkSetAccent(this)"></div>
+          <div class="accent-swatch" style="background:#f97316" data-col="#f97316" onclick="mkSetAccent(this)"></div>
+          <div class="accent-swatch" style="background:#a855f7" data-col="#a855f7" onclick="mkSetAccent(this)"></div>
+          <div class="accent-swatch" style="background:#f5a623" data-col="#f5a623" onclick="mkSetAccent(this)"></div>
+          <div class="accent-swatch" style="background:#ffffff" data-col="#ffffff" onclick="mkSetAccent(this)"></div>
+          <input type="color" value="#e0161a" id="mkCustomColor" title="Custom" style="width:28px;height:28px;border:none;background:none;cursor:pointer;padding:0;border-radius:6px" oninput="mkSetAccentHex(this.value)">
+        </div>
+
+        <div class="step-label" style="margin-top:4px">Text overlays (optional)</div>
+        <div class="mockup-text-inputs">
+          <input class="qi-input" type="text" id="mkHeadline" placeholder="Headline text..." oninput="mkRefresh()">
+          <input class="qi-input" type="text" id="mkSubline" placeholder="Subtext / tagline..." oninput="mkRefresh()">
+          <input class="qi-input" type="text" id="mkHandle" placeholder="@handle or brand..." oninput="mkRefresh()">
+        </div>
+
+        <!-- Mockup adjustments -->
+        <div class="step-label">Adjustments</div>
+        <div class="mockup-controls">
+          <div class="ctrl-row">
+            <span class="ctrl-label">Scale</span>
+            <input type="range" class="ctrl-slider" id="mkScale" min="40" max="100" value="72" oninput="mkRefresh();document.getElementById('mkScaleVal').textContent=this.value+'%'">
+            <span class="ctrl-val" id="mkScaleVal">72%</span>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-label">X Offset</span>
+            <input type="range" class="ctrl-slider" id="mkOffX" min="-300" max="300" value="0" oninput="mkRefresh();document.getElementById('mkOffXVal').textContent=this.value">
+            <span class="ctrl-val" id="mkOffXVal">0</span>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-label">Y Offset</span>
+            <input type="range" class="ctrl-slider" id="mkOffY" min="-300" max="300" value="0" oninput="mkRefresh();document.getElementById('mkOffYVal').textContent=this.value">
+            <span class="ctrl-val" id="mkOffYVal">0</span>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-label">BG Style</span>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;flex:1">
+              <button class="canvas-size-btn active" onclick="mkSetBgStyle(this,'gradient')" id="mkBgGrad">Gradient</button>
+              <button class="canvas-size-btn" onclick="mkSetBgStyle(this,'solid')" id="mkBgSolid">Solid</button>
+              <button class="canvas-size-btn" onclick="mkSetBgStyle(this,'mesh')" id="mkBgMesh">Mesh</button>
+              <button class="canvas-size-btn" onclick="mkSetBgStyle(this,'dark')" id="mkBgDark">Dark</button>
+              <button class="canvas-size-btn" onclick="mkSetBgStyle(this,'light')" id="mkBgLight">Light</button>
+            </div>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-label">Tilt</span>
+            <input type="range" class="ctrl-slider" id="mkTilt" min="-20" max="20" value="0" oninput="mkRefresh();document.getElementById('mkTiltVal').textContent=this.value+'°'">
+            <span class="ctrl-val" id="mkTiltVal">0°</span>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-label">Shadow</span>
+            <input type="range" class="ctrl-slider" id="mkShadow" min="0" max="100" value="60" oninput="mkRefresh();document.getElementById('mkShadowVal').textContent=this.value">
+            <span class="ctrl-val" id="mkShadowVal">60</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live mockup preview -->
+      <div class="editor-sec" id="mkPreviewSec" style="display:none">
+        <div class="step-label" style="margin-bottom:4px">Live preview — editing in real time</div>
+        <div class="mockup-preview-wrap">
+          <canvas id="mkCanvas" width="1080" height="1080"></canvas>
+          <div class="wm-badge">PREVIEW</div>
+        </div>
+      </div>
+
+      <div class="error-box" id="mkErrorBox"></div>
+      <button class="btn-generate" id="mkGenBtn" style="display:none" onclick="mkDownload()">DOWNLOAD MOCKUP — FREE</button>
+    </div>
+
     <div style="height:40px"></div>
   </div>
 </div>
@@ -2860,55 +3099,141 @@ async function ctDownloadAllCards(){const tweets=window._ctTweets;if(!tweets)ret
 // ── DOMContentLoaded ──
 
 // ══════════════════════════════════════════════════════
-// GFX INTERACTIVE EDITOR
+// DESIGN HUB — CANVAS EDITOR + IPHONE MOCKUP
 // ══════════════════════════════════════════════════════
+
+// ── Hub tab switch ──
+function hubSwitch(tab) {
+  document.querySelectorAll('.hub-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.hub-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('hubTab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  document.getElementById('hubPanel'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+}
+
+// ════════════════════════════════
+// CANVAS EDITOR
+// ════════════════════════════════
+
+// canvas size state
+let gfxCanvasW = 1600, gfxCanvasH = 900;
+function gfxSetSize(btn) {
+  document.querySelectorAll('#gfxSizeRow .canvas-size-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  gfxCanvasW = +btn.dataset.w; gfxCanvasH = +btn.dataset.h;
+  const c = document.getElementById('gfxPrevCanvas');
+  if (c) { c.width = gfxCanvasW; c.height = gfxCanvasH; }
+  // Rescale template elements proportionally when switching size
+  gfxInitTmpls();
+  if (gfxState) gfxRefreshPreview();
+}
 
 const GFX_TEMPLATES = [
   { id:'cinema', name:'Dark Cinema',
     bg:{ c1:'#0d0d0d', c2:'#1a0802' },
     elements:[
-      { id:'brand', type:'text', label:'Brand Name', text:'YOUR BRAND', x:80, y:108, fs:22, color:'#ffffff88', ff:'DM Sans', fw:'300', align:'left' },
-      { id:'line1', type:'line', label:'Top Accent Line', x:80, y:158, w:90, color:'#c8a84b' },
-      { id:'title', type:'text', label:'Main Title', text:'15TH ANNUAL\nCAR SHOW', x:80, y:195, fs:118, color:'#ffffff', ff:'Bebas Neue', fw:'400', align:'left' },
-      { id:'line2', type:'line', label:'Bottom Accent Line', x:80, y:556, w:90, color:'#c8a84b' },
-      { id:'date', type:'text', label:'Date', text:'SEPTEMBER 17-21, 2024', x:80, y:616, fs:24, color:'#ffffff', ff:'DM Mono', fw:'400', align:'left' },
-      { id:'loc', type:'text', label:'Location', text:'AVDA. ENRIQUE PEINADOR', x:80, y:658, fs:24, color:'#ffffff', ff:'DM Mono', fw:'400', align:'left' },
+      { id:'brand', type:'text', label:'Brand Name', text:'YOUR BRAND', x:0.05, y:0.12, fs:0.024, color:'#ffffff88', ff:'DM Sans', fw:'300', align:'left' },
+      { id:'line1', type:'line', label:'Top Accent', x:0.05, y:0.175, w:0.056, color:'#c8a84b' },
+      { id:'title', type:'text', label:'Main Title', text:'15TH ANNUAL\nCAR SHOW', x:0.05, y:0.215, fs:0.131, color:'#ffffff', ff:'Bebas Neue', fw:'400', align:'left' },
+      { id:'line2', type:'line', label:'Bottom Accent', x:0.05, y:0.617, w:0.056, color:'#c8a84b' },
+      { id:'date', type:'text', label:'Date', text:'SEPTEMBER 17-21, 2024', x:0.05, y:0.685, fs:0.0267, color:'#ffffff', ff:'DM Mono', fw:'400', align:'left' },
+      { id:'loc', type:'text', label:'Location', text:'AVDA. ENRIQUE PEINADOR', x:0.05, y:0.73, fs:0.0267, color:'#ffffff', ff:'DM Mono', fw:'400', align:'left' },
     ]
   },
   { id:'agency', name:'Bold Agency',
     bg:{ c1:'#07062a', c2:'#100e5c' },
     elements:[
-      { id:'brand', type:'text', label:'Brand', text:'Your Company', x:80, y:68, fs:20, color:'#ffffffaa', ff:'DM Sans', fw:'300', align:'left' },
-      { id:'h1', type:'text', label:'Headline 1', text:'DIGITAL', x:80, y:130, fs:158, color:'#ffffff', ff:'Bebas Neue', fw:'400', align:'left' },
-      { id:'h2', type:'text', label:'Headline 2 (accent)', text:'MARKETING', x:80, y:310, fs:130, color:'#f97316', ff:'Bebas Neue', fw:'400', align:'left' },
-      { id:'h3', type:'text', label:'Headline 3', text:'FOR YOUR BUSINESS', x:80, y:456, fs:76, color:'#ffffff', ff:'Bebas Neue', fw:'400', align:'left' },
-      { id:'tagline', type:'text', label:'Tagline', text:'Grow Your Business — Maximize The Results', x:80, y:568, fs:25, color:'#ffffffdd', ff:'DM Sans', fw:'700', align:'left' },
-      { id:'body', type:'text', label:'Body Text', text:'Build your business digitally to reach a wider audience.', x:80, y:612, fs:20, color:'#ffffff88', ff:'DM Sans', fw:'400', align:'left' },
-      { id:'handle', type:'text', label:'Handle / Contact', text:'@yourhandle  |  contact@email.com', x:80, y:848, fs:21, color:'#ffffffcc', ff:'DM Sans', fw:'400', align:'left' },
-      { id:'dots', type:'dots', label:'Dot Grid', x:878, y:38, color:'#ffffff44', cols:9, rows:5, gap:20, ds:3 },
+      { id:'brand', type:'text', label:'Brand', text:'Your Company', x:0.05, y:0.075, fs:0.022, color:'#ffffffaa', ff:'DM Sans', fw:'300', align:'left' },
+      { id:'h1', type:'text', label:'Headline 1', text:'DIGITAL', x:0.05, y:0.144, fs:0.175, color:'#ffffff', ff:'Bebas Neue', fw:'400', align:'left' },
+      { id:'h2', type:'text', label:'Headline 2', text:'MARKETING', x:0.05, y:0.344, fs:0.144, color:'#f97316', ff:'Bebas Neue', fw:'400', align:'left' },
+      { id:'h3', type:'text', label:'Headline 3', text:'FOR YOUR BUSINESS', x:0.05, y:0.506, fs:0.084, color:'#ffffff', ff:'Bebas Neue', fw:'400', align:'left' },
+      { id:'tagline', type:'text', label:'Tagline', text:'Grow Your Business — Maximize The Results', x:0.05, y:0.63, fs:0.0278, color:'#ffffffdd', ff:'DM Sans', fw:'700', align:'left' },
+      { id:'body', type:'text', label:'Body', text:'Build your brand digitally to reach a wider audience.', x:0.05, y:0.68, fs:0.022, color:'#ffffff88', ff:'DM Sans', fw:'400', align:'left' },
+      { id:'handle', type:'text', label:'Handle', text:'@yourhandle  |  contact@email.com', x:0.05, y:0.942, fs:0.0233, color:'#ffffffcc', ff:'DM Sans', fw:'400', align:'left' },
+      { id:'dots', type:'dots', label:'Dot Grid', rx:0.549, ry:0.042, color:'#ffffff44', cols:9, rows:5, gap:20, ds:3 },
     ]
   },
   { id:'crypto', name:'Crypto Card',
     bg:{ c1:'#0d1117', c2:'#1a2332' },
     elements:[
-      { id:'bgtext', type:'text', label:'Background Text', text:'TOKEN\nLOCKS', x:60, y:100, fs:218, color:'#ffffff06', ff:'Bebas Neue', fw:'400', align:'left' },
-      { id:'card', type:'rect', label:'Card Block', x:820, y:170, w:680, h:512, color:'#ede8e0', radius:14 },
-      { id:'author', type:'text', label:'Author Handle', text:'@yourusername x @brand', x:856, y:264, fs:19, color:'#666666', ff:'DM Mono', fw:'400', align:'left' },
-      { id:'ctitle', type:'text', label:'Card Title', text:'Your Project:\nMy journey into\nwhat matters', x:840, y:318, fs:48, color:'#111111', ff:'DM Sans', fw:'800', align:'left' },
-      { id:'csub', type:'text', label:'Card Subtitle', text:'(and why everyone needs it)', x:840, y:586, fs:22, color:'#555555', ff:'DM Sans', fw:'400', align:'left' },
+      { id:'bgtext', type:'text', label:'Background Text', text:'TOKEN\nLOCKS', x:0.0375, y:0.111, fs:0.242, color:'#ffffff06', ff:'Bebas Neue', fw:'400', align:'left' },
+      { id:'card', type:'rect', label:'Card Block', rx:0.5125, ry:0.189, rw:0.425, rh:0.569, color:'#ede8e0', radius:14 },
+      { id:'author', type:'text', label:'Author', text:'@yourusername x @brand', rx:0.535, ry:0.293, fs:0.021, color:'#666666', ff:'DM Mono', fw:'400', align:'left' },
+      { id:'ctitle', type:'text', label:'Card Title', text:'Your Project:\nMy journey into\nwhat matters', rx:0.525, ry:0.353, fs:0.0533, color:'#111111', ff:'DM Sans', fw:'800', align:'left' },
+      { id:'csub', type:'text', label:'Subtitle', text:'(and why everyone needs it)', rx:0.525, ry:0.651, fs:0.0244, color:'#555555', ff:'DM Sans', fw:'400', align:'left' },
     ]
   },
   { id:'minimal', name:'Clean Minimal',
     bg:{ c1:'#f5f5f3', c2:'#e0e0da' },
     elements:[
-      { id:'brand', type:'text', label:'Brand', text:'your brand', x:800, y:200, fs:20, color:'#aaaaaa', ff:'DM Mono', fw:'400', align:'center' },
-      { id:'title', type:'text', label:'Title', text:'YOUR THREAD\nTITLE HERE', x:800, y:278, fs:112, color:'#111111', ff:'Bebas Neue', fw:'400', align:'center' },
-      { id:'line', type:'line', label:'Accent Line', x:650, y:575, w:300, color:'#e0161a' },
-      { id:'sub', type:'text', label:'Subtitle', text:'A thread by @yourhandle', x:800, y:626, fs:25, color:'#777777', ff:'DM Mono', fw:'400', align:'center' },
-      { id:'dots', type:'dots', label:'Decoration', x:1380, y:680, color:'#bbbbbb', cols:5, rows:5, gap:22, ds:4 },
+      { id:'brand', type:'text', label:'Brand', text:'your brand', cx:0.5, y:0.222, fs:0.022, color:'#aaaaaa', ff:'DM Mono', fw:'400', align:'center' },
+      { id:'title', type:'text', label:'Title', text:'YOUR THREAD\nTITLE HERE', cx:0.5, y:0.308, fs:0.124, color:'#111111', ff:'Bebas Neue', fw:'400', align:'center' },
+      { id:'line', type:'line', label:'Accent Line', rx:0.406, ry:0.639, rw:0.1875, color:'#e0161a' },
+      { id:'sub', type:'text', label:'Subtitle', text:'A thread by @yourhandle', cx:0.5, y:0.695, fs:0.0278, color:'#777777', ff:'DM Mono', fw:'400', align:'center' },
+      { id:'dots', type:'dots', label:'Dots', rx:0.8625, ry:0.755, color:'#bbbbbb', cols:5, rows:5, gap:22, ds:4 },
     ]
-  }
+  },
+  { id:'neon', name:'Neon Glow',
+    bg:{ c1:'#050510', c2:'#0a0518' },
+    elements:[
+      { id:'glow', type:'rect', label:'Glow Block', rx:0.0, ry:0.0, rw:1.0, rh:1.0, color:'#0a0524', radius:0 },
+      { id:'brand', type:'text', label:'Brand', text:'THREADCRAFT', cx:0.5, y:0.08, fs:0.018, color:'#ffffff44', ff:'DM Mono', fw:'400', align:'center' },
+      { id:'neonline', type:'line', label:'Neon Line', rx:0.1, ry:0.28, rw:0.8, color:'#00ffff' },
+      { id:'title', type:'text', label:'Title', text:'NEON\nDROPS', cx:0.5, y:0.3, fs:0.2, color:'#ffffff', ff:'Bebas Neue', fw:'400', align:'center' },
+      { id:'neonline2', type:'line', label:'Neon Line 2', rx:0.1, ry:0.72, rw:0.8, color:'#ff00ff' },
+      { id:'sub', type:'text', label:'Sub', text:'FUTURE IS NOW', cx:0.5, y:0.77, fs:0.03, color:'#00ffff', ff:'DM Mono', fw:'400', align:'center' },
+      { id:'handle', type:'text', label:'Handle', text:'@handle', cx:0.5, y:0.9, fs:0.022, color:'#ffffff66', ff:'DM Mono', fw:'400', align:'center' },
+    ]
+  },
+  { id:'product', name:'Product Launch',
+    bg:{ c1:'#0f0f0f', c2:'#1a1400' },
+    elements:[
+      { id:'tag', type:'text', label:'Tag', text:'NEW ARRIVAL', x:0.05, y:0.072, fs:0.018, color:'#e0161a', ff:'DM Mono', fw:'400', align:'left' },
+      { id:'title', type:'text', label:'Product Name', text:'YOUR PRODUCT\nNAME HERE', x:0.05, y:0.11, fs:0.155, color:'#ffffff', ff:'Bebas Neue', fw:'400', align:'left' },
+      { id:'price', type:'text', label:'Price', text:'₦49,999', x:0.05, y:0.655, fs:0.078, color:'#f5a623', ff:'Bebas Neue', fw:'400', align:'left' },
+      { id:'desc', type:'text', label:'Description', text:'Premium quality · Limited stock · Ships in 2 days', x:0.05, y:0.78, fs:0.022, color:'#ffffff88', ff:'DM Sans', fw:'400', align:'left' },
+      { id:'cta', type:'text', label:'CTA', text:'ORDER NOW →', x:0.05, y:0.88, fs:0.033, color:'#ffffff', ff:'DM Mono', fw:'700', align:'left' },
+      { id:'dots', type:'dots', label:'Dots', rx:0.7, ry:0.05, color:'#ffffff22', cols:8, rows:10, gap:26, ds:3 },
+    ]
+  },
+  { id:'event', name:'Event Invite',
+    bg:{ c1:'#1a0008', c2:'#0d000d' },
+    elements:[
+      { id:'pre', type:'text', label:'Pre-title', text:'YOU ARE INVITED TO', cx:0.5, y:0.06, fs:0.02, color:'#ffffff66', ff:'DM Mono', fw:'400', align:'center' },
+      { id:'title', type:'text', label:'Event Name', text:'THE ANNUAL\nGALA NIGHT', cx:0.5, y:0.12, fs:0.155, color:'#ffffff', ff:'Bebas Neue', fw:'400', align:'center' },
+      { id:'date', type:'text', label:'Date', text:'FRIDAY · DECEMBER 20 · 2024', cx:0.5, y:0.62, fs:0.028, color:'#c8a84b', ff:'DM Mono', fw:'400', align:'center' },
+      { id:'venue', type:'text', label:'Venue', text:'GRAND BALLROOM, VICTORIA ISLAND', cx:0.5, y:0.69, fs:0.024, color:'#ffffff88', ff:'DM Sans', fw:'400', align:'center' },
+      { id:'time', type:'text', label:'Time', text:'6:00 PM — DRESS CODE: BLACK TIE', cx:0.5, y:0.76, fs:0.022, color:'#ffffff66', ff:'DM Mono', fw:'300', align:'center' },
+      { id:'handle', type:'text', label:'Contact', text:'RSVP: @yourhandle  |  tickets@event.com', cx:0.5, y:0.92, fs:0.02, color:'#ffffff44', ff:'DM Mono', fw:'400', align:'center' },
+    ]
+  },
+  { id:'quote', name:'Bold Quote',
+    bg:{ c1:'#0d0d0d', c2:'#181818' },
+    elements:[
+      { id:'qmark', type:'text', label:'Quote Mark', text:'"', cx:0.5, y:0.04, fs:0.22, color:'#e0161a22', ff:'Bebas Neue', fw:'400', align:'center' },
+      { id:'quote', type:'text', label:'Quote Text', text:'Success is not final,\nfailure is not fatal:\nit is the courage\nthat counts.', cx:0.5, y:0.2, fs:0.084, color:'#ffffff', ff:'Bebas Neue', fw:'400', align:'center' },
+      { id:'author', type:'text', label:'Author', text:'— Winston Churchill', cx:0.5, y:0.82, fs:0.028, color:'#ffffff88', ff:'DM Mono', fw:'400', align:'center' },
+      { id:'handle', type:'text', label:'Handle', text:'@yourhandle', cx:0.5, y:0.92, fs:0.02, color:'#e0161a', ff:'DM Mono', fw:'400', align:'center' },
+    ]
+  },
 ];
+
+// ── Resolve proportional coords to pixels ──
+function gfxResolve(el, W, H) {
+  const r = {...el};
+  // x/y as ratio → pixel
+  if ('cx' in r) r.x = r.cx * W;
+  else if ('rx' in r) r.x = r.rx * W;
+  else if (r.x <= 1 && r.x >= 0 && !Number.isInteger(r.x) && r.x < 10) r.x = r.x * W;
+  if ('ry' in r) r.y = r.ry * H;
+  else if (r.y <= 1 && r.y > 0) r.y = r.y * H;
+  // fs as ratio
+  if (r.fs <= 1) r.fs = Math.round(r.fs * H);
+  // w/h for rect/line
+  if ('rw' in r) r.w = r.rw * W;
+  else if (r.w && r.w <= 1) r.w = r.w * W;
+  if ('rh' in r) r.h = r.rh * H;
+  return r;
+}
 
 // ── State ──
 let gfxState = null;
@@ -2923,20 +3248,23 @@ function gfxClone(t) {
 // ── Render ──
 function gfxRender(canvas, state, wm) {
   const ctx = canvas.getContext('2d');
-  const W=1600, H=900;
+  const W=canvas.width||gfxCanvasW, H=canvas.height||gfxCanvasH;
   ctx.clearRect(0,0,W,H);
   const c1 = gfxBg.c1||state.bg.c1, c2 = gfxBg.c2||state.bg.c2;
   const g = ctx.createLinearGradient(0,0,W,H);
   g.addColorStop(0,c1); g.addColorStop(1,c2);
   ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
-  state.elements.forEach(el => gfxDrawEl(ctx, el, el.id===gfxSelId));
+  state.elements.forEach(el => {
+    const rel = gfxResolve(el, W, H);
+    gfxDrawEl(ctx, rel, el.id===gfxSelId, W, H);
+  });
   if (wm) gfxWatermark(ctx, W, H);
 }
 
-function gfxDrawEl(ctx, el, sel) {
+function gfxDrawEl(ctx, el, sel, W, H) {
   ctx.save();
   if (el.type==='text') {
-    const lines = el.text.split('\n');
+    const lines = (el.text||'').split('\n');
     const lh = el.fs * 1.22;
     ctx.font = (el.fw||'400')+' '+el.fs+'px "'+(el.ff||'DM Sans')+'", sans-serif';
     ctx.fillStyle = el.color||'#ffffff';
@@ -2944,7 +3272,7 @@ function gfxDrawEl(ctx, el, sel) {
     ctx.textBaseline = 'top';
     lines.forEach((ln,i) => ctx.fillText(ln, el.x, el.y + i*lh));
   } else if (el.type==='line') {
-    ctx.strokeStyle = el.color||'#ffffff'; ctx.lineWidth=4;
+    ctx.strokeStyle = el.color||'#ffffff'; ctx.lineWidth=Math.max(3, H/200);
     ctx.beginPath(); ctx.moveTo(el.x,el.y); ctx.lineTo(el.x+(el.w||80),el.y); ctx.stroke();
   } else if (el.type==='rect') {
     ctx.fillStyle = el.color||'#ffffff';
@@ -2959,7 +3287,7 @@ function gfxDrawEl(ctx, el, sel) {
     }
   }
   if (sel) {
-    const bb = gfxBB(el);
+    const bb = gfxBBR(el);
     ctx.strokeStyle='#3b82f6'; ctx.lineWidth=3;
     ctx.setLineDash([7,4]); ctx.strokeRect(bb.x-10,bb.y-10,bb.w+20,bb.h+20);
     ctx.setLineDash([]);
@@ -2970,9 +3298,9 @@ function gfxDrawEl(ctx, el, sel) {
   ctx.restore();
 }
 
-function gfxBB(el) {
+function gfxBBR(el) {
   if (el.type==='text') {
-    const lines=el.text.split('\n'), lh=el.fs*1.22;
+    const lines=(el.text||'').split('\n'), lh=el.fs*1.22;
     const h=lh*lines.length;
     const cw = el.ff&&el.ff.includes('Bebas') ? 0.62 : 0.55;
     const maxW = Math.max(...lines.map(l=>l.length)) * el.fs * cw;
@@ -2990,17 +3318,20 @@ function gfxBB(el) {
 
 function gfxHit(cx, cy) {
   if (!gfxState) return null;
+  const W=gfxCanvasW, H=gfxCanvasH;
   for (let i=gfxState.elements.length-1;i>=0;i--) {
-    const el=gfxState.elements[i], bb=gfxBB(el);
+    const el=gfxState.elements[i];
+    const rel=gfxResolve(el, W, H);
+    const bb=gfxBBR(rel);
     if (cx>=bb.x-14&&cx<=bb.x+bb.w+14&&cy>=bb.y-14&&cy<=bb.y+bb.h+14) return el;
   }
   return null;
 }
 
 function gfxWatermark(ctx, W, H) {
-  ctx.save(); ctx.globalAlpha=0.13; ctx.fillStyle='#ffffff';
-  ctx.font='bold 28px "DM Mono",monospace'; ctx.textBaseline='top';
-  for(let sy=-80;sy<H+80;sy+=160) for(let sx=-80;sx<W+80;sx+=160) {
+  ctx.save(); ctx.globalAlpha=0.10; ctx.fillStyle='#ffffff';
+  ctx.font='bold '+Math.round(H*0.03)+'px "DM Mono",monospace'; ctx.textBaseline='top';
+  for(let sy=-80;sy<H+80;sy+=H*0.18) for(let sx=-80;sx<W+80;sx+=W*0.22) {
     ctx.save(); ctx.translate(sx,sy); ctx.rotate(-Math.PI/7); ctx.fillText('THREADCRAFT',0,0); ctx.restore();
   }
   ctx.restore();
@@ -3009,7 +3340,7 @@ function gfxWatermark(ctx, W, H) {
 // ── Canvas → logical coords ──
 function gfxPt(e) {
   const c=document.getElementById('gfxPrevCanvas'), r=c.getBoundingClientRect();
-  const sx=1600/r.width, sy=900/r.height;
+  const sx=gfxCanvasW/r.width, sy=gfxCanvasH/r.height;
   const cx=e.touches?e.touches[0].clientX:e.clientX;
   const cy=e.touches?e.touches[0].clientY:e.clientY;
   return {x:(cx-r.left)*sx, y:(cy-r.top)*sy};
@@ -3019,7 +3350,7 @@ function gfxPt(e) {
 function gfxPDown(e) {
   const pt=gfxPt(e); const el=gfxHit(pt.x,pt.y);
   gfxDrag=el?el.id:null; gfxDragOrigin=pt; gfxDidDrag=false;
-  if(el) gfxDragElOrigin={x:el.x,y:el.y};
+  if(el) { const rel=gfxResolve(el,gfxCanvasW,gfxCanvasH); gfxDragElOrigin={x:rel.x,y:rel.y,ox:el.x,oy:el.y}; }
 }
 function gfxPMove(e) {
   if(!gfxDrag||!gfxDragOrigin) return;
@@ -3027,10 +3358,18 @@ function gfxPMove(e) {
   if(Math.abs(dx)>5||Math.abs(dy)>5) gfxDidDrag=true;
   if(!gfxDidDrag) return;
   const el=gfxState.elements.find(e=>e.id===gfxDrag); if(!el) return;
-  el.x=gfxDragElOrigin.x+dx; el.y=gfxDragElOrigin.y+dy;
+  // Store as pixel offsets relative to canvas size (preserve ratio behavior)
+  const newX = gfxDragElOrigin.x + dx;
+  const newY = gfxDragElOrigin.y + dy;
+  // Write back — flatten to pixel for simplicity during drag
+  if ('cx' in el) { el.cx = newX/gfxCanvasW; delete el.x; }
+  else if ('rx' in el) { el.rx = newX/gfxCanvasW; delete el.x; }
+  else { el.x = newX; }
+  if ('ry' in el) { el.ry = newY/gfxCanvasH; delete el.y; }
+  else { el.y = newY; }
   gfxRefreshPreview();
   const ex=document.getElementById('ep-x'), ey=document.getElementById('ep-y');
-  if(ex) ex.value=Math.round(el.x); if(ey) ey.value=Math.round(el.y);
+  if(ex) ex.value=Math.round(newX); if(ey) ey.value=Math.round(newY);
 }
 function gfxPUp(e) {
   if(!gfxDidDrag&&gfxDrag) {
@@ -3051,14 +3390,27 @@ function gfxInitTmpls() {
     card.innerHTML='<canvas class="tmpl-canvas" width="320" height="180"></canvas><div class="tmpl-label">'+t.name+'</div>';
     card.onclick=()=>gfxPickTmpl(t.id);
     grid.appendChild(card);
-    const tc=card.querySelector('canvas'), ctx=tc.getContext('2d');
+    const tc=card.querySelector('canvas');
     const off=document.createElement('canvas'); off.width=1600; off.height=900;
     const savedBg={...gfxBg}, savedSel=gfxSelId;
     gfxBg={c1:null,c2:null}; gfxSelId=null;
-    gfxRender(off, gfxClone(t), false);
+    gfxRenderRaw(off, gfxClone(t), false);
     gfxBg=savedBg; gfxSelId=savedSel;
+    const ctx=tc.getContext('2d');
     ctx.drawImage(off,0,0,1600,900,0,0,320,180);
   });
+}
+
+function gfxRenderRaw(canvas, state, wm) {
+  // Always render at 1600x900 for thumbnails regardless of gfxCanvasW/H
+  const W=1600, H=900;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  const c1=state.bg.c1, c2=state.bg.c2;
+  const g=ctx.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,c1); g.addColorStop(1,c2); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  state.elements.forEach(el => { const rel=gfxResolve(el,W,H); gfxDrawEl(ctx,rel,false,W,H); });
+  if (wm) gfxWatermark(ctx,W,H);
 }
 
 function gfxPickTmpl(id) {
@@ -3066,9 +3418,11 @@ function gfxPickTmpl(id) {
   gfxState=gfxClone(t); gfxSelId=null; gfxBg={c1:null,c2:null};
   document.querySelectorAll('.tmpl-card').forEach(c=>c.classList.remove('active'));
   const card=document.getElementById('gtc-'+id); if(card) card.classList.add('active');
-  // Reset bg presets to first active
   document.querySelectorAll('#gfxBgPresets .bg-preset').forEach((b,i)=>b.classList.toggle('on',i===0));
   gfxBg={c1:t.bg.c1, c2:t.bg.c2};
+  // update canvas dimensions
+  const c=document.getElementById('gfxPrevCanvas');
+  if(c){c.width=gfxCanvasW; c.height=gfxCanvasH;}
   document.getElementById('gfxInputsSec').style.display='block';
   document.getElementById('gfxPreviewSec').style.display='block';
   document.getElementById('gfxGenBtn').style.display='block';
@@ -3082,10 +3436,10 @@ function gfxPopInputs() {
   c.innerHTML='';
   gfxState.elements.forEach(el=>{
     if(el.type!=='text') return;
-    const multi=el.text.includes('\n')||el.fs>=60;
+    const multi=(el.text||'').includes('\n')||(el.fs||0)>=0.06;
     const row=document.createElement('div'); row.className='qi-row';
-    const safe=el.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
-    row.innerHTML='<div class="qi-label">'+( el.label||el.id)+'</div>'
+    const safe=(el.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+    row.innerHTML='<div class="qi-label">'+(el.label||el.id)+'</div>'
       +(multi?'<textarea class="qi-input" id="qi-'+el.id+'" rows="2" oninput="gfxElUp(\''+el.id+'\',\'text\',this.value)">'+safe+'</textarea>'
              :'<input class="qi-input" id="qi-'+el.id+'" type="text" value="'+safe+'" oninput="gfxElUp(\''+el.id+'\',\'text\',this.value)">');
     c.appendChild(row);
@@ -3095,7 +3449,7 @@ function gfxPopInputs() {
 function gfxElUp(id, prop, val) {
   if(!gfxState) return;
   const el=gfxState.elements.find(e=>e.id===id); if(!el) return;
-  el[prop]=prop==='fs'||prop==='x'||prop==='y'||prop==='w'||prop==='h'?+val:val;
+  el[prop]=val;
   gfxRefreshPreview();
 }
 
@@ -3112,6 +3466,7 @@ function gfxSetBg(btn) {
 
 function gfxRefreshPreview() {
   const c=document.getElementById('gfxPrevCanvas'); if(!c||!gfxState) return;
+  c.width=gfxCanvasW; c.height=gfxCanvasH;
   gfxRender(c, gfxState, true);
 }
 
@@ -3119,8 +3474,9 @@ function gfxRefreshPreview() {
 function gfxShowPanel(el) {
   const p=document.getElementById('gfxElPanel'); if(!p) return;
   p.style.display='block';
-  const safeText=el.text?el.text.replace(/&/g,'&amp;').replace(/</g,'&lt;'):'' ;
-  const fonts=['Bebas Neue','DM Sans','DM Mono'];
+  const rel=gfxResolve(el, gfxCanvasW, gfxCanvasH);
+  const safeText=(el.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const fonts=['Bebas Neue','DM Sans','DM Mono','Georgia','Impact'];
   const fbtns=fonts.map(f=>'<button class="ep-fbtn'+(el.ff===f?' on':'')+'" onclick="gfxElUp(\''+el.id+'\',\'ff\',\''+f+'\');gfxShowPanel(gfxState.elements.find(e=>e.id===\''+el.id+'\'))">'+f+'</button>').join('');
   const colorVal=el.color&&el.color.length===7?el.color:'#ffffff';
   p.innerHTML=`
@@ -3133,12 +3489,11 @@ function gfxShowPanel(el) {
       </div>
       <div class="ep-row">
         <div class="ep-col"><div class="ep-lbl">Color</div><input type="color" class="ep-color" value="${colorVal}" oninput="gfxElUp('${el.id}','color',this.value)"></div>
-        <div class="ep-col"><div class="ep-lbl">Size</div><input type="number" class="ep-num" id="ep-fs" value="${el.fs}" min="8" max="300" oninput="gfxElUp('${el.id}','fs',+this.value)"></div>
         <div class="ep-col"><div class="ep-lbl">Font</div><div style="display:flex;gap:4px;flex-wrap:wrap">${fbtns}</div></div>
       </div>
       <div class="ep-row" style="margin-top:4px">
-        <div class="ep-col"><div class="ep-lbl">X</div><input type="number" class="ep-num" id="ep-x" value="${Math.round(el.x)}" oninput="gfxElUp('${el.id}','x',+this.value)"></div>
-        <div class="ep-col"><div class="ep-lbl">Y</div><input type="number" class="ep-num" id="ep-y" value="${Math.round(el.y)}" oninput="gfxElUp('${el.id}','y',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">X</div><input type="number" class="ep-num" id="ep-x" value="${Math.round(rel.x)}" oninput="gfxElUpPx('${el.id}','x',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">Y</div><input type="number" class="ep-num" id="ep-y" value="${Math.round(rel.y)}" oninput="gfxElUpPx('${el.id}','y',+this.value)"></div>
         <div class="ep-col"><div class="ep-lbl">Align</div>
           <div style="display:flex;gap:4px">
             <button class="ep-abtn${el.align==='left'?' on':''}" onclick="gfxElUp('${el.id}','align','left');gfxShowPanel(gfxState.elements.find(e=>e.id==='${el.id}'))">L</button>
@@ -3150,39 +3505,58 @@ function gfxShowPanel(el) {
     :el.type==='line'?`
       <div class="ep-row">
         <div class="ep-col"><div class="ep-lbl">Color</div><input type="color" class="ep-color" value="${colorVal}" oninput="gfxElUp('${el.id}','color',this.value)"></div>
-        <div class="ep-col"><div class="ep-lbl">Length</div><input type="number" class="ep-num" value="${el.w||80}" oninput="gfxElUp('${el.id}','w',+this.value)"></div>
-        <div class="ep-col"><div class="ep-lbl">X</div><input type="number" class="ep-num" id="ep-x" value="${Math.round(el.x)}" oninput="gfxElUp('${el.id}','x',+this.value)"></div>
-        <div class="ep-col"><div class="ep-lbl">Y</div><input type="number" class="ep-num" id="ep-y" value="${Math.round(el.y)}" oninput="gfxElUp('${el.id}','y',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">Length</div><input type="number" class="ep-num" value="${Math.round(rel.w||80)}" oninput="gfxElUpPx('${el.id}','rw_or_w',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">X</div><input type="number" class="ep-num" id="ep-x" value="${Math.round(rel.x)}" oninput="gfxElUpPx('${el.id}','x',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">Y</div><input type="number" class="ep-num" id="ep-y" value="${Math.round(rel.y)}" oninput="gfxElUpPx('${el.id}','y',+this.value)"></div>
       </div>`
     :el.type==='rect'?`
       <div class="ep-row">
         <div class="ep-col"><div class="ep-lbl">Color</div><input type="color" class="ep-color" value="${colorVal}" oninput="gfxElUp('${el.id}','color',this.value)"></div>
-        <div class="ep-col"><div class="ep-lbl">X</div><input type="number" class="ep-num" id="ep-x" value="${Math.round(el.x)}" oninput="gfxElUp('${el.id}','x',+this.value)"></div>
-        <div class="ep-col"><div class="ep-lbl">Y</div><input type="number" class="ep-num" id="ep-y" value="${Math.round(el.y)}" oninput="gfxElUp('${el.id}','y',+this.value)"></div>
-        <div class="ep-col"><div class="ep-lbl">Width</div><input type="number" class="ep-num" value="${el.w}" oninput="gfxElUp('${el.id}','w',+this.value)"></div>
-        <div class="ep-col"><div class="ep-lbl">Height</div><input type="number" class="ep-num" value="${el.h}" oninput="gfxElUp('${el.id}','h',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">X</div><input type="number" class="ep-num" id="ep-x" value="${Math.round(rel.x)}" oninput="gfxElUpPx('${el.id}','x',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">Y</div><input type="number" class="ep-num" id="ep-y" value="${Math.round(rel.y)}" oninput="gfxElUpPx('${el.id}','y',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">W</div><input type="number" class="ep-num" value="${Math.round(rel.w)}" oninput="gfxElUpPx('${el.id}','rw_or_w',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">H</div><input type="number" class="ep-num" value="${Math.round(rel.h)}" oninput="gfxElUpPx('${el.id}','rh_or_h',+this.value)"></div>
       </div>`
     :el.type==='dots'?`
       <div class="ep-row">
         <div class="ep-col"><div class="ep-lbl">Color</div><input type="color" class="ep-color" value="${el.color&&el.color.length===7?el.color:'#ffffff'}" oninput="gfxElUp('${el.id}','color',this.value)"></div>
-        <div class="ep-col"><div class="ep-lbl">X</div><input type="number" class="ep-num" id="ep-x" value="${Math.round(el.x)}" oninput="gfxElUp('${el.id}','x',+this.value)"></div>
-        <div class="ep-col"><div class="ep-lbl">Y</div><input type="number" class="ep-num" id="ep-y" value="${Math.round(el.y)}" oninput="gfxElUp('${el.id}','y',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">X</div><input type="number" class="ep-num" id="ep-x" value="${Math.round(rel.x)}" oninput="gfxElUpPx('${el.id}','x',+this.value)"></div>
+        <div class="ep-col"><div class="ep-lbl">Y</div><input type="number" class="ep-num" id="ep-y" value="${Math.round(rel.y)}" oninput="gfxElUpPx('${el.id}','y',+this.value)"></div>
         <div class="ep-col"><div class="ep-lbl">Cols</div><input type="number" class="ep-num" value="${el.cols}" min="1" max="20" oninput="gfxElUp('${el.id}','cols',+this.value)"></div>
         <div class="ep-col"><div class="ep-lbl">Rows</div><input type="number" class="ep-num" value="${el.rows}" min="1" max="20" oninput="gfxElUp('${el.id}','rows',+this.value)"></div>
       </div>`:''}
   `;
 }
 
+function gfxElUpPx(id, prop, px) {
+  // Convert pixel value back to ratio or absolute based on element
+  const el=gfxState&&gfxState.elements.find(e=>e.id===id); if(!el) return;
+  if (prop==='x') {
+    if ('cx' in el) el.cx=px/gfxCanvasW;
+    else if ('rx' in el) el.rx=px/gfxCanvasW;
+    else el.x=px;
+  } else if (prop==='y') {
+    if ('ry' in el) el.ry=px/gfxCanvasH;
+    else el.y=px;
+  } else if (prop==='rw_or_w') {
+    if ('rw' in el) el.rw=px/gfxCanvasW;
+    else if ('w' in el && el.w<=1) el.w=px/gfxCanvasW;
+    else el.w=px;
+  } else if (prop==='rh_or_h') {
+    if ('rh' in el) el.rh=px/gfxCanvasH;
+    else el.h=px;
+  }
+  gfxRefreshPreview();
+}
+
 function gfxDesel() { gfxSelId=null; gfxHidePanel(); gfxRefreshPreview(); }
 function gfxHidePanel() { const p=document.getElementById('gfxElPanel'); if(p) p.style.display='none'; }
 
-// ── Final generate ──
-async function gfxGenerate() {
-  if(!currentUser){document.getElementById('authScreen').classList.remove('hidden');return;}
-  if(!gfxState){const e=document.getElementById('gfxErrorBox');e.textContent='Please select a template first.';e.classList.add('visible');return;}
-  const ok=await deduct(PRICE_TEXTCARD,'Graphic generation'); if(!ok) return;
+// ── Final generate (free download) ──
+function gfxGenerate() {
+  if(!gfxState){const e=document.getElementById('gfxErrorBox');e.textContent='Pick a template first.';e.classList.add('visible');return;}
   document.getElementById('gfxErrorBox').classList.remove('visible');
-  const out=document.createElement('canvas'); out.width=1600; out.height=900;
+  const out=document.createElement('canvas'); out.width=gfxCanvasW; out.height=gfxCanvasH;
   const savedSel=gfxSelId; gfxSelId=null;
   gfxRender(out,gfxState,false);
   gfxSelId=savedSel;
@@ -3201,6 +3575,316 @@ function gfxAttachEvents() {
   c.addEventListener('touchmove',e=>{e.preventDefault();gfxPMove(e);},{passive:false});
   c.addEventListener('touchend',e=>{e.preventDefault();gfxPUp(e);},{passive:false});
 }
+
+// ════════════════════════════════
+// IPHONE MOCKUP ENGINE
+// ════════════════════════════════
+
+let mkDevice = '15pro';
+let mkProduct = 'post';
+let mkScreenImg = null;
+let mkAccentColor = '#e0161a';
+let mkBgStyleVal = 'gradient';
+
+const MK_PRODUCTS = {
+  post:   {w:1080, h:1080},
+  story:  {w:1080, h:1920},
+  banner: {w:1600, h:900},
+  ad:     {w:1200, h:628},
+};
+
+// iPhone device dimensions (relative to phone height = 1.0)
+const MK_DEVICES = {
+  '15pro': { name:'iPhone 15 Pro', cornerR:0.12, notchType:'island', islandW:0.25, islandH:0.032, sideW:0.045, screenRatio:1/0.4615, colorFrame:'#2a2a2a' },
+  '15':    { name:'iPhone 15',     cornerR:0.12, notchType:'island', islandW:0.25, islandH:0.032, sideW:0.042, screenRatio:1/0.4615, colorFrame:'#222' },
+  '14pro': { name:'iPhone 14 Pro', cornerR:0.115, notchType:'island', islandW:0.27, islandH:0.035, sideW:0.044, screenRatio:1/0.46, colorFrame:'#2c2520' },
+  '14':    { name:'iPhone 14',     cornerR:0.115, notchType:'notch', notchW:0.35, notchH:0.03, sideW:0.044, screenRatio:1/0.46, colorFrame:'#1a1a1a' },
+  'se':    { name:'iPhone SE',     cornerR:0.08,  notchType:'none', sideW:0.06, screenRatio:1/0.52, colorFrame:'#2a2a2a' },
+  'fold':  { name:'Fold View',     cornerR:0.06,  notchType:'punch', punchX:0.5, punchR:0.025, sideW:0.03, screenRatio:1/0.65, colorFrame:'#111' },
+};
+
+function mkSetDevice(el) {
+  document.querySelectorAll('#mkDevicePicker .device-opt').forEach(d=>d.classList.remove('active'));
+  el.classList.add('active');
+  mkDevice = el.dataset.device;
+  mkRefresh();
+}
+
+function mkSetProduct(el) {
+  document.querySelectorAll('#mkProductPicker .product-opt').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  mkProduct = el.dataset.product;
+  // Resize mkCanvas
+  const c=document.getElementById('mkCanvas');
+  if(c){ const d=MK_PRODUCTS[mkProduct]; c.width=d.w; c.height=d.h; }
+  mkRefresh();
+}
+
+function mkHandleFile(input) {
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      mkScreenImg = img;
+      document.getElementById('mkOverlaySec').style.display='block';
+      document.getElementById('mkPreviewSec').style.display='block';
+      document.getElementById('mkGenBtn').style.display='block';
+      mkRefresh();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function mkSetAccent(el) {
+  document.querySelectorAll('#mkAccentRow .accent-swatch').forEach(s=>s.classList.remove('on'));
+  el.classList.add('on');
+  mkAccentColor = el.dataset.col;
+  document.getElementById('mkCustomColor').value = mkAccentColor;
+  mkRefresh();
+}
+function mkSetAccentHex(hex) {
+  mkAccentColor = hex;
+  document.querySelectorAll('#mkAccentRow .accent-swatch').forEach(s=>s.classList.remove('on'));
+  mkRefresh();
+}
+
+function mkSetBgStyle(btn, style) {
+  document.querySelectorAll('.ctrl-row .canvas-size-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  mkBgStyleVal = style;
+  mkRefresh();
+}
+
+function mkRefresh() {
+  const c=document.getElementById('mkCanvas'); if(!c) return;
+  const d=MK_PRODUCTS[mkProduct]; c.width=d.w; c.height=d.h;
+  const ctx=c.getContext('2d');
+  mkDraw(ctx, c.width, c.height);
+}
+
+function mkHexToRgb(hex) {
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return {r,g,b};
+}
+function mkDarken(hex, amt=0.6) {
+  const {r,g,b}=mkHexToRgb(hex);
+  return `rgb(${Math.round(r*amt)},${Math.round(g*amt)},${Math.round(b*amt)})`;
+}
+
+function mkDraw(ctx, W, H) {
+  ctx.clearRect(0,0,W,H);
+
+  // ── Background ──
+  const acc=mkAccentColor, accD=mkDarken(acc,0.3), accM=mkDarken(acc,0.5);
+  if (mkBgStyleVal==='gradient') {
+    const g=ctx.createLinearGradient(0,0,W,H);
+    g.addColorStop(0,accM); g.addColorStop(1,'#0a0a0a');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  } else if (mkBgStyleVal==='solid') {
+    ctx.fillStyle=accM; ctx.fillRect(0,0,W,H);
+  } else if (mkBgStyleVal==='mesh') {
+    ctx.fillStyle='#0d0d0d'; ctx.fillRect(0,0,W,H);
+    // mesh blobs
+    const blob=(x,y,r,col,a)=>{
+      const rg=ctx.createRadialGradient(x,y,0,x,y,r);
+      rg.addColorStop(0,col.replace(')',`,${a})`).replace('rgb','rgba'));
+      rg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
+    };
+    const {r,g,b}=mkHexToRgb(acc);
+    blob(W*0.15,H*0.25,W*0.4,`rgb(${r},${g},${b})`,0.35);
+    blob(W*0.8,H*0.6,W*0.35,`rgb(${r},${g},${b})`,0.2);
+  } else if (mkBgStyleVal==='dark') {
+    ctx.fillStyle='#050505'; ctx.fillRect(0,0,W,H);
+  } else if (mkBgStyleVal==='light') {
+    const g=ctx.createLinearGradient(0,0,W,H);
+    g.addColorStop(0,'#f5f5f5'); g.addColorStop(1,'#e0e0e0');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  }
+
+  // subtle dot grid
+  ctx.globalAlpha=0.06; ctx.fillStyle='#ffffff';
+  for(let gy=0;gy<H;gy+=W*0.04) for(let gx=0;gx<W;gx+=W*0.04) {
+    ctx.beginPath(); ctx.arc(gx,gy,W*0.004,0,Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+
+  // ── Accent glow behind phone ──
+  const gCx=W*0.5, gCy=H*0.5;
+  const glowR=ctx.createRadialGradient(gCx,gCy,0,gCx,gCy,Math.min(W,H)*0.45);
+  const {r:ar,g:ag,b:ab}=mkHexToRgb(acc);
+  glowR.addColorStop(0,`rgba(${ar},${ag},${ab},0.2)`);
+  glowR.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=glowR; ctx.fillRect(0,0,W,H);
+
+  // ── Scale & offset from controls ──
+  const scale = (+document.getElementById('mkScale').value)/100 || 0.72;
+  const offX = +document.getElementById('mkOffX').value || 0;
+  const offY = +document.getElementById('mkOffY').value || 0;
+  const tiltDeg = +document.getElementById('mkTilt').value || 0;
+  const shadowAmt = +document.getElementById('mkShadow').value / 100;
+
+  // ── Phone dimensions ──
+  const dev = MK_DEVICES[mkDevice] || MK_DEVICES['15pro'];
+  const phoneH = Math.min(W,H) * scale * (W>=H ? 0.85 : 0.72);
+  const phoneW = phoneH * (dev.sideW * 2 + (1 - dev.sideW*2)) / dev.screenRatio * 0.52;
+  const phoneX = W/2 - phoneW/2 + offX;
+  const phoneY = H/2 - phoneH/2 + offY;
+
+  ctx.save();
+  // tilt
+  ctx.translate(W/2+offX, H/2+offY);
+  ctx.rotate(tiltDeg * Math.PI/180);
+  ctx.translate(-(W/2+offX), -(H/2+offY));
+
+  // ── Drop shadow ──
+  if (shadowAmt > 0) {
+    ctx.shadowColor = `rgba(0,0,0,${shadowAmt*0.9})`;
+    ctx.shadowBlur = phoneH * 0.12 * shadowAmt;
+    ctx.shadowOffsetY = phoneH * 0.06 * shadowAmt;
+    ctx.shadowOffsetX = 0;
+  }
+
+  // ── Phone body ──
+  const cr = phoneW * dev.cornerR;
+  ctx.beginPath();
+  ctx.roundRect(phoneX, phoneY, phoneW, phoneH, cr);
+  ctx.fillStyle = dev.colorFrame||'#222';
+  ctx.fill();
+  ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+
+  // ── Side bezels highlight ──
+  ctx.beginPath(); ctx.roundRect(phoneX, phoneY, phoneW, phoneH, cr);
+  const bev=ctx.createLinearGradient(phoneX,phoneY,phoneX+phoneW,phoneY);
+  bev.addColorStop(0,'rgba(255,255,255,0.18)'); bev.addColorStop(0.5,'rgba(255,255,255,0.04)'); bev.addColorStop(1,'rgba(255,255,255,0.12)');
+  ctx.fillStyle=bev; ctx.fill();
+
+  // ── Screen area ──
+  const sw = dev.sideW, topBezel=0.045, botBezel=0.04;
+  const sX = phoneX + phoneW*sw;
+  const sY = phoneY + phoneH*topBezel;
+  const sW = phoneW*(1-sw*2);
+  const sH = phoneH*(1-topBezel-botBezel);
+  const scr = cr * 0.7;
+  ctx.beginPath(); ctx.roundRect(sX, sY, sW, sH, scr);
+  ctx.fillStyle='#000'; ctx.fill();
+  // clip screen content
+  ctx.save();
+  ctx.beginPath(); ctx.roundRect(sX, sY, sW, sH, scr); ctx.clip();
+
+  // ── Screenshot inside screen ──
+  if (mkScreenImg) {
+    const aspect = mkScreenImg.naturalWidth / mkScreenImg.naturalHeight;
+    let dw=sW, dh=sW/aspect;
+    if(dh<sH){dh=sH;dw=sH*aspect;}
+    const dx=sX+(sW-dw)/2, dy=sY+(sH-dh)/2;
+    ctx.drawImage(mkScreenImg, dx, dy, dw, dh);
+  } else {
+    // Placeholder screen
+    ctx.fillStyle='#111';
+    ctx.fillRect(sX,sY,sW,sH);
+    ctx.fillStyle='rgba(255,255,255,0.08)';
+    ctx.font=`bold ${sW*0.06}px "DM Mono",monospace`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('YOUR SCREENSHOT', sX+sW/2, sY+sH/2);
+  }
+
+  // screen reflection
+  const ref=ctx.createLinearGradient(sX,sY,sX+sW*0.6,sY+sH*0.5);
+  ref.addColorStop(0,'rgba(255,255,255,0.09)');
+  ref.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=ref; ctx.fillRect(sX,sY,sW,sH);
+
+  ctx.restore(); // unclip
+
+  // ── Dynamic Island / Notch ──
+  if (dev.notchType==='island') {
+    const iW=sW*dev.islandW, iH=sH*dev.islandH;
+    const iX=sX+sW/2-iW/2, iY=sY+sH*0.012;
+    ctx.beginPath(); ctx.roundRect(iX,iY,iW,iH,iH/2); ctx.fillStyle='#000'; ctx.fill();
+    // inner glow
+    ctx.beginPath(); ctx.roundRect(iX+1,iY+1,iW-2,iH-2,iH/2);
+    const iglow=ctx.createLinearGradient(iX,iY,iX,iY+iH);
+    iglow.addColorStop(0,'rgba(255,255,255,0.06)'); iglow.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=iglow; ctx.fill();
+  } else if (dev.notchType==='notch') {
+    const nW=sW*(dev.notchW||0.4), nH=sH*(dev.notchH||0.04);
+    ctx.beginPath(); ctx.roundRect(sX+sW/2-nW/2, sY, nW, nH, [0,0,nH/2,nH/2]);
+    ctx.fillStyle='#000'; ctx.fill();
+  } else if (dev.notchType==='punch') {
+    ctx.beginPath(); ctx.arc(sX+sW*(dev.punchX||0.5), sY+sH*0.025, sW*(dev.punchR||0.025), 0, Math.PI*2);
+    ctx.fillStyle='#000'; ctx.fill();
+  }
+
+  // ── Side buttons ──
+  const btnCol='rgba(255,255,255,0.13)';
+  // power btn right
+  const bW=phoneW*0.025, bH=phoneH*0.12, bX=phoneX+phoneW-bW*0.3;
+  ctx.beginPath(); ctx.roundRect(bX, phoneY+phoneH*0.3, bW, bH, bW/2);
+  ctx.fillStyle=btnCol; ctx.fill();
+  // volume btns left
+  const vX=phoneX-bW*0.6;
+  ctx.beginPath(); ctx.roundRect(vX, phoneY+phoneH*0.18, bW, bH*0.65, bW/2); ctx.fillStyle=btnCol; ctx.fill();
+  ctx.beginPath(); ctx.roundRect(vX, phoneY+phoneH*0.32, bW, bH*0.65, bW/2); ctx.fillStyle=btnCol; ctx.fill();
+
+  ctx.restore(); // untilt
+
+  // ── Text overlays on canvas ──
+  const headline = (document.getElementById('mkHeadline')||{}).value||'';
+  const subline  = (document.getElementById('mkSubline')||{}).value||'';
+  const handle   = (document.getElementById('mkHandle')||{}).value||'';
+
+  const textY = phoneY + phoneH + H*0.045;
+  const lightBg = mkBgStyleVal==='light';
+
+  if (headline) {
+    ctx.font=`700 ${W*0.052}px "Bebas Neue",sans-serif`;
+    ctx.fillStyle = lightBg ? '#111' : '#ffffff';
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText(headline, W/2+offX, textY);
+  }
+  if (subline) {
+    ctx.font=`400 ${W*0.026}px "DM Sans",sans-serif`;
+    ctx.fillStyle = lightBg ? '#444' : 'rgba(255,255,255,0.7)';
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText(subline, W/2+offX, textY + (headline ? W*0.058 : 0));
+  }
+  if (handle) {
+    ctx.font=`400 ${W*0.022}px "DM Mono",monospace`;
+    ctx.fillStyle = acc;
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText(handle, W/2+offX, H - H*0.06);
+  }
+
+  // accent strip at top
+  ctx.fillStyle=acc;
+  ctx.fillRect(0,0,W,H*0.006);
+}
+
+function mkDownload() {
+  const c=document.getElementById('mkCanvas'); if(!c) return;
+  mkRefresh();
+  const a=document.createElement('a'); a.download='threadcraft-mockup.png';
+  a.href=c.toDataURL('image/png'); a.click();
+}
+
+// drag over visual for upload zone
+(function(){
+  document.addEventListener('DOMContentLoaded',()=>{
+    const z=document.getElementById('mkUploadZone'); if(!z) return;
+    z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag-over');});
+    z.addEventListener('dragleave',()=>z.classList.remove('drag-over'));
+    z.addEventListener('drop',e=>{
+      e.preventDefault(); z.classList.remove('drag-over');
+      const f=e.dataTransfer.files[0]; if(!f||!f.type.startsWith('image/')) return;
+      const inp=document.getElementById('mkScreenFile');
+      const dt=new DataTransfer(); dt.items.add(f); inp.files=dt.files;
+      mkHandleFile(inp);
+    });
+  });
+})();
 
 // ══════════════════════════════════════════════════════
 // INFOGRAPHIC TEMPLATES + PREVIEW WATERMARK
