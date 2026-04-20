@@ -304,17 +304,17 @@
     .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
 
     /* ══ TOP NAV ══ */
-    #walletBar{background:rgba(255,255,255,.97);border-bottom:1px solid var(--border);padding:0 16px;height:56px;display:none;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1000;backdrop-filter:blur(12px);box-shadow:0 1px 8px rgba(0,0,0,.06)}
+    #walletBar{background:rgba(255,255,255,.97);border-bottom:1px solid var(--border);padding:0 10px;height:48px;display:none;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1000;backdrop-filter:blur(12px);box-shadow:0 1px 8px rgba(0,0,0,.06);gap:6px}
     #walletBar.visible{display:flex}
-    .nav-logo{font-family:var(--display);font-size:1.5rem;letter-spacing:3px;color:var(--text)}
+    .nav-logo{font-family:var(--display);font-size:1.15rem;letter-spacing:2px;color:var(--text);flex-shrink:0}
     .nav-logo span{color:var(--red)}
-    .nav-right{display:flex;align-items:center;gap:8px}
-    .nav-balance-pill{display:flex;align-items:center;gap:6px;background:rgba(224,22,26,.07);border:1px solid rgba(224,22,26,.25);border-radius:20px;padding:6px 12px;cursor:pointer;transition:all .2s}
+    .nav-right{display:flex;align-items:center;gap:5px;flex-shrink:0}
+    .nav-balance-pill{display:flex;align-items:center;gap:4px;background:rgba(224,22,26,.07);border:1px solid rgba(224,22,26,.25);border-radius:20px;padding:4px 8px;cursor:pointer;transition:all .2s;max-width:180px}
     .nav-balance-pill:hover{background:rgba(224,22,26,.12)}
-    .nav-bal-lbl{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--muted)}
-    .nav-bal-val{font-family:var(--display);font-size:17px;letter-spacing:2px;color:var(--red);line-height:1}
-    .nav-bal-plus{background:var(--red);color:#fff;font-family:var(--mono);font-size:9px;letter-spacing:1px;padding:3px 8px;border-radius:20px;white-space:nowrap}
-    .btn-logout{background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:7px 12px;cursor:pointer;transition:all .2s}
+    .nav-bal-lbl{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;color:var(--muted);display:none}
+    .nav-bal-val{font-family:var(--display);font-size:14px;letter-spacing:1px;color:var(--red);line-height:1}
+    .nav-bal-plus{background:var(--red);color:#fff;font-family:var(--mono);font-size:8px;letter-spacing:.5px;padding:2px 6px;border-radius:20px;white-space:nowrap}
+    .btn-logout{background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:var(--mono);font-size:9px;letter-spacing:.5px;padding:5px 8px;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
     .btn-logout:hover{border-color:var(--muted2);color:var(--muted2)}
 
     /* ══ PAGES ══ */
@@ -2962,30 +2962,44 @@ function listenBalance(uid) {
 }
 
 // ── Load transactions ──
+let _allTxDocs = [];
 function loadTransactions(uid) {
   db.collection("users").doc(uid).collection("transactions")
-    .orderBy("createdAt","desc").limit(20)
+    .orderBy("createdAt","desc").limit(50)
     .onSnapshot(snap => {
-      const list = document.getElementById("txList");
-      if (snap.empty) { list.innerHTML = '<div class="tx-empty">No transactions yet — top up your wallet to get started.</div>'; return; }
-      list.innerHTML = snap.docs.map(doc => {
-        const d = doc.data();
-        const isCredit = d.amount > 0;
-        const icon = isCredit ? '<i class="fa-solid fa-credit-card"></i>' : '<i class="fa-solid fa-bolt"></i>';
-        const cls  = isCredit ? "credit" : "debit";
-        const amtCls = isCredit ? "plus" : "minus";
-        const sign = isCredit ? "+" : "";
-        const ts = d.createdAt?.toDate ? d.createdAt.toDate().toLocaleDateString("en-NG",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}) : "—";
-        return `<div class="tx-item">
-          <div class="tx-icon ${cls}">${icon}</div>
-          <div class="tx-desc-wrap">
-            <div class="tx-title">${d.description || "Transaction"}</div>
-            <div class="tx-date">${ts}</div>
-          </div>
-          <div class="tx-amount ${amtCls}">${sign}&#8358;${Math.abs(d.amount).toLocaleString()}</div>
-        </div>`;
-      }).join("");
+      _allTxDocs = snap.docs;
+      renderTransactions(5);
     });
+}
+
+function renderTransactions(limit) {
+  const list = document.getElementById("txList");
+  if (!_allTxDocs.length) {
+    list.innerHTML = '<div class="tx-empty">No transactions yet — top up your wallet to get started.</div>';
+    return;
+  }
+  const shown = _allTxDocs.slice(0, limit);
+  const hasMore = _allTxDocs.length > limit;
+  list.innerHTML = shown.map(doc => {
+    const d = doc.data();
+    const isCredit = d.amount > 0;
+    const icon = isCredit ? '<i class="fa-solid fa-credit-card"></i>' : '<i class="fa-solid fa-bolt"></i>';
+    const cls  = isCredit ? "credit" : "debit";
+    const amtCls = isCredit ? "plus" : "minus";
+    const sign = isCredit ? "+" : "";
+    const ts = d.createdAt?.toDate ? d.createdAt.toDate().toLocaleDateString("en-NG",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}) : "—";
+    return `<div class="tx-item">
+      <div class="tx-icon ${cls}">${icon}</div>
+      <div class="tx-desc-wrap">
+        <div class="tx-title">${d.description || "Transaction"}</div>
+        <div class="tx-date">${ts}</div>
+      </div>
+      <div class="tx-amount ${amtCls}">${sign}&#8358;${Math.abs(d.amount).toLocaleString()}</div>
+    </div>`;
+  }).join("");
+  if (hasMore) {
+    list.innerHTML += `<button onclick="renderTransactions(${Math.min(limit + 10, _allTxDocs.length)})" style="width:100%;margin-top:12px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:10px;cursor:pointer;transition:all .2s" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--muted2)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">Show More ↓</button>`;
+  }
 }
 
 // ── Auth UI ──
@@ -4437,6 +4451,16 @@ function wcStep3() {
 async function wcStep4Analyse() {
   WC.step = 4;
   wcHideInput();
+
+  // Check balance before calling AI
+  if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
+  if (userBalance < 10) {
+    wcBotMsg(`You need at least ₦10 to get AI suggestions. Top up your wallet!`);
+    setTimeout(openTopup, 800);
+    document.getElementById("wcRestartBtn").classList.add("visible");
+    return;
+  }
+
   wcShowTyping();
   try {
     const res  = await fetch("/api/suggest", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ platform: WC.platform, handle: WC.handle, examples: WC.examples }) });
@@ -4446,6 +4470,11 @@ async function wcStep4Analyse() {
     if (!res.ok) throw new Error(data.error || "Analysis failed");
     WC.detectedStyle = data;
     wcRemoveTyping();
+
+    // ₦10 charge for the AI suggestion response
+    const ok = await deduct(10, "What Can I Create — AI suggestions");
+    if (!ok) { document.getElementById("wcRestartBtn").classList.add("visible"); return; }
+
     wcStep5ShowSuggestions(data);
   } catch(err) {
     wcRemoveTyping();
@@ -4558,7 +4587,7 @@ async function wcStep7Generate() {
     WC.examples ? `User examples: ${WC.examples.slice(0, 400)}` : "",
   ].filter(Boolean).join("\n");
 
-  const ok = await deduct(cost, `What Can I Create — ${WC.chosenFormat}`);
+  const ok = await deduct(cost, `What Can I Create — content generation`);
   if (!ok) { wcRemoveTyping(); return; }
 
   try {
@@ -4738,18 +4767,12 @@ function wcScrollBottom() {
   if (el) setTimeout(() => el.scrollTop = el.scrollHeight, 60);
 }
 
-// Auto-start when navigating to the page
+// Auto-start when navigating to the page — single clean patch
 (function() {
-  const _orig = window.showPage;
-  window.showPage = function(id) {
-    if (typeof _orig === "function") _orig(id);
-    if (id === "pageWhatCreate" && WC.step === 0) setTimeout(wcStart, 200);
-  };
-  // Also patch if showPage is defined later
   document.addEventListener("DOMContentLoaded", () => {
-    const orig2 = window.showPage;
+    const _orig = window.showPage;
     window.showPage = function(id) {
-      orig2(id);
+      if (typeof _orig === "function") _orig(id);
       if (id === "pageWhatCreate" && WC.step === 0) setTimeout(wcStart, 200);
     };
   });
