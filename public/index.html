@@ -218,6 +218,25 @@
     footer p{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:1px}
     @media(max-width:560px){.logo{font-size:44px}.hero-stats{flex-wrap:wrap}.hero-stat{min-width:50%}.controls-row{grid-template-columns:1fr}.brief-grid{grid-template-columns:1fr}.brief-field.full{grid-column:1}.custom-colors{flex-wrap:wrap}.hero-top{flex-direction:column}.hero-right{align-items:flex-start}}
 
+    /* ══ MODE TOGGLE ══ */
+    .mode-toggle{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:28px;gap:4px}
+    .mode-btn{flex:1;font-family:var(--mono);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);background:transparent;border:none;border-radius:9px;padding:10px 14px;cursor:pointer;transition:all .2s}
+    .mode-btn.active{background:linear-gradient(135deg,var(--red2),var(--red3));color:#fff}
+    .mode-btn:not(.active):hover{color:var(--text)}
+    .single-post-controls{display:none}
+    .single-post-controls.visible{display:block}
+    .thread-controls{display:block}
+    .thread-controls.hidden{display:none}
+    .single-post-result{display:none}
+    .single-post-result.visible{display:block}
+    .post-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;animation:fadeUp .3s ease forwards}
+    .post-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .post-badge{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border:1px solid var(--red);border-radius:20px;color:var(--red)}
+    .post-text{font-size:15px;line-height:1.9;color:#e8e8e8;white-space:pre-wrap;word-break:break-word}
+    .post-footer{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+    .post-char{font-family:var(--mono);font-size:11px;color:var(--muted)}
+    .post-actions{display:flex;gap:8px}
+
     /* ══ AUTH SCREEN ══ */
     #authScreen{position:fixed;inset:0;background:var(--black);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px}
     #authScreen.hidden{display:none}
@@ -734,10 +753,16 @@
   <div class="container">
     <div class="page-header">
       <button class="btn-back" onclick="showPage('pageHome')"><i class="fa fa-arrow-left"></i> Back</button>
-      <div class="page-title"><i class="fa-solid fa-pen-nib"></i> CREATE THREAD</div>
+      <div class="page-title"><i class="fa-solid fa-pen-nib"></i> CREATE CONTENT</div>
     </div>
     <div class="form-section">
-      <div class="step-label">Configure Thread</div>
+      <!-- Mode Toggle -->
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="modeThread" onclick="ctSetMode('thread')"><i class="fa-solid fa-list"></i> Thread</button>
+        <button class="mode-btn" id="modeSingle" onclick="ctSetMode('single')"><i class="fa-solid fa-align-left"></i> Single Post</button>
+      </div>
+
+      <div class="step-label" id="ctStepLabel">Configure Thread</div>
       <div class="field">
         <label>Topic *</label>
         <input type="text" id="ct-topic" placeholder="e.g. Why most devs never ship their side projects" />
@@ -781,7 +806,8 @@
             <span class="select-arrow">▼</span>
           </div>
         </div>
-        <div class="field" style="margin-bottom:0">
+        <!-- Thread length (shown in thread mode) -->
+        <div class="field thread-controls" id="ctLengthField" style="margin-bottom:0">
           <label>Length</label>
           <div class="select-wrap">
             <select id="ct-length">
@@ -792,11 +818,25 @@
             <span class="select-arrow">▼</span>
           </div>
         </div>
+        <!-- Single post format (shown in single mode) -->
+        <div class="field single-post-controls" id="ctFormatField" style="margin-bottom:0">
+          <label>Format</label>
+          <div class="select-wrap">
+            <select id="ct-post-format">
+              <option value="tweet">Single Tweet (~280 chars)</option>
+              <option value="short_article" selected>Short Article (~300 words)</option>
+              <option value="long_article">Long Article (~600 words)</option>
+            </select>
+            <span class="select-arrow">▼</span>
+          </div>
+        </div>
       </div>
       <button class="btn-generate" id="ctGenerateBtn" onclick="handleCtGenerateClick()">GENERATE THREAD</button>
       <div class="loading-bar" id="ctLoadingBar"></div>
       <div class="error-box" id="ctErrorBox"></div>
     </div>
+
+    <!-- Thread results -->
     <div class="thread-section" id="ctThreadSection">
       <div class="thread-header">
         <div class="thread-header-left">
@@ -810,6 +850,21 @@
       </div>
       <div class="tweet-list" id="ctTweetList"></div>
     </div>
+
+    <!-- Single post result -->
+    <div class="single-post-result" id="ctPostSection">
+      <div class="thread-header">
+        <div class="thread-header-left">
+          <div class="thread-title">Generated Post</div>
+        </div>
+        <div class="thread-header-actions">
+          <button class="btn-copy-all" onclick="ctCopyPost()">Copy</button>
+          <button class="btn-dl-all" onclick="ctDownloadPostCard()">↓ Card</button>
+        </div>
+      </div>
+      <div id="ctPostCard"></div>
+    </div>
+
     <div style="height:40px"></div>
   </div>
 </div>
@@ -3008,18 +3063,43 @@ function onCustomColorFor(page) {
 }
 
 // ══════════════════════════════════════════════════════
-// CREATE THREAD (standalone — no gig link)
+// CREATE THREAD / SINGLE POST (standalone)
 // ══════════════════════════════════════════════════════
 const ctPaidInfographics = new Set();
 const ctPaidTextCards    = new Set();
+let ctMode = "thread"; // "thread" | "single"
+
+function ctSetMode(mode) {
+  ctMode = mode;
+  document.getElementById("modeThread").classList.toggle("active", mode==="thread");
+  document.getElementById("modeSingle").classList.toggle("active", mode==="single");
+  document.querySelectorAll(".thread-controls").forEach(el => el.classList.toggle("hidden", mode==="single"));
+  document.querySelectorAll(".single-post-controls").forEach(el => el.classList.toggle("visible", mode==="single"));
+  document.getElementById("ctStepLabel").textContent = mode==="thread" ? "Configure Thread" : "Configure Post";
+  document.getElementById("ctGenerateBtn").textContent = mode==="thread" ? "GENERATE THREAD" : "GENERATE POST";
+  document.getElementById("ctThreadSection").classList.remove("visible");
+  document.getElementById("ctPostSection").classList.remove("visible");
+}
 
 function handleCtGenerateClick() {
   if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
+  if (ctMode === "single") {
+    const cost = PRICE_TWEET; // single post = 1 tweet cost
+    if (userBalance < cost) { showBalanceToast(`Need \u20A6${cost} — top up your wallet`); openTopup(); return; }
+    ctGenerateSinglePost();
+    return;
+  }
   const len = document.getElementById("ct-length").value;
   const tweetCount = len==="short"?6:len==="long"?15:10;
   const cost = tweetCount * PRICE_TWEET;
   if (userBalance < cost) { showBalanceToast(`Need \u20A6${cost} — top up your wallet`); openTopup(); return; }
   ctGenerateThread();
+}
+
+async function ctSafeJson(res) {
+  const text = await res.text();
+  try { return JSON.parse(text); }
+  catch(e) { throw new Error("Server error — please try again later"); }
 }
 
 async function ctGenerateThread() {
@@ -3040,7 +3120,7 @@ async function ctGenerateThread() {
   document.getElementById("ctThreadSection").classList.remove("visible");
   try {
     const res  = await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic,context,tone,length})});
-    const data = await res.json();
+    const data = await ctSafeJson(res);
     if (!res.ok) throw new Error(data.error||"Something went wrong");
     ctRenderThread(data.tweets);
     ctPaidInfographics.clear(); ctPaidTextCards.clear();
@@ -3051,6 +3131,107 @@ async function ctGenerateThread() {
     btn.disabled=false; btn.textContent="GENERATE THREAD";
     document.getElementById("ctLoadingBar").classList.remove("active");
   }
+}
+
+async function ctGenerateSinglePost() {
+  if (!currentUser) return;
+  const topic   = document.getElementById("ct-topic").value.trim();
+  const context = document.getElementById("ct-context").value.trim();
+  const tone    = document.getElementById("ct-tone").value;
+  const format  = document.getElementById("ct-post-format").value;
+  if (!topic) { document.getElementById("ctErrorBox").textContent="// Drop a topic first."; document.getElementById("ctErrorBox").classList.add("visible"); return; }
+  const cost = PRICE_TWEET;
+  const ok = await deduct(cost, `Single post — ${format}`);
+  if (!ok) return;
+  const btn = document.getElementById("ctGenerateBtn");
+  btn.disabled=true; btn.textContent="GENERATING...";
+  document.getElementById("ctLoadingBar").classList.add("active");
+  document.getElementById("ctErrorBox").classList.remove("visible");
+  document.getElementById("ctPostSection").classList.remove("visible");
+  try {
+    const res  = await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic,context,tone,length:"single",format,mode:"single"})});
+    const data = await ctSafeJson(res);
+    if (!res.ok) throw new Error(data.error||"Something went wrong");
+    // Support both `data.post` (string) and `data.tweets` (array with 1 item)
+    const postText = data.post || (Array.isArray(data.tweets) ? data.tweets.join("\n\n") : null);
+    if (!postText) throw new Error("No content returned from server");
+    ctRenderSinglePost(postText, format);
+  } catch(err) {
+    await db.collection("users").doc(currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(cost)});
+    document.getElementById("ctErrorBox").textContent="// "+err.message; document.getElementById("ctErrorBox").classList.add("visible");
+  } finally {
+    btn.disabled=false; btn.textContent="GENERATE POST";
+    document.getElementById("ctLoadingBar").classList.remove("active");
+  }
+}
+
+function ctRenderSinglePost(text, format) {
+  window._ctPost = text;
+  const formatLabels = {tweet:"Single Tweet", short_article:"Short Article", long_article:"Long Article"};
+  const container = document.getElementById("ctPostCard");
+  const cc = text.length;
+  const wordCount = text.trim().split(/\s+/).length;
+  container.innerHTML = `
+    <div class="post-card">
+      <div class="post-card-header">
+        <span class="post-badge">${formatLabels[format]||"Post"}</span>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">${wordCount} words · ${cc} chars</span>
+      </div>
+      <div class="post-text" id="ctPostText">${escapeHtml(text)}</div>
+      <div class="post-footer">
+        <span class="post-char">${format==="tweet"?(cc>280?`<span style="color:#ff4444">${cc}/280 — over limit</span>`:`${cc}/280`):"" }</span>
+        <div class="post-actions">
+          <button class="btn-copy-tweet" onclick="(function(b){navigator.clipboard.writeText(window._ctPost).then(()=>{b.textContent='copied ✓';setTimeout(()=>b.textContent='copy',2000)})})(this)">copy</button>
+          <button class="btn-dl-card" onclick="ctDownloadPostCard()">↓ card</button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById("ctPostSection").classList.add("visible");
+  document.getElementById("ctPostSection").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function ctCopyPost() {
+  if (!window._ctPost) return;
+  navigator.clipboard.writeText(window._ctPost).then(() => {
+    const b = document.querySelector("#ctPostSection .btn-copy-all");
+    b.textContent="Copied ✓"; setTimeout(()=>b.textContent="Copy",2000);
+  });
+}
+
+function ctDownloadPostCard() {
+  if (!window._ctPost) return;
+  const style = pageStyles.ct;
+  const handle = document.getElementById("ct-xHandle").value.trim();
+  const canvas = document.createElement("canvas"); canvas.width=1600; canvas.height=900;
+  drawTextCard_post(canvas, window._ctPost, style, handle);
+  const a = document.createElement("a"); a.download="threadcraft-post.png"; a.href=canvas.toDataURL("image/png"); a.click();
+}
+
+function drawTextCard_post(canvas, text, style, handle) {
+  const ctx = canvas.getContext("2d");
+  const W=canvas.width, H=canvas.height;
+  const g = ctx.createLinearGradient(0,0,W,H);
+  g.addColorStop(0, style.c1); g.addColorStop(1, style.c2);
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=style.darkText?"rgba(0,0,0,0.08)":"rgba(255,255,255,0.06)";
+  ctx.fillRect(80,80,W-160,H-160);
+  const textColor = style.darkText?"#111":"#fff";
+  const muteColor = style.darkText?"rgba(0,0,0,0.5)":"rgba(255,255,255,0.55)";
+  // Wrap text
+  ctx.font=`400 ${W*0.032}px "DM Sans",sans-serif`;
+  ctx.fillStyle=textColor;
+  const maxW=W-240, lineH=W*0.044, lines=[];
+  text.split("\n").forEach(para=>{
+    const words=para.split(" "); let line="";
+    words.forEach(w=>{ const t=line?line+" "+w:w; if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t; });
+    lines.push(line); lines.push("");
+  });
+  const totalH=lines.length*lineH, startY=(H-totalH)/2;
+  lines.forEach((l,i)=>{ ctx.textAlign="left"; ctx.fillText(l,120,startY+i*lineH); });
+  if(handle){ ctx.font=`400 ${W*0.022}px "DM Mono",monospace`; ctx.fillStyle=muteColor; ctx.textAlign="center"; ctx.fillText(handle,W/2,H-60); }
+  ctx.fillStyle=style.darkText?"rgba(0,0,0,0.35)":"rgba(255,255,255,0.35)";
+  ctx.font=`300 ${W*0.018}px "DM Mono",monospace`; ctx.textAlign="right";
+  ctx.fillText("THREADCRAFT",W-80,H-60);
 }
 
 function ctRenderThread(tweets) {
@@ -4031,7 +4212,9 @@ async function generateThread() {
   setLoading(true); clearError(); hideThread();
   try {
     const res  = await fetch("/api/generate", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({topic,context,tone,length}) });
-    const data = await res.json();
+    const rawText = await res.text();
+    let data;
+    try { data = JSON.parse(rawText); } catch(e) { throw new Error("Server error — please try again later"); }
     if (!res.ok) throw new Error(data.error || "Something went wrong");
     renderThread(data.tweets);
     paidInfographics.clear();
