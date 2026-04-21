@@ -1374,35 +1374,43 @@ function wrapText(ctx, text, x, y, maxW, lh, maxY=860) {
 function drawBarChart(ctx, data, x, y, w, h, accentC, textC, bgC) {
   if(!data||!data.length) return;
   const n = Math.min(data.length, 5);
-  const barH = Math.min(52, (h-(n-1)*14)/n);
-  const gap = 14;
-  const lblW = 140, valW = 80, barAreaW = w-lblW-valW-16;
+  const gap = 18;
+  const barH = Math.min(58, (h-(n-1)*gap)/n);
+  const lblW = 160, valW = 90, barAreaW = w-lblW-valW-20;
 
   for(let i=0;i<n;i++) {
     const d=data[i], by=y+i*(barH+gap);
-    // label
-    ctx.font=`400 ${Math.min(20,barH*.42)}px 'DM Sans',sans-serif`;
-    ctx.fillStyle=textC; ctx.textBaseline="middle"; ctx.textAlign="left";
-    ctx.fillText(d.label||"", x, by+barH/2);
-    // track bg
-    ctx.fillStyle=bgC;
-    ctx.beginPath(); ctx.roundRect(x+lblW, by, barAreaW, barH, 6); ctx.fill();
-    // fill bar
     const pct=Math.min(100,Math.max(0,d.pct||0));
-    const fillW=Math.max(6,(pct/100)*barAreaW);
+    const fillW=Math.max(8,(pct/100)*barAreaW);
+
+    // label
+    ctx.font=`400 ${Math.min(22,barH*.4)}px 'DM Sans',sans-serif`;
+    ctx.fillStyle=textC+"cc"; ctx.textBaseline="middle"; ctx.textAlign="left";
+    ctx.fillText(d.label||"", x, by+barH/2);
+
+    // track bg with subtle glow
+    ctx.fillStyle=bgC;
+    ctx.beginPath(); ctx.roundRect(x+lblW, by, barAreaW, barH, barH/2); ctx.fill();
+
+    // fill bar — gradient with glow
     const fg=ctx.createLinearGradient(x+lblW,0,x+lblW+barAreaW,0);
-    fg.addColorStop(0,accentC); fg.addColorStop(1,accentC+"bb");
+    fg.addColorStop(0,accentC);
+    fg.addColorStop(1,accentC+"88");
     ctx.fillStyle=fg;
-    ctx.beginPath(); ctx.roundRect(x+lblW, by, fillW, barH, 6); ctx.fill();
-    // percentage label inside bar
-    if(fillW>40){
-      ctx.font=`700 ${Math.min(16,barH*.3)}px 'DM Mono',monospace`;
-      ctx.fillStyle=textC; ctx.textAlign="left";
-      ctx.fillText(pct+"%", x+lblW+10, by+barH/2);
-    }
-    // value on right
-    ctx.font=`700 ${Math.min(20,barH*.4)}px 'DM Mono',monospace`;
-    ctx.fillStyle=accentC; ctx.textAlign="right";
+    ctx.beginPath(); ctx.roundRect(x+lblW, by, fillW, barH, barH/2); ctx.fill();
+
+    // shine on bar
+    ctx.save();
+    ctx.beginPath(); ctx.roundRect(x+lblW, by, fillW, barH, barH/2); ctx.clip();
+    const shine=ctx.createLinearGradient(0,by,0,by+barH);
+    shine.addColorStop(0,"rgba(255,255,255,0.25)");
+    shine.addColorStop(0.5,"rgba(255,255,255,0)");
+    ctx.fillStyle=shine; ctx.fillRect(x+lblW,by,fillW,barH);
+    ctx.restore();
+
+    // value on right — bold accent
+    ctx.font=`700 ${Math.min(22,barH*.4)}px 'DM Mono',monospace`;
+    ctx.fillStyle=accentC; ctx.textAlign="right"; ctx.textBaseline="middle";
     ctx.fillText(d.value||"", x+w, by+barH/2);
   }
   ctx.textAlign="left"; ctx.textBaseline="alphabetic";
@@ -1410,162 +1418,260 @@ function drawBarChart(ctx, data, x, y, w, h, accentC, textC, bgC) {
 
 function drawDonut(ctx, cx, cy, r, pct, accentC, bgC, label, sublabel, textC) {
   const start=-Math.PI/2, end=start+(pct/100)*Math.PI*2;
-  const lw=r*.32;
+  const lw=r*.28;
+
+  // Outer glow ring
+  ctx.save();
+  ctx.shadowColor=accentC;
+  ctx.shadowBlur=30;
+  ctx.beginPath(); ctx.arc(cx,cy,r,start,end);
+  ctx.strokeStyle=accentC; ctx.lineWidth=lw; ctx.lineCap="round"; ctx.stroke();
+  ctx.restore();
+
+  // Track
   ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
   ctx.strokeStyle=bgC; ctx.lineWidth=lw; ctx.stroke();
+
+  // Arc
   ctx.beginPath(); ctx.arc(cx,cy,r,start,end);
   ctx.strokeStyle=accentC; ctx.lineWidth=lw; ctx.lineCap="round"; ctx.stroke();
   ctx.lineCap="butt";
-  ctx.font=`700 ${r*.55}px 'DM Sans',sans-serif`;
+
+  // Center label
+  ctx.font=`700 ${r*.52}px 'DM Sans',sans-serif`;
   ctx.fillStyle=textC; ctx.textAlign="center"; ctx.textBaseline="middle";
-  ctx.fillText(label,cx,cy-r*.1);
-  ctx.font=`400 ${r*.22}px 'DM Sans',sans-serif`;
-  ctx.fillStyle=textC+"99"; ctx.fillText(sublabel,cx,cy+r*.28);
+  ctx.fillText(label,cx,cy-r*.08);
+  ctx.font=`400 ${r*.2}px 'DM Mono',monospace`;
+  ctx.fillStyle=textC+"88"; ctx.fillText((sublabel||"").toUpperCase(),cx,cy+r*.3);
   ctx.textAlign="left"; ctx.textBaseline="alphabetic";
 }
 
 function drawNumberGrid(ctx, items, x, y, w, h, accentC, textC, bgC) {
   const n=Math.min(items.length,4);
   const cols=n<=2?n:n===3?3:2, rows=Math.ceil(n/cols);
-  const cellW=(w-(cols-1)*20)/cols, cellH=Math.min(180,(h-(rows-1)*16)/rows);
+  const gapX=20, gapY=16;
+  const cellW=(w-(cols-1)*gapX)/cols, cellH=Math.min(200,(h-(rows-1)*gapY)/rows);
   for(let i=0;i<n;i++){
     const item=items[i], col=i%cols, row=Math.floor(i/cols);
-    const cx=x+col*(cellW+20), cy=y+row*(cellH+16);
-    // card
+    const cx=x+col*(cellW+gapX), cy=y+row*(cellH+gapY);
+
+    // Card with subtle border
     ctx.fillStyle=bgC;
-    ctx.beginPath(); ctx.roundRect(cx,cy,cellW,cellH,10); ctx.fill();
-    // top accent bar
-    ctx.fillStyle=accentC;
-    ctx.beginPath(); ctx.roundRect(cx,cy,cellW,6,{upperLeft:10,upperRight:10,lowerLeft:0,lowerRight:0}); ctx.fill();
-    // value
-    const vSize=Math.min(cellH*.38, item.value.length>6?52:item.value.length>4?64:80);
+    ctx.beginPath(); ctx.roundRect(cx,cy,cellW,cellH,14); ctx.fill();
+    ctx.strokeStyle=accentC+"33"; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.roundRect(cx,cy,cellW,cellH,14); ctx.stroke();
+
+    // Accent gradient top bar
+    const barGrad=ctx.createLinearGradient(cx,cy,cx+cellW,cy);
+    barGrad.addColorStop(0,accentC);
+    barGrad.addColorStop(1,accentC+"66");
+    ctx.fillStyle=barGrad;
+    ctx.beginPath(); ctx.roundRect(cx,cy,cellW,5,{upperLeft:14,upperRight:14,lowerLeft:0,lowerRight:0}); ctx.fill();
+
+    // Value with glow
+    const vSize=Math.min(cellH*.36, item.value.length>6?50:item.value.length>4?62:76);
+    ctx.save();
+    ctx.shadowColor=accentC;
+    ctx.shadowBlur=20;
     ctx.font=`700 ${vSize}px 'DM Sans',sans-serif`;
     ctx.fillStyle=accentC; ctx.textAlign="center"; ctx.textBaseline="middle";
-    ctx.fillText(item.value,cx+cellW/2,cy+cellH*.44);
-    // label
-    ctx.font=`400 ${Math.min(18,cellH*.14)}px 'DM Sans',sans-serif`;
-    ctx.fillStyle=textC+"bb";
-    ctx.fillText(item.label||"",cx+cellW/2,cy+cellH*.76);
+    ctx.fillText(item.value,cx+cellW/2,cy+cellH*.43);
+    ctx.restore();
+
+    // Label
+    ctx.font=`400 ${Math.min(17,cellH*.12)}px 'DM Mono',monospace`;
+    ctx.fillStyle=textC+"99"; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText((item.label||"").toUpperCase(),cx+cellW/2,cy+cellH*.74);
     ctx.textAlign="left"; ctx.textBaseline="alphabetic";
   }
 }
 
-// ─── INFOGRAPHIC RENDERER ─────────────────────────────────────────────────────
-// circleImg: optional HTMLImageElement to draw clipped inside the right circle
-function drawInfographic(canvas, d, style, handle, isHook, isCTA, circleImg) {
-  const ctx=canvas.getContext("2d");
-  const W=1600,H=900;
-  const {c1,c2,darkText}=style;
+// ─── PREMIUM BACKGROUND RENDERER ─────────────────────────────────────────────
+function drawPremiumBg(ctx, W, H, c1, c2, darkText) {
+  // Rich layered gradient background
+  const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+  bgGrad.addColorStop(0, c1);
+  bgGrad.addColorStop(0.55, c2);
+  bgGrad.addColorStop(1, darkenHex(c1, 0.3));
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, W, H);
 
-  // Colours
-  const TEXT      = darkText?"#1e293b":"#ffffff";
-  const TEXT_MED  = darkText?"#475569":"rgba(255,255,255,0.75)";
-  const TEXT_LOW  = darkText?"#94a3b8":"rgba(255,255,255,0.4)";
-  const CARD_BG   = darkText?"rgba(255,255,255,0.55)":"rgba(255,255,255,0.15)";
-  const CHART_BG  = darkText?"rgba(0,0,0,0.08)":"rgba(255,255,255,0.18)";
-  const ACCENT    = darkText?c1:"#ffffff";
-  const ACCENT2   = darkText?c2:rgba(c1,0.85);
+  // Large radial glow — top left
+  const glow1 = ctx.createRadialGradient(W*0.15, H*0.2, 0, W*0.15, H*0.2, W*0.55);
+  glow1.addColorStop(0, darkText?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.12)");
+  glow1.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = glow1; ctx.fillRect(0, 0, W, H);
 
-  // Background
-  ctx.fillStyle=makeGrad(ctx,W,H,c1,c2);
-  ctx.fillRect(0,0,W,H);
+  // Secondary glow — bottom right
+  const glow2 = ctx.createRadialGradient(W*0.85, H*0.8, 0, W*0.85, H*0.8, W*0.5);
+  glow2.addColorStop(0, darkText?"rgba(0,0,0,0.15)":rgba(c1,0.25));
+  glow2.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = glow2; ctx.fillRect(0, 0, W, H);
 
-  // Subtle noise dots
-  const orig=ctx.globalAlpha;
-  ctx.fillStyle=darkText?"rgba(0,0,0,0.025)":"rgba(255,255,255,0.025)";
-  for(let x=20;x<W;x+=28) for(let y=20;y<H;y+=28) if(Math.random()>.65){ctx.beginPath();ctx.arc(x,y,1,0,Math.PI*2);ctx.fill();}
-  ctx.globalAlpha=orig;
-
-  // ── Circle image zone (right side) ──
-  // Circle center and radius — partially off-screen right edge for that cropped look
-  const CX = W - 260, CY = H / 2, CR = 390;
-  // Text safe zone: keep content within left 58% of width
-  const TEXT_MAX_X = Math.round(W * 0.58);
-
-  // Draw the decorative arc stroke (always visible, thicker when no image)
-  const strokeW = circleImg ? 6 : 10;
+  // Diagonal light streak
   ctx.save();
-  ctx.strokeStyle = darkText ? "rgba(0,0,0,0.25)" : rgba(c1, 0.5);
-  ctx.lineWidth = strokeW;
+  ctx.globalAlpha = 0.06;
+  const streak = ctx.createLinearGradient(0, 0, W*0.6, H);
+  streak.addColorStop(0, "rgba(255,255,255,0)");
+  streak.addColorStop(0.4, "rgba(255,255,255,1)");
+  streak.addColorStop(0.6, "rgba(255,255,255,1)");
+  streak.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = streak;
   ctx.beginPath();
-  ctx.arc(CX, CY, CR, 0, Math.PI * 2);
-  ctx.stroke();
+  ctx.moveTo(W*0.1, 0); ctx.lineTo(W*0.35, 0); ctx.lineTo(W*0.9, H); ctx.lineTo(W*0.65, H);
+  ctx.closePath(); ctx.fill();
   ctx.restore();
 
-  if (circleImg) {
-    // Clip image into circle
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(CX, CY, CR - strokeW / 2, 0, Math.PI * 2);
-    ctx.clip();
-    // Cover-fit the image inside the circle bounding box
-    const bx = CX - CR, by = CY - CR, bs = CR * 2;
-    const ir = circleImg.naturalWidth / circleImg.naturalHeight;
-    let sw = bs, sh = bs;
-    if (ir > 1) { sh = bs; sw = sh * ir; } else { sw = bs; sh = sw / ir; }
-    const ox = bx + (bs - sw) / 2, oy = by + (bs - sh) / 2;
-    // Slight dark overlay so text-contrast stays if image bleeds left
-    ctx.drawImage(circleImg, ox, oy, sw, sh);
-    ctx.fillStyle = "rgba(0,0,0,0.18)";
-    ctx.fillRect(bx, by, bs, bs);
-    ctx.restore();
+  // Fine dot grid texture
+  ctx.save();
+  ctx.globalAlpha = darkText?0.04:0.06;
+  ctx.fillStyle = darkText?"#000":"#fff";
+  for(let px=0;px<W;px+=32) for(let py=0;py<H;py+=32){
+    ctx.beginPath(); ctx.arc(px,py,1.2,0,Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
 
-    // Thin bright ring border around the clipped image
+function darkenHex(hex, amt) {
+  const {r,g,b}=hexToRgb(hex);
+  return `rgb(${Math.max(0,Math.round(r*(1-amt)))},${Math.max(0,Math.round(g*(1-amt)))},${Math.max(0,Math.round(b*(1-amt)))})`;
+}
+
+// ─── INFOGRAPHIC RENDERER ─────────────────────────────────────────────────────
+function drawInfographic(canvas, d, style, handle, isHook, isCTA, circleImg) {
+  const ctx=canvas.getContext("2d");
+  const W=1600, H=900;
+  const {c1,c2,darkText}=style;
+
+  // Colour system
+  const TEXT     = darkText?"#0f172a":"#ffffff";
+  const TEXT_MED = darkText?"#334155":"rgba(255,255,255,0.78)";
+  const TEXT_LOW = darkText?"#94a3b8":"rgba(255,255,255,0.38)";
+  const CARD_BG  = darkText?"rgba(255,255,255,0.6)":"rgba(255,255,255,0.1)";
+  const CHART_BG = darkText?"rgba(0,0,0,0.07)":"rgba(255,255,255,0.14)";
+  const ACCENT   = darkText?c1:"#ffffff";
+  const ACCENT2  = darkText?c2:rgba(c1,0.8);
+
+  // ── Premium background ──
+  drawPremiumBg(ctx, W, H, c1, c2, darkText);
+
+  // ── Right decorative zone ──
+  const CX = W - 240, CY = H/2, CR = 400;
+  const TEXT_MAX_X = Math.round(W * 0.57);
+
+  // Outer ring glow
+  ctx.save();
+  ctx.shadowColor = darkText?"rgba(0,0,0,0.2)":rgba(c1,0.6);
+  ctx.shadowBlur = 40;
+  ctx.strokeStyle = darkText?"rgba(0,0,0,0.15)":"rgba(255,255,255,0.15)";
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(CX, CY, CR+18, 0, Math.PI*2); ctx.stroke();
+  ctx.restore();
+
+  if(circleImg){
+    // Clipped image with vignette
     ctx.save();
-    ctx.strokeStyle = darkText ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.22)";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(CX, CY, CR - strokeW / 2, 0, Math.PI * 2);
-    ctx.stroke();
+    ctx.beginPath(); ctx.arc(CX, CY, CR, 0, Math.PI*2); ctx.clip();
+    const bx=CX-CR, by=CY-CR, bs=CR*2;
+    const ir=circleImg.naturalWidth/circleImg.naturalHeight;
+    let sw=bs,sh=bs;
+    if(ir>1){sh=bs;sw=sh*ir;}else{sw=bs;sh=sw/ir;}
+    const ox=bx+(bs-sw)/2, oy=by+(bs-sh)/2;
+    ctx.drawImage(circleImg,ox,oy,sw,sh);
+    // Vignette overlay on image
+    const vig=ctx.createRadialGradient(CX,CY,CR*0.4,CX,CY,CR);
+    vig.addColorStop(0,"rgba(0,0,0,0)");
+    vig.addColorStop(1,"rgba(0,0,0,0.45)");
+    ctx.fillStyle=vig; ctx.fillRect(bx,by,bs,bs);
+    ctx.restore();
+    // Sharp ring border
+    ctx.save();
+    ctx.strokeStyle="rgba(255,255,255,0.18)"; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2); ctx.stroke();
     ctx.restore();
   } else {
-    // No image yet — draw a placeholder inner fill
+    // Decorative abstract circle — concentric arcs
     ctx.save();
-    ctx.fillStyle = darkText ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.07)";
-    ctx.beginPath();
-    ctx.arc(CX, CY, CR - strokeW, 0, Math.PI * 2);
-    ctx.fill();
+    const alpha = darkText?0.07:0.12;
+    // Fill
+    ctx.fillStyle=darkText?`rgba(0,0,0,${alpha})`:`rgba(255,255,255,${alpha})`;
+    ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2); ctx.fill();
+    // Dashed arc rings
+    [CR*0.65, CR*0.82].forEach(r=>{
+      ctx.setLineDash([12,20]);
+      ctx.strokeStyle=darkText?"rgba(0,0,0,0.12)":"rgba(255,255,255,0.14)";
+      ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(CX,CY,r,0,Math.PI*2); ctx.stroke();
+    });
+    ctx.setLineDash([]);
+    // Cross-hair lines
+    ctx.strokeStyle=darkText?"rgba(0,0,0,0.08)":"rgba(255,255,255,0.1)";
+    ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(CX-CR*0.5,CY); ctx.lineTo(CX+CR*0.5,CY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX,CY-CR*0.5); ctx.lineTo(CX,CY+CR*0.5); ctx.stroke();
     ctx.restore();
   }
 
-  // ── Header bar ──
-  ctx.fillStyle=darkText?"rgba(255,255,255,0.6)":"rgba(0,0,0,0.2)";
-  ctx.fillRect(0,0,W,72);
+  // ── Gradient fade on left edge of circle zone (blends content into bg) ──
+  const fade=ctx.createLinearGradient(TEXT_MAX_X-80,0,TEXT_MAX_X+80,0);
+  fade.addColorStop(0,"rgba(0,0,0,0)");
+  fade.addColorStop(1,darkText?c1+"44":"rgba(0,0,0,0.15)");
+  ctx.fillStyle=fade; ctx.fillRect(TEXT_MAX_X-80,0,160,H);
 
-  ctx.font="500 14px 'DM Mono',monospace";
-  ctx.fillStyle=TEXT_MED; ctx.textBaseline="middle";
-  ctx.fillText(`${String(d.tweetNum||1).padStart(2,"0")} / ${String(d.tweetTotal||1).padStart(2,"0")}`,40,36);
+  // ── Top bar ──
+  const topBarGrad=ctx.createLinearGradient(0,0,0,68);
+  topBarGrad.addColorStop(0,darkText?"rgba(255,255,255,0.55)":"rgba(0,0,0,0.28)");
+  topBarGrad.addColorStop(1,darkText?"rgba(255,255,255,0)":"rgba(0,0,0,0)");
+  ctx.fillStyle=topBarGrad; ctx.fillRect(0,0,W,68);
 
-  // Category pill
+  // Left accent line on top bar
+  ctx.fillStyle=ACCENT+"cc";
+  ctx.fillRect(0,0,3,68);
+
+  // Tweet counter
+  ctx.font="600 13px 'DM Mono',monospace";
+  ctx.fillStyle=TEXT_LOW; ctx.textBaseline="middle";
+  ctx.fillText(`${String(d.tweetNum||1).padStart(2,"0")} / ${String(d.tweetTotal||1).padStart(2,"0")}`,32,34);
+
+  // Category pill — pill with accent bg
   if(d.accentLabel){
     const lbl=d.accentLabel.toUpperCase();
-    ctx.font="500 11px 'DM Mono',monospace";
+    ctx.font="600 10px 'DM Mono',monospace";
     const lw=ctx.measureText(lbl).width;
-    ctx.fillStyle=darkText?"rgba(0,0,0,0.1)":"rgba(255,255,255,0.2)";
-    ctx.beginPath(); ctx.roundRect(110,20,lw+22,30,4); ctx.fill();
-    ctx.fillStyle=ACCENT; ctx.fillText(lbl,121,36);
+    const pillX=90, pillW=lw+26, pillH=26;
+    // Pill bg
+    ctx.fillStyle=darkText?rgba(c1,0.15):"rgba(255,255,255,0.18)";
+    ctx.beginPath(); ctx.roundRect(pillX,34-pillH/2,pillW,pillH,pillH/2); ctx.fill();
+    // Pill border
+    ctx.strokeStyle=ACCENT+"44"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.roundRect(pillX,34-pillH/2,pillW,pillH,pillH/2); ctx.stroke();
+    ctx.fillStyle=ACCENT; ctx.fillText(lbl,pillX+13,34);
   }
 
   // Hook/CTA badge
   if(isHook||isCTA){
     const lbl=isHook?"HOOK":"CTA";
-    ctx.font="500 11px 'DM Mono',monospace";
+    ctx.font="600 10px 'DM Mono',monospace";
     const lw=ctx.measureText(lbl).width;
-    ctx.fillStyle=isHook?"rgba(255,255,255,0.22)":"rgba(255,107,53,0.45)";
-    ctx.beginPath(); ctx.roundRect(W-40-lw-22,20,lw+22,30,4); ctx.fill();
-    ctx.fillStyle=isHook?ACCENT:"#ff6b35"; ctx.fillText(lbl,W-40-lw-11,36);
+    const bX=W-36-lw-26, bW=lw+26, bH=26;
+    ctx.fillStyle=isHook?"rgba(255,255,255,0.2)":"rgba(255,107,53,0.35)";
+    ctx.beginPath(); ctx.roundRect(bX,34-bH/2,bW,bH,bH/2); ctx.fill();
+    ctx.strokeStyle=isHook?"rgba(255,255,255,0.3)":"rgba(255,107,53,0.6)"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.roundRect(bX,34-bH/2,bW,bH,bH/2); ctx.stroke();
+    ctx.fillStyle=isHook?ACCENT:"#ff6b35"; ctx.fillText(lbl,bX+13,34);
   }
 
   // Handle
   if(handle){
     ctx.font="400 13px 'DM Mono',monospace"; ctx.fillStyle=TEXT_LOW;
     const hw=ctx.measureText(handle).width;
-    ctx.fillText(handle,W-40-hw-(isHook||isCTA?100:0),36);
+    const hx=W-36-hw-(isHook||isCTA?120:0);
+    ctx.fillText(handle,hx,34);
   }
   ctx.textBaseline="alphabetic";
 
-  // ── Content — pass TEXT_MAX_X so layouts respect the image zone ──
-  const cY=90, cH=H-90-72, pX=72;
+  // ── Content ──
+  const cY=80, cH=H-80-68, pX=64;
   switch(d.layout){
     case "stat":       _stat(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c2,darkText,W,cY,cH,pX,TEXT_MAX_X); break;
     case "list":       _list(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c2,darkText,W,cY,cH,pX,TEXT_MAX_X); break;
@@ -1574,100 +1680,176 @@ function drawInfographic(canvas, d, style, handle, isHook, isCTA, circleImg) {
     default:           _quote(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c2,darkText,W,cY,cH,pX,TEXT_MAX_X);
   }
 
-  // ── Footer ──
-  ctx.fillStyle=darkText?"rgba(255,255,255,0.6)":"rgba(0,0,0,0.25)";
-  ctx.fillRect(0,H-72,W,72);
-  ctx.font="400 13px 'DM Mono',monospace"; ctx.fillStyle=TEXT_LOW; ctx.textBaseline="middle";
-  const tw=ctx.measureText("// AI Thread Agent").width;
-  ctx.fillText("// AI Thread Agent",W-40-tw,H-36);
+  // ── Bottom bar ──
+  const botGrad=ctx.createLinearGradient(0,H-64,0,H);
+  botGrad.addColorStop(0,darkText?"rgba(255,255,255,0)":"rgba(0,0,0,0)");
+  botGrad.addColorStop(1,darkText?"rgba(255,255,255,0.5)":"rgba(0,0,0,0.32)");
+  ctx.fillStyle=botGrad; ctx.fillRect(0,H-64,W,64);
+
+  // Accent line at very bottom
+  ctx.fillStyle=ACCENT+"55"; ctx.fillRect(0,H-2,W,2);
+
+  // Branding
+  ctx.font="400 26px 'Bebas Neue',sans-serif"; ctx.fillStyle=ACCENT+"99"; ctx.textBaseline="middle";
+  ctx.fillText("THREADCRAFT",32,H-32);
+  ctx.font="400 11px 'DM Mono',monospace"; ctx.fillStyle=TEXT_LOW;
+  const bw=ctx.measureText("// AI Thread Agent").width;
+  ctx.fillText("// AI Thread Agent",W-36-bw,H-32);
   ctx.textBaseline="alphabetic";
 }
 
 // ── LAYOUTS ───────────────────────────────────────────────────────────────────
 
 function _stat(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c2,darkText,W,cY,cH,pX,TEXT_MAX_X){
-  TEXT_MAX_X=TEXT_MAX_X||Math.round(W*0.58);
-  const mid=Math.min(W/2, TEXT_MAX_X-40);
+  TEXT_MAX_X=TEXT_MAX_X||Math.round(W*0.57);
+  const mid=Math.min(W*0.44, TEXT_MAX_X-60);
+
   if(d.stat){
     const sv=d.stat.value||"", su=d.stat.unit||"", sl=d.stat.label||"";
-    const ss=sv.length>6?110:sv.length>4?150:190;
+    const ss=sv.length>6?100:sv.length>4?140:185;
+    const statY=cY+ss*0.9+30;
+
+    // Big number with glow
+    ctx.save();
+    ctx.shadowColor=ACCENT;
+    ctx.shadowBlur=60;
     ctx.font=`700 ${ss}px 'DM Sans',sans-serif`;
     ctx.fillStyle=ACCENT; ctx.textBaseline="alphabetic";
-    ctx.shadowColor=darkText?"rgba(0,0,0,0.2)":"rgba(255,255,255,0.4)";
-    ctx.shadowBlur=50;
-    ctx.fillText(sv, pX, cY+ss*.9);
-    ctx.shadowBlur=0;
+    ctx.fillText(sv, pX, statY);
+    ctx.restore();
+
+    // Unit
     if(su){
-      ctx.font=`300 44px 'DM Sans',sans-serif`; ctx.fillStyle=TEXT_MED;
-      const vw=(() => { const prev=ctx.font; ctx.font=`700 ${ss}px 'DM Sans',sans-serif`; const w=ctx.measureText(sv).width; ctx.font=prev; return w; })();
-      ctx.fillText(su, pX+vw+12, cY+ss*.65);
+      const prevFont=ctx.font;
+      ctx.font=`700 ${ss}px 'DM Sans',sans-serif`;
+      const vw=ctx.measureText(sv).width;
+      ctx.font=`300 ${Math.round(ss*0.28)}px 'DM Sans',sans-serif`;
+      ctx.fillStyle=TEXT_MED; ctx.textBaseline="alphabetic";
+      ctx.fillText(su, pX+vw+10, statY-ss*0.22);
     }
-    if(sl){ctx.font="400 19px 'DM Mono',monospace"; ctx.fillStyle=TEXT_LOW; ctx.fillText(sl.toUpperCase(),pX,cY+ss*.9+36);}
+
+    // Label below number
+    if(sl){
+      ctx.font="500 16px 'DM Mono',monospace";
+      ctx.fillStyle=TEXT_LOW; ctx.textBaseline="alphabetic";
+      ctx.fillText(sl.toUpperCase(), pX, statY+32);
+    }
+
+    // Accent underline on stat
+    const numW=(() => { ctx.font=`700 ${ss}px 'DM Sans',sans-serif`; return ctx.measureText(sv).width; })();
+    const lineGrad=ctx.createLinearGradient(pX,0,pX+numW,0);
+    lineGrad.addColorStop(0,ACCENT+"cc");
+    lineGrad.addColorStop(1,ACCENT+"00");
+    ctx.fillStyle=lineGrad;
+    ctx.fillRect(pX, statY+8, Math.min(numW, mid-pX-20), 3);
+
     // Donut if pct
     if(d.stat.pct){
-      const dr=90;
-      drawDonut(ctx,pX+dr+20,cY+cH*.65,dr,d.stat.pct,ACCENT,CHART_BG,d.stat.pct+"%",sl||"",TEXT);
+      const dr=88;
+      drawDonut(ctx,pX+dr+24,cY+cH*0.72,dr,d.stat.pct,ACCENT,CHART_BG,d.stat.pct+"%",sl||"",TEXT);
     }
   }
-  // Divider
-  ctx.strokeStyle=darkText?"rgba(0,0,0,0.1)":"rgba(255,255,255,0.18)";
-  ctx.lineWidth=1; ctx.setLineDash([4,10]);
-  ctx.beginPath(); ctx.moveTo(mid-10,cY+30); ctx.lineTo(mid-10,cY+cH-30); ctx.stroke();
+
+  // Dashed vertical divider
+  ctx.save();
+  ctx.strokeStyle=darkText?"rgba(0,0,0,0.1)":"rgba(255,255,255,0.14)";
+  ctx.lineWidth=1; ctx.setLineDash([5,12]);
+  ctx.beginPath(); ctx.moveTo(mid,cY+20); ctx.lineTo(mid,cY+cH-20); ctx.stroke();
   ctx.setLineDash([]);
+  ctx.restore();
+
   // Right: headline + subtext
-  const rx=mid+40;
+  const rx=mid+48;
   if(d.headline){
-    const hs=d.headline.length>35?40:d.headline.length>22?50:62;
-    ctx.font=`700 ${hs}px 'DM Sans',sans-serif`; ctx.fillStyle=TEXT; ctx.textBaseline="alphabetic";
-    const ey=wrapText(ctx,d.headline,rx,cY+hs+30,W-rx-pX,hs*1.35,H-100);
-    if(d.subtext){ctx.font="300 22px 'DM Sans',sans-serif"; ctx.fillStyle=TEXT_MED; wrapText(ctx,d.subtext,rx,ey+18,W-rx-pX,32,H-90);}
+    const hs=d.headline.length>35?38:d.headline.length>22?48:60;
+    ctx.font=`700 ${hs}px 'DM Sans',sans-serif`;
+    ctx.fillStyle=TEXT; ctx.textBaseline="alphabetic";
+    const ey=wrapText(ctx,d.headline,rx,cY+hs+40,TEXT_MAX_X-rx,hs*1.3,H-100);
+    if(d.subtext){
+      ctx.font="300 20px 'DM Sans',sans-serif";
+      ctx.fillStyle=TEXT_MED;
+      wrapText(ctx,d.subtext,rx,ey+22,TEXT_MAX_X-rx,30,H-90);
+    }
   }
 }
 
 function _list(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c2,darkText,W,cY,cH,pX,TEXT_MAX_X){
-  TEXT_MAX_X=TEXT_MAX_X||Math.round(W*0.58);
+  TEXT_MAX_X=TEXT_MAX_X||Math.round(W*0.57);
   const pts=(d.points||[]).slice(0,4);
+
   if(d.headline){
-    const hs=d.headline.length>40?36:d.headline.length>25?46:56;
-    ctx.font=`700 ${hs}px 'DM Sans',sans-serif`; ctx.fillStyle=TEXT; ctx.textBaseline="alphabetic";
-    wrapText(ctx,d.headline,pX,cY+hs+12,TEXT_MAX_X-pX,hs*1.3,cY+hs*2.8);
+    const hs=d.headline.length>40?34:d.headline.length>25?44:54;
+    ctx.font=`700 ${hs}px 'DM Sans',sans-serif`;
+    ctx.fillStyle=TEXT; ctx.textBaseline="alphabetic";
+    wrapText(ctx,d.headline,pX,cY+hs+16,TEXT_MAX_X-pX,hs*1.28,cY+hs*2.9);
   }
-  const top=cY+170, availH=cH-175;
-  // Fill all available space — no artificial 116px cap
+
+  const top=cY+155, availH=cH-162;
   const itemH=Math.floor(availH/Math.max(pts.length,1));
+
   pts.forEach((pt,i)=>{
-    const iy=top+i*itemH;
+    const iy=top+i*itemH, ih=itemH-14;
+
+    // Card bg with glass effect
+    ctx.save();
     ctx.fillStyle=CARD_BG;
-    ctx.beginPath(); ctx.roundRect(pX,iy,TEXT_MAX_X-pX,itemH-12,8); ctx.fill();
-    ctx.fillStyle=ACCENT;
-    ctx.beginPath(); ctx.roundRect(pX,iy,6,itemH-12,{upperLeft:8,lowerLeft:8,upperRight:0,lowerRight:0}); ctx.fill();
-    // Number badge — scale with row height, no arbitrary cap
-    const numFS=Math.min(52,Math.floor(itemH*0.42));
+    ctx.beginPath(); ctx.roundRect(pX,iy,TEXT_MAX_X-pX,ih,10); ctx.fill();
+    // Card border
+    ctx.strokeStyle=ACCENT+"22"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.roundRect(pX,iy,TEXT_MAX_X-pX,ih,10); ctx.stroke();
+    ctx.restore();
+
+    // Accent left bar — gradient
+    const barGrad=ctx.createLinearGradient(pX,iy,pX,iy+ih);
+    barGrad.addColorStop(0,ACCENT);
+    barGrad.addColorStop(1,ACCENT+"66");
+    ctx.fillStyle=barGrad;
+    ctx.beginPath(); ctx.roundRect(pX,iy,5,ih,{upperLeft:10,lowerLeft:10,upperRight:0,lowerRight:0}); ctx.fill();
+
+    // Number badge
+    const numFS=Math.min(50,Math.floor(ih*0.4));
+    ctx.save();
+    ctx.shadowColor=ACCENT; ctx.shadowBlur=15;
     ctx.font=`700 ${numFS}px 'Bebas Neue',sans-serif`;
     ctx.fillStyle=ACCENT; ctx.textBaseline="middle"; ctx.textAlign="center";
-    ctx.fillText(String(i+1).padStart(2,"0"), pX+52, iy+(itemH-12)/2);
+    ctx.fillText(String(i+1).padStart(2,"0"), pX+54, iy+ih/2);
+    ctx.restore();
     ctx.textAlign="left";
-    // Text — scale up proportionally; max 44px keeps it clean for 1-2 items
-    const textFS=Math.min(44,Math.floor(itemH*0.3));
-    ctx.font=`400 ${textFS}px 'DM Sans',sans-serif`; ctx.fillStyle=TEXT;
-    wrapText(ctx,pt,pX+92,iy+(itemH-12)/2-(itemH>100?textFS*0.5:textFS*0.35),TEXT_MAX_X-pX-110,textFS*1.35,iy+itemH-12);
+
+    // Separator dot
+    ctx.fillStyle=ACCENT+"44";
+    ctx.beginPath(); ctx.arc(pX+90,iy+ih/2,3,0,Math.PI*2); ctx.fill();
+
+    // Point text
+    const textFS=Math.min(40,Math.floor(ih*0.28));
+    ctx.font=`400 ${textFS}px 'DM Sans',sans-serif`;
+    ctx.fillStyle=TEXT;
+    wrapText(ctx,pt,pX+104,iy+ih/2-(ih>110?textFS*0.45:textFS*0.3),TEXT_MAX_X-pX-120,textFS*1.32,iy+ih);
     ctx.textBaseline="alphabetic";
   });
-  if(d.subtext){ctx.font="300 17px 'DM Mono',monospace"; ctx.fillStyle=TEXT_LOW; ctx.textBaseline="alphabetic"; ctx.fillText(d.subtext.toUpperCase(),pX,top+pts.length*itemH+20);}
+
+  if(d.subtext){
+    ctx.font="400 15px 'DM Mono',monospace";
+    ctx.fillStyle=TEXT_LOW; ctx.textBaseline="alphabetic";
+    ctx.fillText(d.subtext.toUpperCase(),pX,top+pts.length*itemH+22);
+  }
 }
 
 function _data(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c2,darkText,W,cY,cH,pX,TEXT_MAX_X){
-  TEXT_MAX_X=TEXT_MAX_X||Math.round(W*0.58);
+  TEXT_MAX_X=TEXT_MAX_X||Math.round(W*0.57);
+
   if(d.headline){
-    const hs=d.headline.length>40?34:d.headline.length>25?44:54;
-    ctx.font=`700 ${hs}px 'DM Sans',sans-serif`; ctx.fillStyle=TEXT; ctx.textBaseline="alphabetic";
-    wrapText(ctx,d.headline,pX,cY+hs+12,TEXT_MAX_X-pX,hs*1.3,cY+hs*2.5);
+    const hs=d.headline.length>40?32:d.headline.length>25?42:52;
+    ctx.font=`700 ${hs}px 'DM Sans',sans-serif`;
+    ctx.fillStyle=TEXT; ctx.textBaseline="alphabetic";
+    wrapText(ctx,d.headline,pX,cY+hs+16,TEXT_MAX_X-pX,hs*1.28,cY+hs*2.6);
   }
-  const top=cY+160, dH=cH-170;
+
+  const top=cY+150, dH=cH-158;
   if(d.chartData&&d.chartData.length){
     if(d.chartType==="donut"&&d.chartData.length===1){
       const cd=d.chartData[0];
-      drawDonut(ctx,pX+160,cY+cH*.55,130,cd.pct||50,ACCENT,CHART_BG,cd.value||"",cd.label||"",TEXT);
+      drawDonut(ctx,pX+155,cY+cH*0.58,128,cd.pct||50,ACCENT,CHART_BG,cd.value||"",cd.label||"",TEXT);
     } else if(d.chartType==="numbers"||d.chartData.every(x=>x.pct==null)){
       drawNumberGrid(ctx,d.chartData,pX,top,TEXT_MAX_X-pX,dH,ACCENT,TEXT,CARD_BG);
     } else {
@@ -1676,68 +1858,93 @@ function _data(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c
   } else {
     _list(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c2,darkText,W,cY,cH,pX,TEXT_MAX_X);
   }
-  if(d.subtext){ctx.font="300 17px 'DM Mono',monospace"; ctx.fillStyle=TEXT_LOW; ctx.textBaseline="alphabetic"; ctx.fillText(d.subtext.toUpperCase(),pX,cY+cH-8);}
+  if(d.subtext){
+    ctx.font="400 15px 'DM Mono',monospace";
+    ctx.fillStyle=TEXT_LOW; ctx.textBaseline="alphabetic";
+    ctx.fillText(d.subtext.toUpperCase(),pX,cY+cH-10);
+  }
 }
 
 function _comp(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c2,darkText,W,cY,cH,pX,TEXT_MAX_X){
-  TEXT_MAX_X=TEXT_MAX_X||Math.round(W*0.58);
+  TEXT_MAX_X=TEXT_MAX_X||Math.round(W*0.57);
   const left=d.leftCol||{label:"Before",points:[]}, right=d.rightCol||{label:"After",points:[]};
   const maxItems=Math.max((left.points||[]).length,(right.points||[]).length,1);
-
-  // ── Dynamic sizing: bigger font when fewer items, tighter when many ──
-  const ptFS  = maxItems<=2?46:maxItems===3?38:maxItems===4?30:24;
-  const lineH = ptFS*1.5;
-  const labelH= 60, hdrFS=20;
-  const ct=cY+88, ch=cH-96, mid=W/2;
-  // Evenly distribute rows across the available body height
-  const bodyH = ch - labelH - 20;
-  const rowH  = Math.floor(bodyH / maxItems);
+  const ptFS=maxItems<=2?42:maxItems===3?34:maxItems===4?28:22;
+  const lineH=ptFS*1.45;
+  const labelH=56, hdrFS=18;
+  const ct=cY+80, ch=cH-88;
+  const mid=TEXT_MAX_X/2+pX/2;
+  const bodyH=ch-labelH-16;
+  const rowH=Math.floor(bodyH/maxItems);
 
   // Headline
   if(d.headline){
-    const hfs=d.headline.length>50?38:d.headline.length>35?44:52;
-    ctx.font=`700 ${hfs}px 'DM Sans',sans-serif`; ctx.fillStyle=TEXT; ctx.textBaseline="alphabetic";
-    ctx.textAlign="center"; ctx.fillText(d.headline,W/2,cY+64); ctx.textAlign="left";
+    const hfs=d.headline.length>50?34:d.headline.length>35?42:50;
+    ctx.font=`700 ${hfs}px 'DM Sans',sans-serif`;
+    ctx.fillStyle=TEXT; ctx.textBaseline="alphabetic";
+    ctx.textAlign="center"; ctx.fillText(d.headline,TEXT_MAX_X/2,cY+56); ctx.textAlign="left";
   }
 
-  // ── Left card ──
-  const lw=mid-pX-16;
-  ctx.fillStyle=darkText?"rgba(0,0,0,0.05)":"rgba(255,255,255,0.1)";
-  ctx.beginPath(); ctx.roundRect(pX,ct,lw,ch,10); ctx.fill();
-  ctx.fillStyle=TEXT_LOW;
-  ctx.beginPath(); ctx.roundRect(pX,ct,lw,labelH,{upperLeft:10,upperRight:10,lowerLeft:0,lowerRight:0}); ctx.fill();
-  ctx.font=`700 ${hdrFS}px 'DM Mono',monospace`; ctx.fillStyle=TEXT_MED; ctx.textBaseline="middle"; ctx.textAlign="center";
-  ctx.fillText((left.label||"").toUpperCase(), pX+lw/2, ct+labelH/2); ctx.textAlign="left";
+  // ── Left card (muted — "before") ──
+  const lw=mid-pX-14;
+  ctx.fillStyle=darkText?"rgba(0,0,0,0.06)":"rgba(255,255,255,0.08)";
+  ctx.beginPath(); ctx.roundRect(pX,ct,lw,ch,12); ctx.fill();
+  ctx.strokeStyle="rgba(255,255,255,0.08)"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.roundRect(pX,ct,lw,ch,12); ctx.stroke();
+
+  // Left header
+  ctx.fillStyle=darkText?"rgba(0,0,0,0.12)":"rgba(255,255,255,0.08)";
+  ctx.beginPath(); ctx.roundRect(pX,ct,lw,labelH,{upperLeft:12,upperRight:12,lowerLeft:0,lowerRight:0}); ctx.fill();
+  ctx.font=`600 ${hdrFS}px 'DM Mono',monospace`; ctx.fillStyle=TEXT_LOW;
+  ctx.textBaseline="middle"; ctx.textAlign="center";
+  ctx.fillText((left.label||"").toUpperCase(),pX+lw/2,ct+labelH/2); ctx.textAlign="left";
+
   (left.points||[]).slice(0,5).forEach((pt,i)=>{
-    const iy=ct+labelH+10+i*rowH+rowH/2;
+    const iy=ct+labelH+8+i*rowH+rowH/2;
     ctx.font=`400 ${ptFS}px 'DM Sans',sans-serif`; ctx.fillStyle=TEXT_MED;
     ctx.textAlign="left"; ctx.textBaseline="middle";
-    _compWrap(ctx,"✕  "+pt,pX+24,iy,lw-48,lineH);
+    _compWrap(ctx,"✕  "+pt,pX+22,iy,lw-44,lineH);
   });
 
-  // ── Right card (highlighted) ──
-  const rw=W-mid-16-pX;
-  ctx.fillStyle=darkText?"rgba(255,255,255,0.65)":"rgba(255,255,255,0.18)";
-  ctx.beginPath(); ctx.roundRect(mid+16,ct,rw,ch,10); ctx.fill();
-  ctx.fillStyle=ACCENT;
-  ctx.beginPath(); ctx.roundRect(mid+16,ct,rw,labelH,{upperLeft:10,upperRight:10,lowerLeft:0,lowerRight:0}); ctx.fill();
-  ctx.font=`700 ${hdrFS}px 'DM Mono',monospace`; ctx.fillStyle=darkText?"#fff":c1; ctx.textBaseline="middle"; ctx.textAlign="center";
-  ctx.fillText((right.label||"").toUpperCase(), mid+16+rw/2, ct+labelH/2); ctx.textAlign="left";
+  // ── Right card (highlighted — "after") ──
+  const rw=TEXT_MAX_X-mid-14;
+  ctx.save();
+  ctx.shadowColor=ACCENT; ctx.shadowBlur=30;
+  ctx.fillStyle=darkText?"rgba(255,255,255,0.7)":"rgba(255,255,255,0.16)";
+  ctx.beginPath(); ctx.roundRect(mid+14,ct,rw,ch,12); ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle=ACCENT+"44"; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.roundRect(mid+14,ct,rw,ch,12); ctx.stroke();
+
+  // Right header — accent fill
+  const rhGrad=ctx.createLinearGradient(mid+14,ct,mid+14+rw,ct);
+  rhGrad.addColorStop(0,ACCENT); rhGrad.addColorStop(1,ACCENT2||ACCENT+"bb");
+  ctx.fillStyle=rhGrad;
+  ctx.beginPath(); ctx.roundRect(mid+14,ct,rw,labelH,{upperLeft:12,upperRight:12,lowerLeft:0,lowerRight:0}); ctx.fill();
+  ctx.font=`600 ${hdrFS}px 'DM Mono',monospace`;
+  ctx.fillStyle=darkText?"#fff":c1; ctx.textBaseline="middle"; ctx.textAlign="center";
+  ctx.fillText((right.label||"").toUpperCase(),mid+14+rw/2,ct+labelH/2); ctx.textAlign="left";
+
   (right.points||[]).slice(0,5).forEach((pt,i)=>{
-    const iy=ct+labelH+10+i*rowH+rowH/2;
+    const iy=ct+labelH+8+i*rowH+rowH/2;
     ctx.font=`400 ${ptFS}px 'DM Sans',sans-serif`; ctx.fillStyle=TEXT;
     ctx.textAlign="left"; ctx.textBaseline="middle";
-    _compWrap(ctx,"✓  "+pt,mid+36,iy,rw-52,lineH);
+    _compWrap(ctx,"✓  "+pt,mid+34,iy,rw-48,lineH);
   });
 
   // ── VS badge ──
-  ctx.fillStyle=darkText?"rgba(0,0,0,0.08)":"rgba(255,255,255,0.18)";
-  ctx.beginPath(); ctx.arc(W/2,ct+ch/2,42,0,Math.PI*2); ctx.fill();
-  ctx.font="700 30px 'Bebas Neue',sans-serif"; ctx.fillStyle=TEXT_LOW; ctx.textAlign="center"; ctx.textBaseline="middle";
-  ctx.fillText("VS",W/2,ct+ch/2); ctx.textAlign="left"; ctx.textBaseline="alphabetic";
+  ctx.save();
+  ctx.shadowColor=darkText?"rgba(0,0,0,0.2)":rgba(c1,0.5); ctx.shadowBlur=20;
+  ctx.fillStyle=darkText?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.15)";
+  ctx.beginPath(); ctx.arc(TEXT_MAX_X/2,ct+ch/2,38,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=ACCENT+"55"; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.arc(TEXT_MAX_X/2,ct+ch/2,38,0,Math.PI*2); ctx.stroke();
+  ctx.restore();
+  ctx.font="700 26px 'Bebas Neue',sans-serif";
+  ctx.fillStyle=darkText?c1:TEXT; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText("VS",TEXT_MAX_X/2,ct+ch/2); ctx.textAlign="left"; ctx.textBaseline="alphabetic";
 }
 
-// Wraps text inside a comp card cell, vertically centred around centerY
 function _compWrap(ctx,text,x,centerY,maxW,lineH){
   const words=text.split(" "); let line=""; const lines=[];
   for(const w of words){
@@ -1745,23 +1952,53 @@ function _compWrap(ctx,text,x,centerY,maxW,lineH){
     if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else{line=t;}
   }
   if(line)lines.push(line);
-  const startY=centerY-(lines.length*lineH)/2+lineH*0.75;
-  lines.forEach((l,i)=>{ctx.fillText(l,x,startY+i*lineH);});
+  const startY=centerY-(lines.length*lineH)/2+lineH*0.72;
+  lines.forEach((l,i)=>{ ctx.fillText(l,x,startY+i*lineH); });
 }
 
 function _quote(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c2,darkText,W,cY,cH,pX,TEXT_MAX_X){
-  TEXT_MAX_X=TEXT_MAX_X||Math.round(W*0.58);
+  TEXT_MAX_X=TEXT_MAX_X||Math.round(W*0.57);
   const H=900, cy=cY+cH/2;
   const text=d.quoteText||d.headline||"";
-  ctx.font="700 280px 'DM Sans',sans-serif";
-  ctx.fillStyle=darkText?"rgba(0,0,0,0.05)":"rgba(255,255,255,0.07)";
-  ctx.textBaseline="alphabetic"; ctx.fillText('"',pX-12,cY+250);
-  const qs=text.length>80?40:text.length>50?52:66;
-  ctx.font=`300 ${qs}px 'DM Sans',sans-serif`; ctx.fillStyle=TEXT;
-  const ey=wrapText(ctx,text,pX+44,cy-24,TEXT_MAX_X-pX-44,qs*1.5,H-100);
-  ctx.fillStyle=ACCENT; ctx.fillRect(pX+44,ey+16,100,5);
-  if(d.subtext){ctx.font="300 19px 'DM Mono',monospace"; ctx.fillStyle=TEXT_LOW; ctx.fillText(d.subtext.toUpperCase(),pX+44,ey+54);}
-  if(d.headline&&d.headline!==text){ctx.font="500 14px 'DM Mono',monospace"; ctx.fillStyle=ACCENT; ctx.fillText(d.headline.toUpperCase(),pX+44,cY+36);}
+
+  // Giant decorative quote mark
+  ctx.save();
+  ctx.font="900 320px 'DM Sans',sans-serif";
+  ctx.fillStyle=darkText?"rgba(0,0,0,0.04)":"rgba(255,255,255,0.06)";
+  ctx.textBaseline="alphabetic";
+  ctx.fillText('"', pX-16, cY+280);
+  ctx.restore();
+
+  // Accent top line
+  const lineGrad=ctx.createLinearGradient(pX+40,0,pX+200,0);
+  lineGrad.addColorStop(0,ACCENT);
+  lineGrad.addColorStop(1,ACCENT+"00");
+  ctx.fillStyle=lineGrad;
+  ctx.fillRect(pX+40,cy-60,160,3);
+
+  // Quote text
+  const qs=text.length>90?36:text.length>55?48:62;
+  ctx.font=`300 ${qs}px 'DM Sans',sans-serif`;
+  ctx.fillStyle=TEXT; ctx.textBaseline="alphabetic";
+  const ey=wrapText(ctx,text,pX+40,cy-20,TEXT_MAX_X-pX-56,qs*1.52,H-100);
+
+  // Bottom accent line
+  ctx.fillStyle=lineGrad;
+  ctx.fillRect(pX+40,ey+18,120,3);
+
+  // Subtext
+  if(d.subtext){
+    ctx.font="400 17px 'DM Mono',monospace";
+    ctx.fillStyle=TEXT_LOW;
+    ctx.fillText(d.subtext.toUpperCase(),pX+40,ey+52);
+  }
+
+  // Category above
+  if(d.headline&&d.headline!==text){
+    ctx.font="600 12px 'DM Mono',monospace";
+    ctx.fillStyle=ACCENT;
+    ctx.fillText(d.headline.toUpperCase(),pX+40,cY+32);
+  }
 }
 
 // ─── SIMPLE TEXT CARD ─────────────────────────────────────────────────────────
@@ -1773,7 +2010,7 @@ function drawTextCard(id, text, idx, total, isHook, isCTA) {
   const TEXT_LOW=darkText?"#94a3b8":"rgba(255,255,255,0.35)";
   const TEXT_MED=darkText?"#475569":"rgba(255,255,255,0.7)";
   const ACCENT=darkText?c1:"#ffffff";
-  ctx.fillStyle=makeGrad(ctx,W,H,c1,c2); ctx.fillRect(0,0,W,H);
+  drawPremiumBg(ctx, W, H, c1, c2, darkText);
 
   // ── Context-aware background watermark ──
   const lower = text.toLowerCase();
@@ -1808,9 +2045,15 @@ function drawTextCard(id, text, idx, total, isHook, isCTA) {
     ctx.beginPath(); ctx.arc(W*0.85, H*0.45, 180, 0, Math.PI*1.4); ctx.stroke();
   }
   ctx.restore();
-  ctx.fillStyle=darkText?"rgba(255,255,255,0.6)":"rgba(0,0,0,0.2)"; ctx.fillRect(0,0,W,72);
-  ctx.font="500 14px 'DM Mono',monospace"; ctx.fillStyle=TEXT_MED; ctx.textBaseline="middle";
-  ctx.fillText(`${String(idx+1).padStart(2,"0")} / ${String(total).padStart(2,"0")}`,40,36);
+  const tcTopGrad=ctx.createLinearGradient(0,0,0,72);
+  tcTopGrad.addColorStop(0,darkText?"rgba(255,255,255,0.55)":"rgba(0,0,0,0.28)");
+  tcTopGrad.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=tcTopGrad; ctx.fillRect(0,0,W,72);
+  // Accent left bar
+  const ACCENT_TC=darkText?c1:"#ffffff";
+  ctx.fillStyle=ACCENT_TC+"cc"; ctx.fillRect(0,0,3,72);
+  ctx.font="600 13px 'DM Mono',monospace"; ctx.fillStyle=TEXT_MED; ctx.textBaseline="middle";
+  ctx.fillText(`${String(idx+1).padStart(2,"0")} / ${String(total).padStart(2,"0")}`,32,36);
   if(isHook||isCTA){
     const lbl=isHook?"HOOK":"CTA"; ctx.font="500 11px 'DM Mono',monospace";
     const lw=ctx.measureText(lbl).width;
@@ -1822,7 +2065,11 @@ function drawTextCard(id, text, idx, total, isHook, isCTA) {
   const pX=80, fs=text.length>200?34:text.length>140?42:text.length>80?52:62;
   ctx.font=`300 ${fs}px 'DM Sans',sans-serif`; ctx.fillStyle=TEXT;
   wrapText(ctx,text,pX,140,W-pX*2,fs*1.55,H-90);
-  ctx.fillStyle=darkText?"rgba(255,255,255,0.6)":"rgba(0,0,0,0.2)"; ctx.fillRect(0,H-72,W,72);
+  const tcBotGrad=ctx.createLinearGradient(0,H-64,0,H);
+  tcBotGrad.addColorStop(0,"rgba(0,0,0,0)");
+  tcBotGrad.addColorStop(1,darkText?"rgba(255,255,255,0.5)":"rgba(0,0,0,0.32)");
+  ctx.fillStyle=tcBotGrad; ctx.fillRect(0,H-64,W,64);
+  ctx.fillStyle=ACCENT_TC+"55"; ctx.fillRect(0,H-2,W,2);
   ctx.font="400 28px 'Bebas Neue',sans-serif"; ctx.fillStyle=ACCENT; ctx.textBaseline="middle";
   ctx.fillText("THREADCRAFT",40,H-36);
   ctx.font="400 13px 'DM Mono',monospace"; ctx.fillStyle=TEXT_LOW;
