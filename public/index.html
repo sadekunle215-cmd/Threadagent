@@ -1193,7 +1193,7 @@
         <label>Your X Handle (optional)</label>
         <input type="text" id="inf-xHandle" placeholder="@yourhandle" autocomplete="off" />
       </div>
-      <button class="btn-generate" id="infGenBtn" onclick="infGenerate()">GENERATE INFOGRAPHIC — &#8358;200</button>
+      <button class="btn-generate" id="infGenBtn" onclick="infGenerate()">GENERATE INFOGRAPHIC — &#8358;400</button>
       <div class="error-box" id="infErrorBox"></div>
 
       <!-- Preview with watermark -->
@@ -2072,10 +2072,10 @@ function handleMsGenerateClick(){
   if(!currentUser){ document.getElementById("authScreen").classList.remove("hidden"); return; }
   const topic = document.getElementById("ms-topic").value.trim();
   if(!topic){ showMsError("Add a project topic first."); return; }
-  // Cost: ₦20/scene. 15s≈4 scenes, 30s≈7, 60s≈12, 90s≈16
+  // Cost: ₦25/scene. 15s≈4 scenes, 30s≈7, 60s≈12, 90s≈16
   const sceneMap = {"15":4,"30":7,"60":12,"90":16};
   const sceneCount = sceneMap[msSelectedLen]||7;
-  const cost = sceneCount * 20;
+  const cost = sceneCount * 25;
   if(userBalance < cost){ showBalanceToast(`Need ₦${cost} to generate — top up your wallet`); openTopup(); return; }
   msGenerate(sceneCount, cost);
 }
@@ -2697,15 +2697,12 @@ async function msRenderVideo() {
   previewSec.style.display  = "none";
   _msVideoBlob = null;
 
-  // ── Two canvases: offscreen for rendering, live for capture ──
-  const W = 1280, H = 720;
-  const offCanvas = document.createElement("canvas");
-  offCanvas.width = W; offCanvas.height = H;
-  const offCtx = offCanvas.getContext("2d");
-
-  const liveCanvas = document.createElement("canvas");
-  liveCanvas.width = W; liveCanvas.height = H;
-  const liveCtx = liveCanvas.getContext("2d");
+  // ── Single canvas rendered directly into MediaRecorder (no frame buffer) ──
+  // This avoids the pre-render ImageData array that causes OOM crashes on mobile.
+  const W = 960, H = 540; // Lower res for mobile stability (still 16:9)
+  const canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d", { alpha: false });
 
   // ── Helpers ──
   function parseDur(s) {
@@ -2721,7 +2718,7 @@ async function msRenderVideo() {
   }
 
   const totalSecs = parseInt(msSelectedLen) || 30;
-  const fps = 25; // 25fps is more reliable for MediaRecorder timing
+  const fps = 20; // Lower fps for mobile stability
 
   // Scale durations to exactly totalSecs
   const rawDurs = scenes.map(s => parseDur(typeof s==="object"?s:{}) || 0);
@@ -2729,9 +2726,8 @@ async function msRenderVideo() {
   let sceneDurs = rawSum > 0
     ? rawDurs.map(d => (d/rawSum) * totalSecs)
     : scenes.map(() => totalSecs / scenes.length);
-  // Correct for floating point so frames sum exactly
-  let totalFrames = sceneDurs.reduce((a,d) => a + Math.round(d*fps), 0);
   const wantFrames = Math.round(totalSecs * fps);
+  let totalFrames = sceneDurs.reduce((a,d) => a + Math.round(d*fps), 0);
   sceneDurs[sceneDurs.length-1] += (wantFrames - totalFrames) / fps;
 
   const styleColors = {
@@ -2749,51 +2745,6 @@ async function msRenderVideo() {
     title: renderSceneTitle, cta: renderSceneCTA,
   };
 
-  // ── PHASE 1: Pre-render every frame into ImageData array ──
-  progressLabel.textContent = "Pre-rendering frames…";
-  const allFrames = []; // array of ImageData
-
-  for (let si = 0; si < scenes.length; si++) {
-    const raw    = scenes[si];
-    const scene  = typeof raw==="object" ? raw : {scene:si+1,duration:"",visual:"",overlay:raw,voiceover:"",mood:""};
-    const type   = msDetectSceneType(scene);
-    const renderFn = sceneRenderers[type] || renderSceneTitle;
-    const frames = Math.round(sceneDurs[si] * fps);
-
-    for (let f = 0; f < frames; f++) {
-      const t = f / frames;
-      const fadeIn  = t < 0.08 ? easeIn(t/0.08) : 1;
-      const fadeOut = t > 0.92 ? easeIn((1-t)/0.08) : 1;
-      const fade    = Math.min(fadeIn, fadeOut);
-
-      renderFn(offCtx, W, H, t, pal, scene);
-
-      if (fade < 1) {
-        offCtx.save();
-        offCtx.globalAlpha = 1 - fade;
-        offCtx.fillStyle = "#000";
-        offCtx.fillRect(0,0,W,H);
-        offCtx.restore();
-      }
-      drawHUD(offCtx, W, H, pal, si+1, scenes.length, t);
-
-      allFrames.push(offCtx.getImageData(0, 0, W, H));
-
-      // Update progress bar during pre-render
-      const done = allFrames.length;
-      const total = wantFrames;
-      progressBar.style.width = `${Math.round((done/total)*50)}%`; // first 50% = pre-render
-      progressLabel.textContent = `Pre-rendering… scene ${si+1}/${scenes.length} (${Math.round(done/total*100)}%)`;
-
-      // Yield every 10 frames so UI stays responsive
-      if (f % 10 === 0) await new Promise(r => setTimeout(r, 0));
-    }
-  }
-
-  // ── PHASE 2: Play frames back at exact fps into MediaRecorder ──
-  progressLabel.textContent = "Recording…";
-  progressBar.style.width = "50%";
-
   const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
     ? "video/webm;codecs=vp9"
     : MediaRecorder.isTypeSupported("video/webm") ? "video/webm" : null;
@@ -2805,35 +2756,58 @@ async function msRenderVideo() {
     return;
   }
 
-  const stream   = liveCanvas.captureStream(fps);
-  const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 6_000_000 });
+  // ── Stream canvas directly into MediaRecorder — no frame buffer ──
+  const stream   = canvas.captureStream(fps);
+  const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 3_000_000 });
   const chunks   = [];
-  recorder.ondataavailable = e => { if (e.data.size>0) chunks.push(e.data); };
+  recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+  recorder.start(500); // collect chunks every 500ms
 
-  await new Promise(resolve => {
-    recorder.onstop = resolve;
+  progressLabel.textContent = "Recording…";
+  progressBar.style.width = "0%";
 
-    let frameIdx = 0;
+  let framesRendered = 0;
+
+  // ── Render each scene frame-by-frame, yielding to keep UI alive ──
+  for (let si = 0; si < scenes.length; si++) {
+    const raw     = scenes[si];
+    const scene   = typeof raw==="object" ? raw : {scene:si+1,duration:"",visual:"",overlay:raw,voiceover:"",mood:""};
+    const type    = msDetectSceneType(scene);
+    const renderFn= sceneRenderers[type] || renderSceneTitle;
+    const frames  = Math.round(sceneDurs[si] * fps);
     const msPerFrame = 1000 / fps;
 
-    recorder.start(200);
+    for (let f = 0; f < frames; f++) {
+      const t       = f / frames;
+      const fadeIn  = t < 0.08 ? easeIn(t/0.08) : 1;
+      const fadeOut = t > 0.92 ? easeIn((1-t)/0.08) : 1;
+      const fade    = Math.min(fadeIn, fadeOut);
 
-    // Draw first frame immediately so stream has content before interval fires
-    liveCtx.putImageData(allFrames[0], 0, 0);
+      renderFn(ctx, W, H, t, pal, scene);
 
-    const interval = setInterval(() => {
-      if (frameIdx >= allFrames.length) {
-        clearInterval(interval);
-        setTimeout(() => recorder.stop(), 300);
-        return;
+      if (fade < 1) {
+        ctx.save();
+        ctx.globalAlpha = 1 - fade;
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, W, H);
+        ctx.restore();
       }
-      liveCtx.putImageData(allFrames[frameIdx], 0, 0);
-      frameIdx++;
+      drawHUD(ctx, W, H, pal, si+1, scenes.length, t);
 
-      const pct = 50 + Math.round((frameIdx / allFrames.length) * 50);
+      framesRendered++;
+      const pct = Math.round((framesRendered / wantFrames) * 100);
       progressBar.style.width = `${pct}%`;
-      progressLabel.textContent = `Recording… ${Math.round(frameIdx/fps)}s / ${totalSecs}s`;
-    }, msPerFrame);
+      progressLabel.textContent = `Recording… scene ${si+1}/${scenes.length} · ${Math.round(framesRendered/fps)}s / ${totalSecs}s`;
+
+      // Yield for exactly one frame duration so MediaRecorder stays in sync
+      await new Promise(r => setTimeout(r, msPerFrame));
+    }
+  }
+
+  // ── Stop recorder and wait for final data ──
+  await new Promise(resolve => {
+    recorder.onstop = resolve;
+    recorder.stop();
   });
 
   _msVideoBlob = new Blob(chunks, { type:"video/webm" });
@@ -2873,7 +2847,7 @@ function renderThread(tweets){
         <div class="tweet-footer-right">
           <button class="btn-copy-tweet" onclick="copyTweet(this,${i})">copy</button>
           <button class="btn-dl-card" onclick="payForTextCard(this,${i})">↓ text card</button>
-          <button class="btn-ai-graphic locked-infographic" onclick="payForInfographic(${i})" id="infobtn-${i}">&#8358;200 infographic</button>
+          <button class="btn-ai-graphic locked-infographic" onclick="payForInfographic(${i})" id="infobtn-${i}">&#8358;400 infographic</button>
           <button class="btn-ai-graphic" id="graphicbtn-${i}" style="display:none"></button>
         </div>
       </div>
@@ -2920,9 +2894,9 @@ let currentUser = null;
 let userBalance = 0;
 
 // ── Prices ──
-const PRICE_TWEET    = 30;
-const PRICE_TEXTCARD = 100;
-const PRICE_IMAGE    = 200;
+const PRICE_TWEET    = 50;
+const PRICE_TEXTCARD = 150;
+const PRICE_IMAGE    = 400;
 
 // ── Auth state listener ──
 auth.onAuthStateChanged(async user => {
@@ -4235,7 +4209,7 @@ async function infGenerate() {
   } catch(err) {
     await db.collection('users').doc(currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(PRICE_IMAGE)});
     const e=document.getElementById('infErrorBox');e.textContent='// '+err.message;e.classList.add('visible');
-  } finally { btn.disabled=false; btn.textContent='GENERATE INFOGRAPHIC — \u20A6200'; }
+  } finally { btn.disabled=false; btn.textContent='GENERATE INFOGRAPHIC — \u20A6400'; }
 }
 
 function infDownloadFinal() {
@@ -4455,7 +4429,7 @@ async function wcStep4Analyse() {
   // Check balance before calling AI
   if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
   if (userBalance < 10) {
-    wcBotMsg(`You need at least ₦10 to get AI suggestions. Top up your wallet!`);
+    wcBotMsg(`You need at least ₦20 to get AI suggestions. Top up your wallet!`);
     setTimeout(openTopup, 800);
     document.getElementById("wcRestartBtn").classList.add("visible");
     return;
@@ -4471,8 +4445,8 @@ async function wcStep4Analyse() {
     WC.detectedStyle = data;
     wcRemoveTyping();
 
-    // ₦10 charge for the AI suggestion response
-    const ok = await deduct(10, "What Can I Create — AI suggestions");
+    // ₦20 charge for the AI suggestion response
+    const ok = await deduct(20, "What Can I Create — AI suggestions");
     if (!ok) { document.getElementById("wcRestartBtn").classList.add("visible"); return; }
 
     wcStep5ShowSuggestions(data);
@@ -4570,7 +4544,7 @@ async function wcStep7Generate() {
   if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
 
   const isThread = WC.chosenFormat === "thread";
-  const cost = 10; // flat ₦10 for What Can I Create
+  const cost = 20; // flat ₦20 for What Can I Create
 
   if (userBalance < cost) {
     wcBotMsg(`You need ₦${cost} to generate this. Top up your wallet and come back!`);
