@@ -553,7 +553,13 @@
     </div>
     <div id="loginForm">
       <div class="auth-field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@email.com" /></div>
-      <div class="auth-field"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••" /></div>
+      <div class="auth-field">
+        <label style="display:flex;justify-content:space-between;align-items:center">
+          Password
+          <span onclick="doForgotPassword()" style="font-family:var(--mono);font-size:10px;color:var(--red);cursor:pointer;letter-spacing:.5px;font-weight:400;text-transform:none">Forgot password?</span>
+        </label>
+        <input type="password" id="loginPassword" placeholder="••••••••" />
+      </div>
       <button class="btn-auth" onclick="doLogin()">Login →</button>
     </div>
     <div id="signupForm" style="display:none">
@@ -2908,6 +2914,11 @@ auth.onAuthStateChanged(async user => {
     const hee = document.getElementById("homeEmail"); if(hee) hee.textContent=user.email;
     listenBalance(user.uid);
     loadTransactions(user.uid);
+    // Restore last visited page after refresh
+    const lastPage = sessionStorage.getItem("tcLastPage");
+    if (lastPage && document.getElementById(lastPage)) {
+      showPage(lastPage);
+    }
   } else {
     currentUser = null;
     document.getElementById("authScreen").classList.remove("hidden");
@@ -3012,8 +3023,27 @@ async function doSignup() {
   }
 }
 
+async function doForgotPassword() {
+  const email = document.getElementById("loginEmail").value.trim();
+  if (!email) {
+    showAuthError("Enter your email address above first, then tap Forgot password.");
+    return;
+  }
+  try {
+    await auth.sendPasswordResetEmail(email);
+    const el = document.getElementById("authError");
+    el.textContent = "✅ Reset email sent! Check your inbox.";
+    el.style.color = "var(--grn)";
+    el.classList.add("visible");
+    setTimeout(() => { el.classList.remove("visible"); el.style.color = ""; }, 5000);
+  } catch(e) {
+    showAuthError(e.message.replace("Firebase: ",""));
+  }
+}
+
 async function doLogout() {
   await auth.signOut();
+  sessionStorage.removeItem("tcLastPage");
 }
 
 // ── Wallet deduction ──
@@ -3099,6 +3129,7 @@ function showPage(id) {
   document.querySelectorAll(".app-page").forEach(p => p.classList.remove("active"));
   document.getElementById(id).classList.add("active");
   window.scrollTo(0,0);
+  sessionStorage.setItem("tcLastPage", id);
 }
 
 // ══════════════════════════════════════════════════════
