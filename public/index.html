@@ -5250,41 +5250,15 @@ async function wcStep4Analyse() {
 
   wcShowTyping();
   try {
-    const prompt = `You are a content strategist. Analyse these social media posts/description to detect the creator's writing style for ${WC.platform}.
-
-Examples/Description:
-${WC.examples}
-
-Return ONLY a valid JSON object — no markdown fences, no explanation, no extra text:
-{
-  "tone": "one of: conversational / bold / educational / personal / analytical",
-  "topics": ["topic 1", "topic 2", "topic 3"],
-  "ideas": ["specific content idea 1 (full sentence)", "specific content idea 2 (full sentence)", "specific content idea 3 (full sentence)"],
-  "style_notes": "one-sentence description of the creator's voice"
-}`;
-
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 600,
-        messages: [{ role: "user", content: prompt }]
-      })
-    });
-    const raw = await res.json();
-    const textBlock = (raw.content || []).find(b => b.type === "text");
-    if (!textBlock) throw new Error("No response from AI");
-
-    let jsonStr = textBlock.text.trim();
-    // Strip any accidental markdown fences
-    jsonStr = jsonStr.replace(/^```json?\s*/i, "").replace(/```\s*$/,"").trim();
-    const data = JSON.parse(jsonStr);
-
+    const res  = await fetch("/api/suggest", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ platform: WC.platform, handle: WC.handle, examples: WC.examples }) });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) { throw new Error("Could not analyse your style — skipping to manual"); }
+    if (!res.ok) throw new Error(data.error || "Analysis failed");
     WC.detectedStyle = data;
     wcRemoveTyping();
 
-    const ok = await deduct(20, "What Can I Create — AI style analysis");
+    const ok = await deduct(20, "What Can I Create — AI suggestions");
     if (!ok) { document.getElementById("wcRestartBtn").classList.add("visible"); return; }
 
     wcStep5ShowSuggestions(data);
@@ -5393,82 +5367,35 @@ async function wcStep7Generate() {
 
   wcShowTyping();
   const tone    = WC.detectedStyle?.tone || "conversational";
-  const styleNote = WC.detectedStyle?.style_notes || "";
-  const contextStr = [
+  const context = [
     `Platform: ${WC.platform}`,
-    styleNote ? `Voice/style: ${styleNote}` : "",
-    WC.examples ? `Creator examples: ${WC.examples.slice(0, 300)}` : "",
+    WC.detectedStyle?.style_notes ? `Style: ${WC.detectedStyle.style_notes}` : "",
+    WC.examples ? `User examples: ${WC.examples.slice(0, 400)}` : "",
   ].filter(Boolean).join("\n");
 
   const ok = await deduct(cost, `What Can I Create — content generation`);
   if (!ok) { wcRemoveTyping(); return; }
 
   try {
-    let prompt, data;
+    const body = {
+      topic: WC.chosenTopic, context, tone,
+      length: isThread ? "short" : "single",
+      mode: isThread ? "thread" : "single",
+      short_form: true
+    };
+    if (!isThread) body.format = "short_post";
 
-    if (isThread) {
-      prompt = `You are a viral Twitter/X thread writer. Write a punchy 5-tweet thread about:
-
-Topic: ${WC.chosenTopic}
-${contextStr}
-Tone: ${tone}
-
-Rules:
-- Exactly 5 tweets
-- Each tweet ≤ 280 characters
-- Hook on tweet 1, CTA on tweet 5
-- No hashtags unless very natural
-- Return ONLY a JSON array of 5 strings, no markdown, no explanation:
-["tweet 1 text", "tweet 2 text", "tweet 3 text", "tweet 4 text", "tweet 5 text"]`;
-
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 800,
-          messages: [{ role: "user", content: prompt }]
-        })
-      });
-      const raw = await res.json();
-      const textBlock = (raw.content || []).find(b => b.type === "text");
-      if (!textBlock) throw new Error("No response from AI");
-      let jsonStr = textBlock.text.trim().replace(/^```json?\s*/i,"").replace(/```\s*$/,"").trim();
-      const tweets = JSON.parse(jsonStr);
-      if (!Array.isArray(tweets) || tweets.length === 0) throw new Error("Invalid thread data");
-      data = { tweets: tweets.slice(0, 5) };
-    } else {
-      prompt = `Write a single compelling ${WC.platform} post about:
-
-Topic: ${WC.chosenTopic}
-${contextStr}
-Tone: ${tone}
-
-Rules:
-- Max 280 characters for Twitter/X, longer for LinkedIn/Facebook
-- No hashtag spam
-- Return ONLY the post text, nothing else — no quotes, no label, no explanation`;
-
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 400,
-          messages: [{ role: "user", content: prompt }]
-        })
-      });
-      const raw = await res.json();
-      const textBlock = (raw.content || []).find(b => b.type === "text");
-      if (!textBlock) throw new Error("No response from AI");
-      data = { post: textBlock.text.trim() };
-    }
+    const res  = await fetch("/api/generate", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
+    const raw  = await res.text();
+    let data;
+    try { data = JSON.parse(raw); } catch(e) { throw new Error("Server error — please try again"); }
+    if (!res.ok) throw new Error(data.error || "Generation failed");
 
     wcRemoveTyping();
     if (isThread) {
-      wcRenderThreadResult(data.tweets);
+      wcRenderThreadResult((data.tweets || []).slice(0, 5));
     } else {
-      let post = data.post || "";
+      let post = data.post || (Array.isArray(data.tweets) ? data.tweets[0] : "");
       if (WC.platform === "twitter" && post.length > 300) post = post.slice(0, 277).trimEnd() + "…";
       wcRenderPostResult(post);
     }
