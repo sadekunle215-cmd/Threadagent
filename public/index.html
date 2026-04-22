@@ -617,6 +617,39 @@
     #inf-show-mockup+span::before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s}
     #inf-show-mockup:checked+span::before{transform:translateX(18px)}
     .motion-len-btn.active{border-color:var(--red);color:var(--red);background:rgba(224,22,26,.08)}
+
+    /* ══ MY WORK PAGE ══ */
+    .work-list{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+    .work-item{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;transition:background .15s;cursor:pointer;position:relative;overflow:hidden}
+    .work-item:hover{background:var(--surface)}
+    .work-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+    .work-item.type-thread::before{background:var(--red)}
+    .work-item.type-single::before{background:#3b82f6}
+    .work-item.type-infographic::before{background:var(--accent2)}
+    .work-item.type-motion::before{background:#a855f7}
+    .work-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+    .work-icon.type-thread{background:rgba(224,22,26,.1);color:var(--red)}
+    .work-icon.type-single{background:rgba(59,130,246,.1);color:#3b82f6}
+    .work-icon.type-infographic{background:rgba(217,119,6,.1);color:var(--accent2)}
+    .work-icon.type-motion{background:rgba(168,85,247,.1);color:#a855f7}
+    .work-body{flex:1;min-width:0}
+    .work-topic{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+    .work-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .work-type-badge{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 7px;border-radius:20px;border:1px solid}
+    .work-type-badge.type-thread{color:var(--red);border-color:rgba(224,22,26,.3)}
+    .work-type-badge.type-single{color:#3b82f6;border-color:rgba(59,130,246,.3)}
+    .work-type-badge.type-infographic{color:var(--accent2);border-color:rgba(217,119,6,.3)}
+    .work-type-badge.type-motion{color:#a855f7;border-color:rgba(168,85,247,.3)}
+    .work-date{font-family:var(--mono);font-size:10px;color:var(--muted)}
+    .work-cost{font-family:var(--mono);font-size:10px;color:var(--muted2)}
+    .work-open-btn{flex-shrink:0;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:7px 12px;cursor:pointer;transition:all .2s;white-space:nowrap}
+    .work-open-btn:hover{border-color:var(--red);color:var(--red)}
+    .work-empty{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;padding:48px 20px;border:1px dashed var(--border);border-radius:14px}
+    .work-filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+    .work-filter-btn{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:6px 12px;cursor:pointer;transition:all .15s}
+    .work-filter-btn:hover{border-color:var(--muted2);color:var(--text)}
+    .work-filter-btn.active{border-color:var(--red);color:var(--red);background:rgba(224,22,26,.07)}
+    .work-loading{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;padding:32px;display:flex;align-items:center;justify-content:center;gap:8px}
   </style>
 </head>
 <body>
@@ -892,6 +925,11 @@
         <div class="qa-icon" style="background:rgba(245,166,35,.12);color:var(--accent2)"><i class="fa-solid fa-film"></i></div>
         <div class="qa-label">Motion Script</div>
         <div class="qa-desc">AI video scene scripts</div>
+      </div>
+      <div class="qa-card" onclick="showPage('pageMyWork');loadMyWork()" style="border-color:rgba(59,130,246,.2);background:linear-gradient(135deg,var(--surface),rgba(59,130,246,.04))">
+        <div class="qa-icon" style="background:rgba(59,130,246,.12);color:#3b82f6"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <div class="qa-label">My Work</div>
+        <div class="qa-desc">View your history</div>
       </div>
     </div>
 
@@ -1588,7 +1626,7 @@
           Renders each scene as an animated clip — overlay text fades in with the scene number and duration. Output is a <strong style="color:var(--muted2)">.webm</strong> video you can download and edit further.
         </div>
         <button class="btn-generate" id="msRenderVideoBtn" onclick="msRenderVideo()" style="width:100%;padding:14px">
-          <i class="fa-solid fa-film"></i> &nbsp;RENDER MOTION VIDEO
+          <i class="fa-solid fa-film"></i> &nbsp;RENDER MOTION VIDEO — &#8358;150
         </button>
         <div id="msVideoProgress" style="display:none;margin-top:14px">
           <div style="font-family:var(--mono);font-size:11px;color:var(--muted2);margin-bottom:8px" id="msVideoProgressLabel">Rendering…</div>
@@ -1607,6 +1645,31 @@
           Convert .webm → .mp4 free at <span style="color:var(--muted2)">cloudconvert.com</span> or <span style="color:var(--muted2)">ffmpeg.guide</span>
         </div>
       </div>
+    </div>
+
+    <div style="height:40px"></div>
+  </div>
+</div>
+
+<!-- ══ MY WORK PAGE ══ -->
+<div id="pageMyWork" class="app-page">
+  <div class="container">
+    <div class="page-header">
+      <button class="btn-back" onclick="showPage('pageHome')"><i class="fa fa-arrow-left"></i> Back</button>
+      <div class="page-title"><i class="fa-solid fa-clock-rotate-left" style="color:#3b82f6"></i> MY WORK</div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="work-filter-row" id="workFilterRow">
+      <button class="work-filter-btn active" data-filter="all" onclick="workSetFilter(this,'all')">All</button>
+      <button class="work-filter-btn" data-filter="thread" onclick="workSetFilter(this,'thread')"><i class="fa-solid fa-list"></i> Threads</button>
+      <button class="work-filter-btn" data-filter="single" onclick="workSetFilter(this,'single')"><i class="fa-solid fa-align-left"></i> Posts</button>
+      <button class="work-filter-btn" data-filter="infographic" onclick="workSetFilter(this,'infographic')"><i class="fa-solid fa-chart-column"></i> Infographics</button>
+      <button class="work-filter-btn" data-filter="motion" onclick="workSetFilter(this,'motion')"><i class="fa-solid fa-film"></i> Motion</button>
+    </div>
+
+    <div id="workList" class="work-list">
+      <div class="work-loading"><span class="fetch-dot"></span> Loading your work…</div>
     </div>
 
     <div style="height:40px"></div>
@@ -2881,6 +2944,11 @@ async function msGenerate(sceneCount, cost){
   const ok = await deduct(cost, `Motion Script — ${sceneCount} scenes`);
   if(!ok) return;
 
+  // Generate a new session token — msRenderVideo will refuse to run
+  // if this token changes (i.e. a new script was generated since).
+  const sessionToken = Date.now().toString(36) + Math.random().toString(36).slice(2);
+  window._msSessionToken = sessionToken;
+
   const btn = document.getElementById("msGenerateBtn");
   btn.disabled=true; btn.textContent="GENERATING...";
   document.getElementById("msLoadingBar").classList.add("active");
@@ -2910,7 +2978,9 @@ async function msGenerate(sceneCount, cost){
     if (!res.ok) throw new Error(data.error || "Motion script generation failed");
     const scenes = data.scenes || data.tweets;
     if (!Array.isArray(scenes) || scenes.length === 0) throw new Error("No scenes returned — please try again");
-    msRenderScenes(scenes);
+    msRenderScenes(scenes, sessionToken);
+    // Save to work history
+    saveWork("motion", topic, scenes, cost);
   } catch(err){
     await db.collection("users").doc(currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(cost)});
     showMsError(err.message);
@@ -2920,7 +2990,7 @@ async function msGenerate(sceneCount, cost){
   }
 }
 
-function msRenderScenes(scenes){
+function msRenderScenes(scenes, sessionToken){
   const list    = document.getElementById("msSceneList");
   const section = document.getElementById("msSceneSection");
   list.innerHTML = "";
@@ -2958,8 +3028,10 @@ function msRenderScenes(scenes){
   });
 
   window._msScenes = scenes;
+  // Store session token — msRenderVideo checks this to reject stale data
+  window._msSessionToken = sessionToken || window._msSessionToken;
   // Tag scenes with the topic so stale-topic guard can detect mismatches
-  window._msScenesTopic = (document.getElementById("ms-topic")?.value || "").trim().toLowerCase().slice(0, 30);
+  window._msScenesTopic = (document.getElementById("ms-topic")?.value || "").trim().toLowerCase();
   section.classList.add("visible");
   section.scrollIntoView({behavior:"smooth", block:"start"});
   // Show video generator below
@@ -2971,7 +3043,7 @@ function msRenderScenes(scenes){
   const progBox = document.getElementById("msVideoProgress");
   if (progBox) progBox.style.display = "none";
   const renderBtn = document.getElementById("msRenderVideoBtn");
-  if (renderBtn) { renderBtn.disabled = false; renderBtn.innerHTML = '<i class="fa-solid fa-film"></i> &nbsp;RENDER MOTION VIDEO'; }
+  if (renderBtn) { renderBtn.disabled = false; renderBtn.innerHTML = '<i class="fa-solid fa-film"></i> &nbsp;RENDER MOTION VIDEO — &#8358;150'; }
   _msVideoBlob = null;
 }
 
@@ -3586,13 +3658,24 @@ async function msRenderVideo() {
     if (eb) { eb.textContent = "// Generate a script first before rendering video."; eb.classList.add("visible"); }
     return;
   }
-  // Safety: verify scenes belong to the current topic input
-  const currentTopic = (document.getElementById("ms-topic")?.value || "").trim().toLowerCase().slice(0, 30);
-  if (window._msScenesTopic && currentTopic && !window._msScenesTopic.startsWith(currentTopic.slice(0, 10))) {
+  // Safety: ensure the scenes belong to the latest generation,
+  // not a previous topic that happened to share a prefix.
+  const currentTopic = (document.getElementById("ms-topic")?.value || "").trim().toLowerCase();
+  if (window._msScenesTopic && currentTopic && window._msScenesTopic !== currentTopic) {
     const eb = document.getElementById("msErrorBox");
     if (eb) { eb.textContent = "// Topic changed — regenerate the script first."; eb.classList.add("visible"); }
     return;
   }
+
+  // ── Wallet gate: charge ₦150 to render video ──
+  if (!currentUser) { showAuthScreen('login'); return; }
+  if (userBalance < PRICE_VIDEO) {
+    showBalanceToast(`Need ₦${PRICE_VIDEO} to render video — top up your wallet`);
+    openTopup();
+    return;
+  }
+  const chargeOk = await deduct(PRICE_VIDEO, "Motion video render");
+  if (!chargeOk) return;
 
   const btn          = document.getElementById("msRenderVideoBtn");
   const progressBox  = document.getElementById("msVideoProgress");
@@ -3659,7 +3742,8 @@ async function msRenderVideo() {
     : MediaRecorder.isTypeSupported("video/webm") ? "video/webm" : null;
 
   if (!mimeType) {
-    btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-film"></i> &nbsp;RENDER MOTION VIDEO';
+    await db.collection("users").doc(currentUser.uid).update({balance: firebase.firestore.FieldValue.increment(PRICE_VIDEO)});
+    btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-film"></i> &nbsp;RENDER MOTION VIDEO — &#8358;150';
     progressBox.style.display="none";
     showMsError("Browser doesn't support video recording — use Chrome or Edge.");
     return;
@@ -3724,7 +3808,7 @@ async function msRenderVideo() {
   previewSec.style.display  = "block";
   progressBox.style.display = "none";
   btn.disabled = false;
-  btn.innerHTML = '<i class="fa-solid fa-film"></i> &nbsp;RE-RENDER VIDEO';
+  btn.innerHTML = '<i class="fa-solid fa-film"></i> &nbsp;RE-RENDER VIDEO — &#8358;150';
   previewSec.scrollIntoView({ behavior:"smooth", block:"start" });
 }
 
@@ -3782,6 +3866,23 @@ function clearError(){document.getElementById("errorBox").classList.remove("visi
 function hideThread(){document.getElementById("threadSection").classList.remove("visible");}
 function escapeHtml(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
 
+// ── Save a completed work item to Firestore ──
+async function saveWork(type, topic, content, cost, extra={}) {
+  if (!currentUser) return;
+  try {
+    await db.collection("users").doc(currentUser.uid).collection("works").add({
+      type,           // "thread" | "single" | "infographic" | "motion"
+      topic: topic || "Untitled",
+      content,        // tweets[], post string, scenes[], or infographic data obj
+      cost: cost || 0,
+      handle: extra.handle || "",
+      style: extra.style || null,
+      format: extra.format || null,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(e) { /* non-critical — silently ignore */ }
+}
+
 // ── Event listeners moved to DOMContentLoaded below ──
 
 // ══════════════════════════════════════════════════════
@@ -3806,6 +3907,7 @@ let userBalance = 0;
 const PRICE_TWEET    = 50;
 const PRICE_TEXTCARD = 150;
 const PRICE_IMAGE    = 400;
+const PRICE_VIDEO    = 150;
 
 // ── Auth state listener ──
 auth.onAuthStateChanged(async user => {
@@ -4146,6 +4248,11 @@ async function ctGenerateThread() {
     if (!res.ok) throw new Error(data.error||"Something went wrong");
     ctRenderThread(data.tweets);
     ctPaidInfographics.clear(); ctPaidTextCards.clear();
+    // Save to work history
+    saveWork("thread", topic, data.tweets, cost, {
+      handle: document.getElementById("ct-xHandle").value.trim(),
+      style: pageStyles.ct
+    });
   } catch(err) {
     await db.collection("users").doc(currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(cost)});
     document.getElementById("ctErrorBox").textContent="// "+err.message; document.getElementById("ctErrorBox").classList.add("visible");
@@ -4178,6 +4285,12 @@ async function ctGenerateSinglePost() {
     const postText = data.post || (Array.isArray(data.tweets) ? data.tweets.join("\n\n") : null);
     if (!postText) throw new Error("No content returned from server");
     ctRenderSinglePost(postText, format);
+    // Save to work history
+    saveWork("single", topic, postText, cost, {
+      format,
+      handle: document.getElementById("ct-xHandle").value.trim(),
+      style: pageStyles.ct
+    });
   } catch(err) {
     await db.collection("users").doc(currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(cost)});
     document.getElementById("ctErrorBox").textContent="// "+err.message; document.getElementById("ctErrorBox").classList.add("visible");
@@ -5345,6 +5458,8 @@ async function infGenerate() {
     document.getElementById('infPreviewSec').scrollIntoView({behavior:'smooth',block:'start'});
     // Store data for clean download
     window._infLastData={data,style,handle};
+    // Save to work history
+    saveWork("infographic", text, data, PRICE_IMAGE, { handle, style });
   } catch(err) {
     await db.collection('users').doc(currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(PRICE_IMAGE)});
     const e=document.getElementById('infErrorBox');e.textContent='// '+err.message;e.classList.add('visible');
@@ -5493,6 +5608,116 @@ function setLoading(a) {
   document.getElementById("loadingBar").classList.toggle("active", a);
 }
 
+
+// ══════════════════════════════════════════════════════
+// MY WORK — HISTORY + REVISIT
+// ══════════════════════════════════════════════════════
+
+let _allWorks = [];
+let _workFilter = "all";
+
+const WORK_META = {
+  thread:      { icon:"fa-list",          label:"Thread",      cls:"type-thread" },
+  single:      { icon:"fa-align-left",    label:"Post",        cls:"type-single" },
+  infographic: { icon:"fa-chart-column",  label:"Infographic", cls:"type-infographic" },
+  motion:      { icon:"fa-film",          label:"Motion",      cls:"type-motion" },
+};
+
+async function loadMyWork() {
+  if (!currentUser) return;
+  const list = document.getElementById("workList");
+  list.innerHTML = '<div class="work-loading"><span class="fetch-dot"></span> Loading your work…</div>';
+  try {
+    const snap = await db.collection("users").doc(currentUser.uid)
+      .collection("works").orderBy("createdAt","desc").limit(50).get();
+    _allWorks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderWorkList();
+  } catch(e) {
+    list.innerHTML = '<div class="work-empty">Could not load work history — check your connection.</div>';
+  }
+}
+
+function workSetFilter(btn, filter) {
+  document.querySelectorAll(".work-filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  _workFilter = filter;
+  renderWorkList();
+}
+
+function renderWorkList() {
+  const list = document.getElementById("workList");
+  const items = _workFilter === "all" ? _allWorks : _allWorks.filter(w => w.type === _workFilter);
+  if (!items.length) {
+    list.innerHTML = `<div class="work-empty">${_workFilter === "all" ? "No work history yet — start creating!" : "No " + WORK_META[_workFilter]?.label + " history yet."}</div>`;
+    return;
+  }
+  list.innerHTML = items.map(w => {
+    const m = WORK_META[w.type] || WORK_META.thread;
+    const ts = w.createdAt?.toDate ? w.createdAt.toDate().toLocaleDateString("en-NG",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}) : "—";
+    const costStr = w.cost ? `₦${w.cost.toLocaleString()}` : "";
+    return `<div class="work-item ${m.cls}" onclick="openWork('${w.id}')">
+      <div class="work-icon ${m.cls}"><i class="fa-solid ${m.icon}"></i></div>
+      <div class="work-body">
+        <div class="work-topic">${escapeHtml(w.topic || "Untitled")}</div>
+        <div class="work-meta">
+          <span class="work-type-badge ${m.cls}">${m.label}</span>
+          <span class="work-date">${ts}</span>
+          ${costStr ? `<span class="work-cost">${costStr}</span>` : ""}
+        </div>
+      </div>
+      <button class="work-open-btn" onclick="event.stopPropagation();openWork('${w.id}')">Open →</button>
+    </div>`;
+  }).join("");
+}
+
+function openWork(id) {
+  const w = _allWorks.find(x => x.id === id);
+  if (!w) return;
+
+  if (w.type === "thread") {
+    // Restore card style if saved
+    if (w.style) { pageStyles.ct.c1 = w.style.c1; pageStyles.ct.c2 = w.style.c2; pageStyles.ct.darkText = w.style.darkText; }
+    if (w.handle) document.getElementById("ct-xHandle").value = w.handle;
+    if (document.getElementById("ct-topic")) document.getElementById("ct-topic").value = w.topic || "";
+    ctSetMode("thread");
+    showPage("pageCreateThread");
+    if (Array.isArray(w.content)) ctRenderThread(w.content);
+
+  } else if (w.type === "single") {
+    if (w.style) { pageStyles.ct.c1 = w.style.c1; pageStyles.ct.c2 = w.style.c2; pageStyles.ct.darkText = w.style.darkText; }
+    if (w.handle) document.getElementById("ct-xHandle").value = w.handle;
+    if (document.getElementById("ct-topic")) document.getElementById("ct-topic").value = w.topic || "";
+    ctSetMode("single");
+    showPage("pageCreateThread");
+    if (w.content) ctRenderSinglePost(w.content, w.format || "short_article");
+
+  } else if (w.type === "infographic") {
+    showPage("pageCreateInfographic");
+    if (!w.content) return;
+    const style = w.style || pageStyles.inf;
+    const handle = w.handle || "";
+    const canvas = document.getElementById("infCanvas");
+    if (!canvas) return;
+    canvas.width = 1600; canvas.height = 900;
+    const infOpts = { align: infContentAlign, pattern: infBgPattern, mockup: infShowMockup };
+    drawInfographic(canvas, w.content, style, handle, false, false, null, infOpts);
+    gfxWatermark(canvas.getContext("2d"), 1600, 900);
+    document.getElementById("infPreviewSec").style.display = "block";
+    window._infLastData = { data: w.content, style, handle };
+    setTimeout(() => document.getElementById("infPreviewSec").scrollIntoView({behavior:"smooth",block:"start"}), 300);
+
+  } else if (w.type === "motion") {
+    // Pre-fill topic field and restore scenes
+    if (document.getElementById("ms-topic")) document.getElementById("ms-topic").value = w.topic || "";
+    showPage("pageMotionScript");
+    if (Array.isArray(w.content)) {
+      // Restore scenes without generating a new session token
+      // (user can view/edit but must regenerate to render new video)
+      window._msScenesTopic = (w.topic || "").toLowerCase();
+      msRenderScenes(w.content, window._msSessionToken);
+    }
+  }
+}
 
 // ══════════════════════════════════════════════════════
 // WHAT CAN I CREATE TODAY — CONVERSATION ENGINE
