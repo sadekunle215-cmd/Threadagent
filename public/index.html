@@ -281,8 +281,85 @@
     #wcRestartBtn.visible{display:inline-block}
     #wcRestartBtn:hover{color:var(--text);border-color:var(--muted2)}
 
+    /* ══ INIT LOADING OVERLAY ══ */
+    #initOverlay{position:fixed;inset:0;background:#f0f0f2;z-index:10001;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+    #initOverlay.hidden{display:none}
+    .init-logo{font-family:var(--display);font-size:52px;letter-spacing:4px;color:var(--text);line-height:1}
+    .init-logo span{color:var(--red)}
+    .init-bar{width:120px;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+    .init-bar::after{content:'';display:block;height:100%;width:40%;background:linear-gradient(90deg,var(--red2),var(--red3));animation:slide 1.2s ease-in-out infinite}
+
+    /* ══ LANDING SCREEN ══ */
+    #landingScreen{position:fixed;inset:0;background:#fff;z-index:9998;display:none;flex-direction:column;overflow-y:auto}
+    #landingScreen.visible{display:flex}
+    .land-nav{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.97);backdrop-filter:blur(12px);position:sticky;top:0;z-index:10}
+    .land-nav-logo{font-family:var(--display);font-size:26px;letter-spacing:3px;color:var(--text)}
+    .land-nav-logo span{color:var(--red)}
+    .land-nav-right{display:flex;gap:10px;align-items:center}
+    .btn-land-login{background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-family:var(--mono);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 16px;cursor:pointer;transition:all .2s}
+    .btn-land-login:hover{border-color:var(--red);color:var(--red)}
+    .btn-land-signup{background:linear-gradient(135deg,var(--red2),var(--red3));color:#fff;border:none;border-radius:8px;font-family:var(--display);font-size:14px;letter-spacing:2px;padding:9px 20px;cursor:pointer;transition:opacity .2s}
+    .btn-land-signup:hover{opacity:.88}
+    /* hero */
+    .land-hero{padding:72px 24px 60px;max-width:680px;margin:0 auto;text-align:center}
+    .land-hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--red);border:1px solid rgba(224,22,26,.3);background:rgba(224,22,26,.05);border-radius:20px;padding:5px 14px;margin-bottom:28px}
+    .land-hero-eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 2s ease-in-out infinite;flex-shrink:0}
+    .land-h1{font-family:var(--display);font-size:clamp(42px,9vw,80px);letter-spacing:4px;line-height:1;color:var(--text);margin-bottom:24px}
+    .land-h1 em{color:var(--red);font-style:normal}
+    .land-sub{font-family:var(--mono);font-size:13px;color:var(--muted2);line-height:1.9;letter-spacing:.3px;margin-bottom:40px;max-width:480px;margin-left:auto;margin-right:auto}
+    .land-cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:48px}
+    .land-cta-primary{background:linear-gradient(135deg,var(--red2),var(--red3));color:#fff;border:none;border-radius:12px;font-family:var(--display);font-size:18px;letter-spacing:3px;padding:16px 36px;cursor:pointer;transition:all .2s;box-shadow:0 6px 24px rgba(224,22,26,.35)}
+    .land-cta-primary:hover{opacity:.9;transform:translateY(-2px);box-shadow:0 10px 32px rgba(224,22,26,.45)}
+    .land-cta-secondary{background:#fff;border:1px solid var(--border);border-radius:12px;color:var(--muted2);font-family:var(--mono);font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:16px 28px;cursor:pointer;transition:all .2s}
+    .land-cta-secondary:hover{border-color:var(--muted2);color:var(--text)}
+    /* stats strip */
+    .land-stats{display:flex;border:1px solid var(--border);border-radius:16px;overflow:hidden;max-width:600px;margin:0 auto 72px}
+    .land-stat{flex:1;padding:20px 16px;border-right:1px solid var(--border);background:#fff;text-align:center}
+    .land-stat:last-child{border-right:none}
+    .land-stat-val{font-family:var(--display);font-size:32px;letter-spacing:2px;color:var(--text);line-height:1;margin-bottom:4px}
+    .land-stat-val em{color:var(--red);font-style:normal}
+    .land-stat-lbl{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+    /* features */
+    .land-section{padding:0 24px 72px;max-width:720px;margin:0 auto}
+    .land-section-label{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--red);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+    .land-section-label::after{content:'';flex:1;height:1px;background:rgba(224,22,26,.2)}
+    .land-section-title{font-family:var(--display);font-size:clamp(28px,5vw,42px);letter-spacing:2px;color:var(--text);margin-bottom:32px;line-height:1.1}
+    .feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:60px}
+    @media(max-width:560px){.feat-grid{grid-template-columns:1fr}.land-stats{flex-wrap:wrap}.land-stat{min-width:50%}}
+    .feat-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:22px;transition:all .25s;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+    .feat-card:hover{border-color:rgba(224,22,26,.3);transform:translateY(-3px);box-shadow:0 8px 28px rgba(224,22,26,.08)}
+    .feat-icon{width:44px;height:44px;background:rgba(224,22,26,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--red);font-size:1.2rem;margin-bottom:14px}
+    .feat-name{font-family:var(--display);font-size:18px;letter-spacing:1.5px;color:var(--text);margin-bottom:6px}
+    .feat-desc{font-family:var(--mono);font-size:11px;color:var(--muted2);line-height:1.8;letter-spacing:.3px}
+    /* pricing */
+    .price-strip{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 24px;margin-bottom:60px}
+    .price-strip-title{font-family:var(--display);font-size:22px;letter-spacing:2px;color:var(--text);margin-bottom:4px}
+    .price-strip-sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:22px;letter-spacing:.3px}
+    .price-items{display:flex;flex-direction:column;gap:8px}
+    .price-item{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 16px}
+    .price-item-left{display:flex;align-items:center;gap:10px}
+    .price-item-icon{color:var(--red);font-size:.9rem;width:20px;text-align:center}
+    .price-item-name{font-family:var(--sans);font-size:13px;color:var(--text);font-weight:500}
+    .price-item-val{font-family:var(--display);font-size:16px;letter-spacing:1px;color:var(--red)}
+    /* how it works */
+    .steps-list{display:flex;flex-direction:column;gap:0;margin-bottom:60px;position:relative}
+    .steps-list::before{content:'';position:absolute;left:20px;top:24px;bottom:24px;width:2px;background:linear-gradient(to bottom,var(--red),rgba(224,22,26,.1));border-radius:1px}
+    .step-item{display:flex;gap:20px;align-items:flex-start;padding:0 0 28px}
+    .step-item:last-child{padding-bottom:0}
+    .step-num{width:42px;height:42px;border-radius:50%;background:var(--red);color:#fff;font-family:var(--display);font-size:18px;letter-spacing:1px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:1;box-shadow:0 4px 12px rgba(224,22,26,.35)}
+    .step-body{padding-top:8px}
+    .step-title{font-family:var(--display);font-size:18px;letter-spacing:1.5px;color:var(--text);margin-bottom:4px}
+    .step-desc{font-family:var(--mono);font-size:11px;color:var(--muted2);line-height:1.8;letter-spacing:.3px}
+    /* final CTA */
+    .land-final{background:linear-gradient(135deg,var(--surface),rgba(224,22,26,.05));border:1px solid rgba(224,22,26,.2);border-radius:20px;padding:48px 32px;text-align:center;margin-bottom:60px}
+    .land-final-title{font-family:var(--display);font-size:clamp(28px,5vw,44px);letter-spacing:3px;color:var(--text);line-height:1;margin-bottom:12px}
+    .land-final-sub{font-family:var(--mono);font-size:11px;color:var(--muted2);margin-bottom:28px;letter-spacing:.3px}
+    /* footer */
+    .land-footer{border-top:1px solid var(--border);padding:24px;text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:1px}
+
     /* ══ AUTH SCREEN ══ */
-    #authScreen{position:fixed;inset:0;background:#f0f0f2;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;overflow-y:auto;padding:32px 16px 60px}
+    #authScreen{position:fixed;inset:0;background:#f0f0f2;z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:flex-start;overflow-y:auto;padding:32px 16px 60px}
+    #authScreen.visible{display:flex}
     #authScreen.hidden{display:none}
     .auth-box{width:100%;max-width:400px;background:#fff;border:1px solid var(--border);border-radius:20px;padding:36px 28px;flex-shrink:0;box-shadow:0 4px 28px rgba(0,0,0,.08)}
     .auth-logo{font-family:var(--display);font-size:36px;letter-spacing:4px;color:var(--text);margin-bottom:4px}
@@ -539,6 +616,154 @@
 </head>
 <body>
 
+<!-- ══ INIT LOADING OVERLAY ══ -->
+<div id="initOverlay">
+  <div class="init-logo">THREAD<span>CRAFT</span></div>
+  <div class="init-bar"></div>
+</div>
+
+<!-- ══ LANDING PAGE ══ -->
+<div id="landingScreen">
+  <!-- Nav -->
+  <nav class="land-nav">
+    <div class="land-nav-logo">THREAD<span>CRAFT</span></div>
+    <div class="land-nav-right">
+      <button class="btn-land-login" onclick="showAuthScreen('login')">Login</button>
+      <button class="btn-land-signup" onclick="showAuthScreen('signup')">Get Started →</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="land-hero">
+    <div class="land-hero-eyebrow">AI-Powered Content Studio</div>
+    <h1 class="land-h1">Create <em>Threads</em> That Stop the Scroll</h1>
+    <p class="land-sub">ThreadCraft uses advanced AI to help you write viral Twitter/X threads, single posts, motion scripts, infographics, and mockups — all in one place. Top Nigerian creators are already using it.</p>
+    <div class="land-cta-row">
+      <button class="land-cta-primary" onclick="showAuthScreen('signup')">Start Creating Free →</button>
+      <button class="land-cta-secondary" onclick="showAuthScreen('login')">I have an account</button>
+    </div>
+    <!-- Stats -->
+    <div class="land-stats">
+      <div class="land-stat">
+        <div class="land-stat-val">5<em>+</em></div>
+        <div class="land-stat-lbl">AI Tools</div>
+      </div>
+      <div class="land-stat">
+        <div class="land-stat-val"><em>₦</em>50</div>
+        <div class="land-stat-lbl">Per Tweet</div>
+      </div>
+      <div class="land-stat">
+        <div class="land-stat-val">10<em>x</em></div>
+        <div class="land-stat-lbl">Faster</div>
+      </div>
+      <div class="land-stat">
+        <div class="land-stat-val"><em>∞</em></div>
+        <div class="land-stat-lbl">Ideas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="land-section">
+    <div class="land-section-label">What You Get</div>
+    <div class="land-section-title">Everything You Need to Go Viral</div>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="feat-icon"><i class="fa-solid fa-list-ul"></i></div>
+        <div class="feat-name">Thread Generator</div>
+        <div class="feat-desc">Drop a topic, pick a tone, and get a ready-to-post Twitter thread in seconds. Hook, body, and CTA — fully structured.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><i class="fa-solid fa-align-left"></i></div>
+        <div class="feat-name">Single Post</div>
+        <div class="feat-desc">Struggling with the perfect standalone post? Pick your format — insight, story, opinion — and let AI draft it for you.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><i class="fa-solid fa-image"></i></div>
+        <div class="feat-name">Visual Cards</div>
+        <div class="feat-desc">Turn every tweet into a beautiful branded image card with custom gradients, your handle, and download in one click.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><i class="fa-solid fa-chart-bar"></i></div>
+        <div class="feat-name">AI Infographics</div>
+        <div class="feat-desc">Generate scroll-stopping infographic images directly from your tweets using AI image generation.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><i class="fa-solid fa-video"></i></div>
+        <div class="feat-name">Motion Scripts</div>
+        <div class="feat-desc">Get a full scene-by-scene video script with visuals, voiceover, text overlays, and mood directions for your content.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon"><i class="fa-solid fa-mobile-screen"></i></div>
+        <div class="feat-name">Mockup Studio</div>
+        <div class="feat-desc">Drop your screenshot into an iPhone, tablet, or laptop mockup for professional-looking product or app screenshots.</div>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="land-section-label">How It Works</div>
+    <div class="land-section-title">Three Steps to Your Best Post</div>
+    <div class="steps-list">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Create an Account</div>
+          <div class="step-desc">Sign up in seconds with just your email. No card required to get started — fund your wallet only when you're ready to create.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">Top Up Your Wallet</div>
+          <div class="step-desc">Fund your wallet via Paystack — starting from ₦500. Pay only for what you create. No subscriptions, no commitments.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">Generate &amp; Post</div>
+          <div class="step-desc">Pick a tool, enter your topic, and get ready-to-post content with visuals in under 30 seconds. Copy, download, and go viral.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pricing -->
+    <div class="land-section-label">Pricing</div>
+    <div class="land-section-title">Simple, Pay-as-You-Go</div>
+    <div class="price-strip">
+      <div class="price-strip-title">What Does It Cost?</div>
+      <div class="price-strip-sub">Fund your wallet once, use across all tools. No monthly fees.</div>
+      <div class="price-items">
+        <div class="price-item">
+          <div class="price-item-left"><i class="fa-solid fa-feather price-item-icon"></i><span class="price-item-name">Tweet / Single Post</span></div>
+          <div class="price-item-val">₦50</div>
+        </div>
+        <div class="price-item">
+          <div class="price-item-left"><i class="fa-solid fa-image price-item-icon"></i><span class="price-item-name">Branded Text Card</span></div>
+          <div class="price-item-val">₦150</div>
+        </div>
+        <div class="price-item">
+          <div class="price-item-left"><i class="fa-solid fa-wand-magic-sparkles price-item-icon"></i><span class="price-item-name">AI Infographic Image</span></div>
+          <div class="price-item-val">₦400</div>
+        </div>
+        <div class="price-item">
+          <div class="price-item-left"><i class="fa-solid fa-circle-check price-item-icon"></i><span class="price-item-name">Wallet Top-up (min)</span></div>
+          <div class="price-item-val">₦500</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Final CTA -->
+    <div class="land-final">
+      <div class="land-final-title">Ready to Build Your Audience?</div>
+      <div class="land-final-sub">Join ThreadCraft and create content that actually gets engagement.</div>
+      <button class="land-cta-primary" onclick="showAuthScreen('signup')">Create Free Account →</button>
+    </div>
+  </div>
+
+  <div class="land-footer">© 2025 ThreadCraft · AI Thread Agent · Built for Nigerian Creators</div>
+</div>
+
 <!-- ══ AUTH SCREEN ══ -->
 <div id="authScreen">
   <div style="width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center;padding-top:40px">
@@ -568,6 +793,9 @@
       <button class="btn-auth" onclick="doSignup()">Create Account →</button>
     </div>
     <div class="auth-error" id="authError"></div>
+    <div style="text-align:center;margin-top:18px">
+      <button onclick="document.getElementById('authScreen').classList.remove('visible');document.getElementById('authScreen').classList.add('hidden');document.getElementById('landingScreen').classList.add('visible')" style="background:none;border:none;font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);cursor:pointer;transition:color .2s" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">← Back to homepage</button>
+    </div>
   </div>
   </div>
 </div>
@@ -2124,42 +2352,25 @@ async function generateGraphic(btn, index) {
   loading.classList.add("visible"); wrap.style.display="none"; wrap.innerHTML="";
 
   try {
-    // Step 1: Get layout JSON from backend
-    const layoutRes = await fetch("/api/imagine", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({tweet, topic:topic||"general", brandColor:cardStyle.c1, handle, tweetNum:index+1, tweetTotal:total, isHook, isCTA})
+    // Route through backend /api/generate with mode:"infographic"
+    const layoutRes = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        topic: tweet,
+        mode: "infographic",
+        tweet, tweetNum: index+1, tweetTotal: total,
+        isHook, isCTA
+      })
     });
-    const layoutData = await layoutRes.json();
-    if (!layoutRes.ok) throw new Error(layoutData.error || "Layout generation failed");
-    let d = typeof layoutData==="string" ? JSON.parse(layoutData) : layoutData;
+    const d = await layoutRes.json();
+    if (!layoutRes.ok) throw new Error(d.error || "Infographic generation failed");
     d.tweetNum = index+1; d.tweetTotal = total;
 
-    // Step 2: Generate contextual image via DALL-E on backend
-    const imgPrompt = buildImagePrompt(tweet, topic);
-    let circleImg = null;
-    try {
-      const imgRes = await fetch("/api/imagine", {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ prompt: imgPrompt, size: "1024x1024" })
-      });
-      const imgData = await imgRes.json();
-      if (imgRes.ok && imgData.url) {
-        circleImg = await new Promise((resolve, reject) => {
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-          img.onload = () => resolve(img);
-          img.onerror = () => resolve(null); // graceful fallback — no image, still render
-          img.src = imgData.url;
-        });
-      }
-    } catch(imgErr) {
-      console.warn("Circle image fetch failed, rendering without it:", imgErr);
-    }
-
-    // Step 3: Draw infographic — with or without the circle image
+    // Draw infographic canvas
     const canvas = document.createElement("canvas");
     canvas.width = 1600; canvas.height = 900;
-    drawInfographic(canvas, d, cardStyle, handle, isHook, isCTA, circleImg);
+    drawInfographic(canvas, d, cardStyle, handle, isHook, isCTA, null);
 
     loading.classList.remove("visible");
     wrap.style.display = "block"; wrap.className = "ai-graphic-wrap";
@@ -2171,14 +2382,13 @@ async function generateGraphic(btn, index) {
     dlBtn.textContent = "↓ Download Infographic (1600×900)";
     dlBtn.onclick = () => downloadGraphic(index);
     wrap.appendChild(dlBtn);
-    // Mark infobtn as done (it's separate from btn/graphicbtn now)
     const infobtn = document.getElementById(`infobtn-${index}`);
     if (infobtn) { infobtn.textContent = "✓ done"; infobtn.classList.add("done"); infobtn.classList.remove("generating"); infobtn.onclick = null; }
 
   } catch(err) {
     loading.classList.remove("visible");
     const infobtn2 = document.getElementById(`infobtn-${index}`);
-    if (infobtn2) { infobtn2.textContent = "\u20A6200 retry"; infobtn2.classList.remove("generating"); infobtn2.onclick = () => payForInfographic(index); paidInfographics.delete(index); }
+    if (infobtn2) { infobtn2.textContent = "₦400 retry"; infobtn2.classList.remove("generating"); infobtn2.onclick = () => payForInfographic(index); paidInfographics.delete(index); }
     showError(`Graphic ${index+1}: ${err.message}`);
   }
 }
@@ -2322,7 +2532,7 @@ function msPreFillFromBrief(b){
 }
 
 function handleMsGenerateClick(){
-  if(!currentUser){ document.getElementById("authScreen").classList.remove("hidden"); return; }
+  if(!currentUser){ showAuthScreen('login'); return; }
   const topic = document.getElementById("ms-topic").value.trim();
   if(!topic){ showMsError("Add a project topic first."); return; }
   // Cost: ₦25/scene. 15s≈4 scenes, 30s≈7, 60s≈12, 90s≈16
@@ -2346,13 +2556,22 @@ async function msGenerate(sceneCount, cost){
   document.getElementById("msSceneSection").classList.remove("visible");
 
   try{
-    const res = await fetch("/api/generate",{
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ topic, context, tone: msSelectedStyle, length: msSelectedLen, mode:"motion" })
+    // Route through backend /api/generate with mode:"motion"
+    const res = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        topic, context,
+        tone: msSelectedStyle,
+        length: msSelectedLen,
+        mode: "motion"
+      })
     });
     const data = await res.json();
-    if(!res.ok) throw new Error(data.error||"Something went wrong");
-    msRenderScenes(data.scenes || data.tweets);
+    if (!res.ok) throw new Error(data.error || "Motion script generation failed");
+    const scenes = data.scenes || data.tweets;
+    if (!Array.isArray(scenes) || scenes.length === 0) throw new Error("No scenes returned — please try again");
+    msRenderScenes(scenes);
   } catch(err){
     await db.collection("users").doc(currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(cost)});
     showMsError(err.message);
@@ -3153,25 +3372,45 @@ const PRICE_IMAGE    = 400;
 
 // ── Auth state listener ──
 auth.onAuthStateChanged(async user => {
+  // Hide the init overlay once Firebase resolves
+  document.getElementById("initOverlay").classList.add("hidden");
+
   if (user) {
     currentUser = user;
+    // Hide auth + landing, show app
+    document.getElementById("authScreen").classList.remove("visible");
     document.getElementById("authScreen").classList.add("hidden");
+    document.getElementById("landingScreen").classList.remove("visible");
     document.getElementById("walletBar").classList.add("visible");
     await ensureUserDoc(user);
     const hee = document.getElementById("homeEmail"); if(hee) hee.textContent=user.email;
     listenBalance(user.uid);
     loadTransactions(user.uid);
-    // Restore last visited page after refresh
+    // Restore last visited page after refresh — skip if no saved page
     const lastPage = sessionStorage.getItem("tcLastPage");
     if (lastPage && document.getElementById(lastPage)) {
       showPage(lastPage);
+    } else {
+      showPage("pageHome");
     }
   } else {
     currentUser = null;
-    document.getElementById("authScreen").classList.remove("hidden");
     document.getElementById("walletBar").classList.remove("visible");
+    // Hide auth, show landing for unauthenticated users
+    document.getElementById("authScreen").classList.remove("visible");
+    document.getElementById("authScreen").classList.add("hidden");
+    document.getElementById("landingScreen").classList.add("visible");
   }
 });
+
+// ── Show auth screen (from landing or wherever) ──
+function showAuthScreen(tab) {
+  document.getElementById("landingScreen").classList.remove("visible");
+  document.getElementById("authScreen").classList.remove("hidden");
+  document.getElementById("authScreen").classList.add("visible");
+  if (tab) switchAuthTab(tab);
+  window.scrollTo(0, 0);
+}
 
 async function ensureUserDoc(user) {
   const ref = db.collection("users").doc(user.uid);
@@ -3291,6 +3530,7 @@ async function doForgotPassword() {
 async function doLogout() {
   await auth.signOut();
   sessionStorage.removeItem("tcLastPage");
+  // Landing screen will be shown by onAuthStateChanged
 }
 
 // ── Wallet deduction ──
@@ -3427,7 +3667,7 @@ function ctSetMode(mode) {
 }
 
 function handleCtGenerateClick() {
-  if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
+  if (!currentUser) { showAuthScreen('login'); return; }
   if (ctMode === "single") {
     const cost = PRICE_TWEET; // single post = 1 tweet cost
     if (userBalance < cost) { showBalanceToast(`Need \u20A6${cost} — top up your wallet`); openTopup(); return; }
@@ -4462,7 +4702,7 @@ function infInitTmpls() {
 
 // Override the infographic generate to add watermark
 async function infGenerate() {
-  if(!currentUser){document.getElementById('authScreen').classList.remove('hidden');return;}
+  if(!currentUser){showAuthScreen('login');return;}
   const text=document.getElementById('inf-text').value.trim();
   if(!text){const e=document.getElementById('infErrorBox');e.textContent="Please describe what you'd like the infographic to show.";e.classList.add('visible');return;}
   const ok=await deduct(PRICE_IMAGE,'Standalone infographic'); if(!ok) return;
@@ -4470,9 +4710,15 @@ async function infGenerate() {
   const btn=document.getElementById('infGenBtn');
   btn.disabled=true; btn.textContent='GENERATING...';
   try {
-    const res=await fetch('/api/infographic',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tweet:text,topic:text})});
-    const data=await res.json();
-    if(!res.ok) throw new Error(data.error||'Failed');
+    // Route through backend /api/generate with mode:"infographic"
+    const res = await fetch('/api/generate', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ topic: text, mode: 'infographic', tweet: text })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Infographic generation failed');
+
     const style=pageStyles.inf||{c1:'#6366f1',c2:'#a855f7',darkText:false};
     const handle=document.getElementById('inf-xHandle').value.trim();
     const canvas=document.getElementById('infCanvas');
@@ -4519,7 +4765,7 @@ const paidInfographics = new Set();
 const paidTextCards    = new Set();
 
 function handleGenerateClick() {
-  if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
+  if (!currentUser) { showAuthScreen('login'); return; }
   const tweetCount = estimateTweetCount();
   if (tweetCount === 0) { showError("Configure your thread first."); return; }
   const cost = tweetCount * PRICE_TWEET;
@@ -4705,7 +4951,7 @@ async function wcStep4Analyse() {
   wcHideInput();
 
   // Check balance before calling AI
-  if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
+  if (!currentUser) { showAuthScreen('login'); return; }
   if (userBalance < 10) {
     wcBotMsg(`You need at least ₦20 to get AI suggestions. Top up your wallet!`);
     setTimeout(openTopup, 800);
@@ -4819,7 +5065,7 @@ function wcStep6Format() {
 
 async function wcStep7Generate() {
   WC.step = 7;
-  if (!currentUser) { document.getElementById("authScreen").classList.remove("hidden"); return; }
+  if (!currentUser) { showAuthScreen('login'); return; }
 
   const isThread = WC.chosenFormat === "thread";
   const cost = 20; // flat ₦20 for What Can I Create
