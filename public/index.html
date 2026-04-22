@@ -3187,644 +3187,866 @@ function msDetectSceneType(scene) {
 function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
 function easeIn(t)  { return t * t * t; }
 function easeInOut(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; }
+function easeOutBack(t) { const c1=1.70158,c3=c1+1; return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2); }
 
-// ── Draw overlay text — auto-sizing, word-wrapped, never overflows ──
-function drawOverlay(ctx, text, W, H, t, pal, yFrac=0.78, sizeFrac=0.072) {
-  if (!text) return;
+// ── Font helpers — use Impact for bold display, then fallback ──
+const _FD = `"Impact","Arial Black",sans-serif`;    // display
+const _FM = `"Trebuchet MS","Arial Narrow",sans-serif`; // mono-ish
+const _FB = `"Arial",sans-serif`;                   // body
+
+// ── Word-wrap util ──
+function wrapText(ctx, text, maxW) {
   const words = text.split(" ");
-  const visibleWords = Math.ceil(words.length * Math.min(1, t * 3));
-  const shown = words.slice(0, visibleWords).join(" ");
-  if (!shown) return;
-
-  const maxW = W * 0.84;
-  const maxLines = 3;
-  const minSize = H * 0.032;
-  let fs = H * sizeFrac;
-  let lines = [];
-
-  while (fs >= minSize) {
-    ctx.font = `700 ${fs}px Arial, sans-serif`;
-    lines = [];
-    let line = "";
-    for (const w of shown.split(" ")) {
-      const test = line ? line + " " + w : w;
-      if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
-      else line = test;
-    }
-    if (line) lines.push(line);
-    if (lines.length <= maxLines) break;
-    fs -= 2;
+  const lines = []; let line = "";
+  for (const w of words) {
+    const test = line ? line + " " + w : w;
+    if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
+    else line = test;
   }
-  if (lines.length > maxLines) {
-    lines = lines.slice(0, maxLines);
-    lines[maxLines - 1] = lines[maxLines - 1].slice(0, -3) + "…";
-  }
+  if (line) lines.push(line);
+  return lines;
+}
 
-  const lh = fs * 1.25;
-  const totalH = lines.length * lh;
-  const startY = Math.min(H * yFrac - totalH / 2 + lh / 2, H - totalH - H * 0.06);
+// ── Cinematic post-processing: grain + vignette ──
+function postProcess(ctx, W, H, t) {
+  // Vignette
+  const vig = ctx.createRadialGradient(W/2,H/2,H*0.25, W/2,H/2,H*0.85);
+  vig.addColorStop(0,"rgba(0,0,0,0)");
+  vig.addColorStop(1,"rgba(0,0,0,0.72)");
+  ctx.fillStyle = vig; ctx.fillRect(0,0,W,H);
+  // Subtle film grain
+  ctx.save();
+  ctx.globalAlpha = 0.028;
+  const grainSeed = Math.floor(t * 1000);
+  for (let i = 0; i < 1800; i++) {
+    const gx = ((i * 7 + grainSeed * 13) % W);
+    const gy = ((i * 11 + grainSeed * 7) % H);
+    const bright = ((i * 17 + grainSeed) % 2 === 0) ? 255 : 0;
+    ctx.fillStyle = `rgb(${bright},${bright},${bright})`;
+    ctx.fillRect(gx, gy, 1, 1);
+  }
+  ctx.restore();
+  // Top + bottom letterbox bars (cinematic 2.35:1 feel)
+  const barH = H * 0.055;
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, W, barH);
+  ctx.fillRect(0, H - barH, W, barH);
+}
+
+// ── Professional lower-third HUD ──
+function drawHUD(ctx, W, H, pal, sceneNum, totalScenes, t) {
+  const reveal  = Math.min(1, t * 5);
+  const topic   = (document.getElementById("ms-topic")?.value || "").trim().toUpperCase().slice(0, 36) || "THREADCRAFT";
+  const barH    = H * 0.055; // letterbox offset
+  const ltY     = H - barH - H * 0.13;  // lower-third Y
+  const ltH     = H * 0.10;
+  const ltW     = W * 0.52;
+  const ltX     = W * 0.04;
 
   ctx.save();
-  ctx.font = `700 ${fs}px Arial, sans-serif`;
-  ctx.fillStyle = "#ffffff";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.shadowColor = pal.accent;
-  ctx.shadowBlur = 18;
-  lines.forEach((ln, i) => ctx.fillText(ln, W / 2, startY + i * lh));
-  ctx.shadowBlur = 0;
+  ctx.globalAlpha = reveal;
+
+  // Background strip with accent left edge
+  ctx.fillStyle = "rgba(0,0,0,0.72)";
+  ctx.fillRect(ltX, ltY, ltW * reveal, ltH);
+  ctx.fillStyle = pal.accent;
+  ctx.fillRect(ltX, ltY, 4, ltH * reveal);
+
+  // Logo or topic text inside lower-third
+  if (_msLogoImage) {
+    const lh2 = ltH * 0.68;
+    const lw2 = lh2 * (_msLogoImage.width / _msLogoImage.height);
+    ctx.drawImage(_msLogoImage, ltX + 14, ltY + (ltH - lh2)/2, Math.min(lw2, W*0.22), lh2);
+  } else {
+    ctx.font = `700 ${H*0.030}px ${_FD}`;
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "left"; ctx.textBaseline = "middle";
+    ctx.fillText(topic, ltX + 16, ltY + ltH * 0.42);
+    ctx.font = `400 ${H*0.020}px ${_FM}`;
+    ctx.fillStyle = pal.accent;
+    ctx.fillText("THREADCRAFT.AI", ltX + 16, ltY + ltH * 0.75);
+  }
+
+  // Scene counter — right side
+  ctx.globalAlpha = reveal * 0.85;
+  ctx.font = `700 ${H*0.026}px ${_FD}`;
+  ctx.fillStyle = pal.accent;
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  ctx.fillText(`${sceneNum}`, W - W*0.04, ltY + ltH * 0.42);
+  ctx.font = `400 ${H*0.018}px ${_FM}`;
+  ctx.fillStyle = "rgba(255,255,255,0.5)";
+  ctx.fillText(`/ ${totalScenes}`, W - W*0.04, ltY + ltH * 0.75);
+
+  // Progress bar along bottom letterbox edge
+  ctx.globalAlpha = reveal;
+  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  ctx.fillRect(0, H - barH - 3, W, 3);
+  ctx.fillStyle = pal.accent;
+  ctx.fillRect(0, H - barH - 3, W * Math.min(1, t * 1.05), 3);
+
   ctx.restore();
 }
 
-// ── Draw bottom HUD bar ──
-function drawHUD(ctx, W, H, pal, sceneNum, totalScenes, t) {
-  ctx.save();
-  ctx.globalAlpha = Math.min(1, t * 4) * 0.7;
-  // bottom line
-  ctx.fillStyle = pal.accent;
-  ctx.fillRect(0, H - 3, W * Math.min(1, t * 2), 3);
+// ── Scene title card — bold headline over content area ──
+function drawSceneTitle(ctx, W, H, text, t, pal, yCenter, maxWidthFrac=0.82, tag=null) {
+  if (!text) return;
+  const barH   = H * 0.055;
+  const reveal = easeOut(Math.min(1, t * 2.8));
+  const maxW   = W * maxWidthFrac;
+  const barH2  = H * 0.055;
 
-  const hudY = H - 14;
-  const topic = (document.getElementById("ms-topic")?.value || "").trim().toUpperCase().slice(0, 32) || "THREADCRAFT";
-
-  if (_msLogoImage) {
-    // Draw uploaded logo in bottom-left HUD slot
-    const lh = H * 0.042;
-    const lw = lh * (_msLogoImage.width / _msLogoImage.height);
-    ctx.globalAlpha = Math.min(1, t * 4) * 0.65;
-    ctx.drawImage(_msLogoImage, 32, H - lh - 10, Math.min(lw, W * 0.2), lh);
-  } else {
-    ctx.font = `400 ${H*0.022}px "Courier New", monospace`;
-    ctx.fillStyle = pal.sub;
-    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
-    ctx.fillText(topic, 40, hudY);
+  // Auto-size
+  let fs = H * 0.105; const minFs = H * 0.042;
+  let lines = [];
+  while (fs >= minFs) {
+    ctx.font = `700 ${fs}px ${_FD}`;
+    lines = wrapText(ctx, text.toUpperCase(), maxW);
+    if (lines.length <= 2) break;
+    fs -= 3;
   }
+  lines = lines.slice(0,3);
+  const lh = fs * 1.18;
+  const totalH = lines.length * lh;
+  const sy = (yCenter || H * 0.5) - totalH / 2 + lh / 2;
 
-  ctx.font = `400 ${H*0.022}px "Courier New", monospace`;
-  ctx.fillStyle = pal.sub;
-  ctx.textAlign = "right"; ctx.textBaseline = "alphabetic";
-  ctx.fillText(`${sceneNum} / ${totalScenes}`, W - 40, hudY);
+  ctx.save();
+  // Accent left bar
+  const barX = W * 0.08;
+  ctx.fillStyle = pal.accent;
+  ctx.globalAlpha = reveal;
+  ctx.fillRect(barX - 18, sy - fs * 0.7, 5, totalH + fs * 0.4);
+
+  // Text — white first line, accent second+
+  ctx.textAlign = "left"; ctx.textBaseline = "middle";
+  lines.forEach((ln, i) => {
+    ctx.globalAlpha = reveal * (i === 0 ? 1 : 0.88);
+    ctx.font = `700 ${fs}px ${_FD}`;
+    ctx.fillStyle = i === 0 ? "#ffffff" : pal.accent;
+    ctx.shadowColor = pal.accent; ctx.shadowBlur = i === 0 ? 0 : 20;
+    const slideOff = (1 - reveal) * 38;
+    ctx.fillText(ln, barX + slideOff, sy + i * lh);
+  });
+  ctx.shadowBlur = 0;
+
+  // Optional tag label above
+  if (tag) {
+    ctx.globalAlpha = reveal * 0.7;
+    ctx.font = `700 ${H*0.022}px ${_FM}`;
+    ctx.fillStyle = pal.accent;
+    ctx.textAlign = "left";
+    ctx.fillText(tag.toUpperCase(), barX, sy - lh * 0.7);
+  }
+  ctx.restore();
+}
+
+// ── Shared overlay for globe/network (bottom-anchored subtitle) ──
+function drawOverlay(ctx, text, W, H, t, pal, yFrac=0.78, sizeFrac=0.062) {
+  if (!text) return;
+  const barH   = H * 0.055;
+  const reveal = easeOut(Math.min(1, t * 2.5));
+  const maxW   = W * 0.80;
+  let fs = H * sizeFrac; const minFs = H * 0.030;
+  let lines = [];
+  while (fs >= minFs) {
+    ctx.font = `700 ${fs}px ${_FD}`;
+    lines = wrapText(ctx, text.toUpperCase(), maxW);
+    if (lines.length <= 3) break;
+    fs -= 2;
+  }
+  lines = lines.slice(0,3);
+  const lh = fs * 1.22;
+  const totalH = lines.length * lh;
+  const anchorY = H * yFrac - barH;
+  const sy = anchorY - totalH + lh / 2;
+
+  // Semi-transparent backing
+  ctx.save();
+  ctx.globalAlpha = reveal * 0.55;
+  ctx.fillStyle = "#000";
+  ctx.fillRect(W*0.06, sy - lh*0.55, W*0.88, totalH + lh*0.3);
+  ctx.globalAlpha = reveal;
+  ctx.font = `700 ${fs}px ${_FD}`;
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  lines.forEach((ln, i) => {
+    ctx.fillStyle = i === 0 ? "#ffffff" : pal.accent;
+    ctx.shadowColor = pal.accent; ctx.shadowBlur = 16;
+    ctx.fillText(ln, W/2, sy + i*lh + (1-reveal)*16);
+  });
+  ctx.shadowBlur = 0;
   ctx.restore();
 }
 
 // ── SCENE RENDERERS ──
 
 function renderSceneGlobe(ctx, W, H, t, pal, scene) {
-  // Dark bg + radial glow
-  ctx.fillStyle = "#080d14"; ctx.fillRect(0,0,W,H);
-  const cx = W*0.5, cy = H*0.45;
-  // Orbit rings
+  // Deep space background with nebula gradient
+  const bg = ctx.createRadialGradient(W*0.5, H*0.42, 0, W*0.5, H*0.42, H*0.9);
+  bg.addColorStop(0,  "#0d1b2e");
+  bg.addColorStop(0.5,"#060d1a");
+  bg.addColorStop(1,  "#020508");
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+  // Star field
   ctx.save();
-  for (let r = 0; r < 3; r++) {
-    const radius = 90 + r * 70 + Math.sin(t * Math.PI * 2 + r) * 8;
-    const alpha = 0.15 + r * 0.06;
-    ctx.globalAlpha = alpha * easeOut(t);
-    ctx.strokeStyle = pal.accent;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, radius, radius * 0.35, -0.3 + r * 0.4, 0, Math.PI * 2);
-    ctx.stroke();
+  for (let s = 0; s < 90; s++) {
+    const sx = (s * 73 + 11) % W;
+    const sy = (s * 137 + 37) % (H * 0.8);
+    const sr = 0.5 + (s % 3) * 0.4;
+    const twinkle = 0.3 + 0.7 * Math.abs(Math.sin(t * Math.PI * 3 + s));
+    ctx.globalAlpha = twinkle * 0.6;
+    ctx.fillStyle = "#c0d8ff";
+    ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI*2); ctx.fill();
   }
   ctx.restore();
-  // Globe circle
+
+  const cx = W*0.5, cy = H*0.43;
+  const baseR = H * 0.24;
+  const globeR = baseR * easeOutBack(Math.min(1, t * 1.8));
+
+  // Atmospheric halo
   ctx.save();
-  const globeR = 110 * easeOut(Math.min(1, t * 2));
-  const gGrad = ctx.createRadialGradient(cx - 30, cy - 30, 10, cx, cy, globeR);
-  gGrad.addColorStop(0, "#1e3a5f");
-  gGrad.addColorStop(0.5, "#0d2240");
-  gGrad.addColorStop(1, "#060f1e");
-  ctx.globalAlpha = easeOut(Math.min(1, t * 2));
+  const atmo = ctx.createRadialGradient(cx, cy, globeR*0.85, cx, cy, globeR*1.3);
+  atmo.addColorStop(0, `${pal.accent}22`);
+  atmo.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.globalAlpha = easeOut(t);
+  ctx.fillStyle = atmo; ctx.beginPath(); ctx.arc(cx, cy, globeR*1.3, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  // Globe fill
+  ctx.save();
+  ctx.globalAlpha = easeOut(Math.min(1, t * 1.8));
+  const gGrad = ctx.createRadialGradient(cx - globeR*0.28, cy - globeR*0.28, globeR*0.05, cx, cy, globeR);
+  gGrad.addColorStop(0, "#1e4a7a");
+  gGrad.addColorStop(0.45,"#0d2a50");
+  gGrad.addColorStop(1,  "#030c1e");
   ctx.fillStyle = gGrad;
   ctx.beginPath(); ctx.arc(cx, cy, globeR, 0, Math.PI*2); ctx.fill();
-  // Grid lines on globe
-  ctx.strokeStyle = `rgba(59,130,246,0.3)`;
-  ctx.lineWidth = 1;
-  ctx.globalAlpha = easeOut(Math.min(1, t * 2)) * 0.5;
-  for (let lat = -2; lat <= 2; lat++) {
-    const latY = cy + lat * (globeR / 2.5);
-    const halfW = Math.sqrt(Math.max(0, globeR*globeR - Math.pow(latY-cy, 2)));
-    if (halfW > 0) { ctx.beginPath(); ctx.ellipse(cx, latY, halfW, halfW * 0.2, 0, 0, Math.PI*2); ctx.stroke(); }
+
+  // Globe wireframe grid
+  ctx.strokeStyle = "rgba(59,130,246,0.22)"; ctx.lineWidth = 1;
+  ctx.clip(); // clip to globe
+  for (let lat = -4; lat <= 4; lat++) {
+    const latY = cy + lat * (globeR / 4);
+    const hw = Math.sqrt(Math.max(0, globeR*globeR - Math.pow(latY-cy,2)));
+    if (hw > 0) { ctx.beginPath(); ctx.ellipse(cx, latY, hw, hw*0.22, 0, 0, Math.PI*2); ctx.stroke(); }
   }
-  for (let lon = 0; lon < 5; lon++) {
-    ctx.beginPath(); ctx.ellipse(cx, cy, globeR * 0.25 + lon * globeR * 0.15, globeR, lon * 0.35, 0, Math.PI*2); ctx.stroke();
+  const spinOffset = t * Math.PI * 0.7;
+  for (let lon = 0; lon < 8; lon++) {
+    ctx.beginPath(); ctx.ellipse(cx, cy, globeR*Math.cos(lon*Math.PI/8), globeR, spinOffset + lon*Math.PI/8, 0, Math.PI*2); ctx.stroke();
   }
   ctx.restore();
-  // Data stream dots orbiting
+
+  // Specular highlight
   ctx.save();
-  for (let d = 0; d < 12; d++) {
-    const angle = (d / 12) * Math.PI * 2 + t * Math.PI * 1.5;
-    const orbitR = 145;
-    const dx = cx + Math.cos(angle) * orbitR;
-    const dy = cy + Math.sin(angle) * orbitR * 0.3;
-    ctx.globalAlpha = (0.3 + 0.7 * Math.abs(Math.cos(angle))) * easeOut(t);
-    ctx.fillStyle = pal.accent;
-    ctx.beginPath(); ctx.arc(dx, dy, 3, 0, Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 0.25 * easeOut(t);
+  const spec = ctx.createRadialGradient(cx-globeR*0.3, cy-globeR*0.3, 0, cx-globeR*0.1, cy-globeR*0.1, globeR*0.55);
+  spec.addColorStop(0,"rgba(255,255,255,0.6)");
+  spec.addColorStop(1,"rgba(255,255,255,0)");
+  ctx.fillStyle=spec; ctx.beginPath(); ctx.arc(cx,cy,globeR,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  // Orbit rings — 3 tilted ellipses with animated dots
+  ctx.save();
+  for (let r = 0; r < 3; r++) {
+    const orR = globeR * (1.38 + r * 0.32);
+    const tilt = -0.28 + r * 0.22;
+    ctx.globalAlpha = (0.18 + r*0.07) * easeOut(t);
+    ctx.strokeStyle = r===0 ? pal.accent : "rgba(255,255,255,0.2)";
+    ctx.lineWidth = r===0 ? 1.5 : 1;
+    ctx.beginPath(); ctx.ellipse(cx, cy, orR, orR*0.28, tilt, 0, Math.PI*2); ctx.stroke();
+    // Dot on orbit
+    const dotAngle = t * Math.PI * (1.2 + r*0.4);
+    const dx2 = cx + Math.cos(dotAngle) * orR;
+    const dy2 = cy + Math.sin(dotAngle) * orR * 0.28 * Math.cos(tilt);
+    ctx.globalAlpha = easeOut(t);
+    ctx.fillStyle = r===0 ? pal.accent : "#60a5fa";
+    ctx.shadowColor = r===0 ? pal.accent : "#60a5fa"; ctx.shadowBlur = 10;
+    ctx.beginPath(); ctx.arc(dx2, dy2, r===0?5:3, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
   }
   ctx.restore();
-  drawOverlay(ctx, scene.overlay, W, H, t, pal, 0.82);
+
+  postProcess(ctx, W, H, t);
+  drawOverlay(ctx, scene.overlay, W, H, t, pal, 0.80);
 }
 
 function renderSceneDashboard(ctx, W, H, t, pal, scene) {
-  ctx.fillStyle = "#0a0f1a"; ctx.fillRect(0,0,W,H);
-  // Grid bg
+  // Rich dark bg with gradient
+  const bg = ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,"#080e1c"); bg.addColorStop(1,"#040810");
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+  // Subtle dot-grid background
   ctx.save();
-  ctx.strokeStyle = "rgba(59,130,246,0.06)"; ctx.lineWidth = 1;
-  for (let gx = 0; gx < W; gx += 60) { ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,H); ctx.stroke(); }
-  for (let gy = 0; gy < H; gy += 60) { ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke(); }
+  ctx.globalAlpha = 0.07;
+  ctx.fillStyle = pal.accent;
+  for (let gx = 30; gx < W; gx += 48)
+    for (let gy = 30; gy < H; gy += 48) {
+      ctx.beginPath(); ctx.arc(gx, gy, 1.2, 0, Math.PI*2); ctx.fill();
+    }
   ctx.restore();
 
-  // Build stats from topic + overlay text — nothing is hardcoded
   const cat = window._msTopicCategory || "general";
   const topicRaw = (document.getElementById("ms-topic")?.value || "").trim();
   const overlayWords = (scene.overlay || topicRaw).toUpperCase().replace(/[^A-Z0-9\s]/g,"").trim();
-  // Title: use overlay text truncated, never a hardcoded string
-  const dashTitle = overlayWords.slice(0, 28) || topicRaw.toUpperCase().slice(0, 28) || "LIVE DASHBOARD";
-
-  // Bar data: seeded from overlay text so it's unique per scene but stable
+  const dashTitle = (overlayWords.slice(0,26) || topicRaw.toUpperCase().slice(0,26) || "LIVE DASHBOARD");
   const seed = (scene.overlay || topicRaw || "x").split("").reduce((a,c) => a + c.charCodeAt(0), 0);
-  const bars = Array.from({length: 8}, (_, i) => {
-    const v = ((seed * (i + 3) * 7919) % 100) / 100;
-    return 0.3 + v * 0.65; // always between 30% and 95%
-  });
+  const bars = Array.from({length:7}, (_,i) => 0.32 + (((seed*(i+3)*7919) % 100)/100) * 0.62);
 
-  // Stat pills: topic-aware labels and values
   const statSets = {
-    social:    [["REACH",  "2.4M"], ["ENGAGE", "8.7%"], ["GROWTH", "+34%"]],
-    fintech:   [["USERS",  "18K"],  ["VOLUME", "N12M"], ["RATE",   "99.1%"]],
-    crypto:    [["TVL",    "$4.2M"],["APY",    "18.4%"],["TXS",    "92K"]],
-    ecommerce: [["ORDERS", "3.1K"], ["GMV",    "N8.6M"],["CONV",   "4.2%"]],
-    health:    [["USERS",  "9.4K"], ["STREAK", "21d"],  ["GOALS",  "87%"]],
-    tech:      [["MAU",    "45K"],  ["UPTIME", "99.9%"],["CALLS",  "1.2M"]],
-    food:      [["ORDERS", "1.8K"], ["RATING", "4.8/5"],["DELIVER","94%"]],
-    realestate:[["LISTINGS","340"], ["VIEWS",  "12K"],  ["LEADS",  "8.4%"]],
-    education: [["STUDENTS","6.2K"],["COMPLT", "78%"],  ["RATING", "4.9/5"]],
-    general:   [["USERS",  "12.4K"],["RATE",   "94.2%"],["TOTAL",  "+28%"]],
+    social:    [["REACH","2.4M"],["ENGAGE","8.7%"],["GROWTH","+34%"]],
+    fintech:   [["USERS","18K"],["VOLUME","₦12M"],["RATE","99.1%"]],
+    crypto:    [["TVL","$4.2M"],["APY","18.4%"],["TXS","92K"]],
+    ecommerce: [["ORDERS","3.1K"],["GMV","₦8.6M"],["CONV","4.2%"]],
+    health:    [["USERS","9.4K"],["STREAK","21d"],["GOALS","87%"]],
+    tech:      [["MAU","45K"],["UPTIME","99.9%"],["CALLS","1.2M"]],
+    food:      [["ORDERS","1.8K"],["RATING","4.8/5"],["DELIVER","94%"]],
+    general:   [["USERS","12.4K"],["RATE","94.2%"],["TOTAL","+28%"]],
   };
   const stats = statSets[cat] || statSets.general;
+  const reveal = easeOut(Math.min(1, t * 1.8));
 
-  // Main dashboard card
-  const reveal = easeOut(Math.min(1, t * 2));
-  const cardX = W*0.05, cardW = W*0.9;
-  const cardY = H*0.08 + (1 - reveal) * 40, cardH = H*0.62;
+  // Main card
+  const cX=W*0.04, cW=W*0.92, cY=H*0.10, cH=H*0.56;
   ctx.save();
   ctx.globalAlpha = reveal;
-  ctx.fillStyle = "#111827";
-  ctx.strokeStyle = "rgba(59,130,246,0.4)"; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.roundRect(cardX, cardY, cardW, cardH, 12); ctx.fill(); ctx.stroke();
-  // Card header bar
-  ctx.fillStyle = "#1f2937";
-  ctx.beginPath(); ctx.roundRect(cardX, cardY, cardW, 44, [12,12,0,0]); ctx.fill();
-  ["#ef4444","#f59e0b","#22c55e"].forEach((c,i) => {
-    ctx.fillStyle = c; ctx.beginPath(); ctx.arc(cardX+20+i*20, cardY+22, 6, 0, Math.PI*2); ctx.fill();
+  // Card shadow
+  ctx.shadowColor="rgba(0,0,0,0.8)"; ctx.shadowBlur=30; ctx.shadowOffsetY=8;
+  ctx.fillStyle = "#0f1829";
+  ctx.beginPath(); ctx.roundRect(cX, cY, cW, cH, 10); ctx.fill();
+  ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+  // Card border glow
+  ctx.strokeStyle = `${pal.accent}55`; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.roundRect(cX, cY, cW, cH, 10); ctx.stroke();
+  // Header bar
+  ctx.fillStyle="#131e30";
+  ctx.beginPath(); ctx.roundRect(cX, cY, cW, 40, [10,10,0,0]); ctx.fill();
+  // Traffic light dots
+  ["#ff5f57","#febc2e","#28c840"].forEach((c,i) => {
+    ctx.fillStyle=c; ctx.beginPath(); ctx.arc(cX+18+i*18, cY+20, 5, 0, Math.PI*2); ctx.fill();
   });
-  ctx.fillStyle = "#6b7280"; ctx.font = `400 ${H*0.022}px "Courier New",monospace`;
-  ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.fillText(dashTitle, W/2, cardY+22);
-
-  // Animated bar chart — colour tinted by palette accent
-  const barAreaX = cardX + 40, barAreaY = cardY + 60, barAreaH = cardH - 110, barAreaW = cardW - 80;
-  const bw = (barAreaW / bars.length) - 8;
-  bars.forEach((val, i) => {
-    const animVal = val * easeOut(Math.min(1, Math.max(0, t * 3 - i * 0.1)));
-    const bx = barAreaX + i * (bw + 8);
-    const bh = barAreaH * animVal;
-    const by = barAreaY + barAreaH - bh;
-    ctx.fillStyle = "rgba(59,130,246,0.08)";
-    ctx.beginPath(); ctx.roundRect(bx, barAreaY, bw, barAreaH, 4); ctx.fill();
-    const barGrad = ctx.createLinearGradient(0, by, 0, by+bh);
-    barGrad.addColorStop(0, pal.accent + "dd"); barGrad.addColorStop(1, "#1d4ed8");
-    ctx.fillStyle = barGrad;
-    ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, [4,4,0,0]); ctx.fill();
-    ctx.fillStyle = "#9ca3af"; ctx.font = `400 ${H*0.018}px Arial,sans-serif`;
-    ctx.textAlign = "center"; ctx.textBaseline = "top";
-    ctx.fillText((val*100).toFixed(0)+"%", bx+bw/2, barAreaY + barAreaH + 6);
-  });
-
-  // Live indicator pulse
-  const pulse = 0.5 + 0.5 * Math.sin(t * Math.PI * 8);
-  ctx.fillStyle = `rgba(34,197,94,${pulse})`; ctx.beginPath(); ctx.arc(cardX+cardW-20, cardY+22, 5, 0, Math.PI*2); ctx.fill();
+  // Title
+  ctx.font=`700 ${H*0.028}px ${_FD}`;
+  ctx.fillStyle="#8899aa"; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText(dashTitle, W/2, cY+20);
+  // Live pulse
+  const pulse = 0.5+0.5*Math.sin(t*Math.PI*10);
+  ctx.fillStyle=`rgba(34,197,94,${0.5+0.5*pulse})`;
+  ctx.shadowColor="#22c55e"; ctx.shadowBlur=8*pulse;
+  ctx.beginPath(); ctx.arc(cX+cW-18, cY+20, 5, 0, Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
   ctx.restore();
 
-  // Stat pills — topic-aware
-  stats.forEach((s, i) => {
-    const px = W*0.1 + i*(W*0.27), py = cardY + cardH + 14;
-    ctx.save(); ctx.globalAlpha = easeOut(Math.min(1, Math.max(0, t*3 - 0.4 - i*0.15)));
-    ctx.fillStyle = "#1f2937"; ctx.strokeStyle = "rgba(59,130,246,0.3)"; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.roundRect(px, py, W*0.22, 44, 8); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = "#6b7280"; ctx.font=`400 ${H*0.018}px "Courier New",monospace`; ctx.textAlign="left"; ctx.textBaseline="middle";
-    ctx.fillText(s[0], px+12, py+14);
-    ctx.fillStyle = pal.accent; ctx.font=`700 ${H*0.028}px Arial,sans-serif`;
-    ctx.fillText(s[1], px+12, py+32);
+  // Bar chart
+  const bAX=cX+36, bAY=cY+50, bAH=cH-76, bAW=cW-72;
+  const bw=(bAW/bars.length)-10;
+  ctx.save(); ctx.globalAlpha=reveal;
+  bars.forEach((val,i) => {
+    const animV = val * easeOut(Math.min(1, Math.max(0, t*3.5 - i*0.18)));
+    const bx=bAX+i*(bw+10), bh=bAH*animV, by=bAY+bAH-bh;
+    // Track
+    ctx.fillStyle="rgba(255,255,255,0.04)";
+    ctx.beginPath(); ctx.roundRect(bx, bAY, bw, bAH, 4); ctx.fill();
+    // Bar
+    const barGrad = ctx.createLinearGradient(0, by, 0, by+bh);
+    barGrad.addColorStop(0, pal.accent); barGrad.addColorStop(1, pal.accent+"33");
+    ctx.fillStyle=barGrad;
+    ctx.shadowColor=pal.accent; ctx.shadowBlur=8;
+    ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, [4,4,0,0]); ctx.fill();
+    ctx.shadowBlur=0;
+    // Value label on bar
+    if (animV > 0.2) {
+      ctx.font=`700 ${H*0.019}px ${_FM}`;
+      ctx.fillStyle="#ffffff"; ctx.textAlign="center"; ctx.textBaseline="bottom";
+      ctx.fillText(Math.round(animV*100)+"%", bx+bw/2, by-3);
+    }
+  });
+  ctx.restore();
+
+  // Stat pills row
+  const pY = cY+cH+14;
+  stats.forEach((s,i) => {
+    const pw=W*0.26, px=W*0.04+i*(pw+W*0.02);
+    const pillReveal = easeOut(Math.min(1, Math.max(0, t*3.5-0.5-i*0.18)));
+    ctx.save(); ctx.globalAlpha=pillReveal;
+    ctx.fillStyle="#0f1829"; ctx.strokeStyle=`${pal.accent}44`; ctx.lineWidth=1;
+    ctx.shadowColor="rgba(0,0,0,0.6)"; ctx.shadowBlur=10;
+    ctx.beginPath(); ctx.roundRect(px, pY, pw, H*0.096, 8); ctx.fill(); ctx.stroke();
+    ctx.shadowBlur=0;
+    ctx.fillStyle="rgba(255,255,255,0.35)";
+    ctx.font=`700 ${H*0.018}px ${_FM}`; ctx.textAlign="left"; ctx.textBaseline="middle";
+    ctx.fillText(s[0], px+12, pY+H*0.027);
+    ctx.fillStyle=pal.accent;
+    ctx.font=`700 ${H*0.036}px ${_FD}`;
+    ctx.fillText(s[1], px+12, pY+H*0.068);
     ctx.restore();
   });
-  drawOverlay(ctx, scene.overlay, W, H, t, pal, 0.94, 0.045);
+
+  postProcess(ctx, W, H, t);
+  drawOverlay(ctx, scene.overlay, W, H, t, pal, 0.96, 0.052);
 }
 
 function renderSceneCode(ctx, W, H, t, pal, scene) {
-  ctx.fillStyle = "#0d1117"; ctx.fillRect(0,0,W,H);
+  // Deep editor dark bg
+  ctx.fillStyle = "#090d13"; ctx.fillRect(0,0,W,H);
 
-  // Pick code lines based on topic category — no hardcoded Jupiter/DeFi code
   const cat = window._msTopicCategory || "general";
-  const topicName = (document.getElementById("ms-topic")?.value || "app").trim().replace(/\s+/g, "_").toLowerCase().slice(0, 16);
+  const topicName = (document.getElementById("ms-topic")?.value || "app").trim().replace(/\s+/g,"_").toLowerCase().slice(0,14);
   const codeSets = {
-    social:    [`import { SocialAPI } from './${topicName}';`, `const posts = await SocialAPI.getFeed({ limit: 50 });`, `const reach = posts.reduce((a,p) => a + p.impressions, 0);`, `const topPost = posts.sort((a,b) => b.likes - a.likes)[0];`, `await SocialAPI.boost(topPost.id, { budget: 5000 });`, `console.log('Boosted:', topPost.title);`],
-    fintech:   [`import { PaymentGateway } from './${topicName}';`, `const txn = await PaymentGateway.transfer({`, `  from: user.walletId, to: recipient.id,`, `  amount: 50000, currency: 'NGN',`, `});`, `console.log('Transfer:', txn.status, txn.ref);`],
-    crypto:    [`import { SwapSDK } from './${topicName}';`, `const quote = await SwapSDK.getQuote({ inputMint, outputMint });`, `const tx = await SwapSDK.buildTx({ quote, userPubKey });`, `const sig = await wallet.signAndSend(tx);`, `console.log('Swapped:', sig);`],
-    ecommerce: [`import { StoreAPI } from './${topicName}';`, `const products = await StoreAPI.getProducts({ inStock: true });`, `const cart = await StoreAPI.createCart(userId);`, `await StoreAPI.addToCart(cart.id, products[0].sku, 1);`, `const order = await StoreAPI.checkout(cart.id, paymentInfo);`, `console.log('Order:', order.id, order.total);`],
-    health:    [`import { HealthTracker } from './${topicName}';`, `const session = await HealthTracker.startWorkout('strength');`, `await HealthTracker.logSet({ exercise: 'squat', reps: 10 });`, `const stats = await HealthTracker.endSession(session.id);`, `console.log('Calories:', stats.calories, 'Duration:', stats.mins);`],
-    tech:      [`import { ${topicName}SDK } from './sdk';`, `const client = new ${topicName}SDK({ apiKey: process.env.KEY });`, `const data = await client.fetch({ query: userQuery, limit: 100 });`, `const result = await client.process(data.records);`, `await client.store(result); console.log('Done:', result.count);`],
-    food:      [`import { OrdersAPI } from './${topicName}';`, `const menu = await OrdersAPI.getMenu({ available: true });`, `const order = await OrdersAPI.placeOrder({ items, userId });`, `await OrdersAPI.assignRider(order.id);`, `const eta = await OrdersAPI.trackDelivery(order.id);`, `console.log('ETA:', eta.minutes, 'mins');`],
-    general:   [`import { ${topicName} } from './core';`, `const instance = await ${topicName}.init({ config });`, `const users = await instance.db.query({ active: true });`, `const result = await instance.process(users.data);`, `await result.save(); console.log('Processed:', result.count);`],
+    social:    [`import { SocialAPI } from './${topicName}';`,`const posts = await SocialAPI.getFeed({ limit: 50 });`,`const reach = posts.reduce((a,p) => a + p.impressions, 0);`,`const top   = posts.sort((a,b) => b.likes - a.likes)[0];`,`await SocialAPI.boost(top.id, { budget: 5000 });`,`console.log('Boosted:', top.title, reach);`],
+    fintech:   [`import { PaymentGateway } from './${topicName}';`,`const txn = await PaymentGateway.transfer({`,`  from: user.walletId, to: recipient.id,`,`  amount: 50000, currency: 'NGN',`,`});`,`console.log('Transfer:', txn.status, txn.ref);`],
+    crypto:    [`import { SwapSDK } from './${topicName}';`,`const quote = await SwapSDK.getQuote({ inputMint, outputMint });`,`const tx    = await SwapSDK.buildTx({ quote, userPubKey });`,`const sig   = await wallet.signAndSend(tx);`,`console.log('Swapped ✓', sig);`],
+    ecommerce: [`import { StoreAPI } from './${topicName}';`,`const products = await StoreAPI.getProducts({ inStock:true });`,`const cart     = await StoreAPI.createCart(userId);`,`await StoreAPI.addToCart(cart.id, products[0].sku, 1);`,`const order    = await StoreAPI.checkout(cart.id, payInfo);`,`console.log('Order:', order.id, order.total);`],
+    health:    [`import { HealthTracker } from './${topicName}';`,`const sess  = await HealthTracker.startWorkout('strength');`,`await HealthTracker.logSet({ exercise: 'squat', reps: 10 });`,`const stats = await HealthTracker.endSession(sess.id);`,`console.log('Calories:', stats.calories, 'min:', stats.mins);`],
+    general:   [`import { ${topicName} } from './core';`,`const instance = await ${topicName}.init({ config });`,`const users    = await instance.db.query({ active: true });`,`const result   = await instance.process(users.data);`,`await result.save();`,`console.log('Processed:', result.count, 'records.');`],
   };
-  const lines = codeSets[cat] || codeSets.general;
+  const lines = (codeSets[cat] || codeSets.general);
+  const COLORS = { kw:"#f97583", str:"#9ecbff", fn:"#b392f0", num:"#79c0ff", plain:"#cdd9e5", dim:"#6a737d" };
 
-  const scrollOffset = t * H * 0.4;
-  const lineH = H * 0.058;
-  const startY = H * 0.12 - scrollOffset;
-  const colors = { keyword:"#ff7b72", string:"#a5d6ff", func:"#d2a8ff", num:"#79c0ff", plain:"#c9d1d9", comment:"#8b949e" };
-  // Terminal window
+  // Outer window glow
   ctx.save();
-  ctx.fillStyle = "#161b22"; ctx.strokeStyle = "rgba(48,54,61,0.8)"; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.roundRect(W*0.04, H*0.06, W*0.92, H*0.82, 10); ctx.fill(); ctx.stroke();
+  ctx.shadowColor = pal.accent; ctx.shadowBlur = 40;
+  ctx.strokeStyle = `${pal.accent}33`; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.roundRect(W*0.035, H*0.07, W*0.93, H*0.80, 12); ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Editor window bg
+  ctx.fillStyle = "#0d1117";
+  ctx.beginPath(); ctx.roundRect(W*0.035, H*0.07, W*0.93, H*0.80, 12); ctx.fill();
+  ctx.strokeStyle = "#30363d"; ctx.lineWidth=1; ctx.stroke();
+
   // Title bar
-  ctx.fillStyle = "#21262d";
-  ctx.beginPath(); ctx.roundRect(W*0.04, H*0.06, W*0.92, 36, [10,10,0,0]); ctx.fill();
-  ["#ef4444","#f59e0b","#22c55e"].forEach((c,i) => { ctx.fillStyle=c; ctx.beginPath(); ctx.arc(W*0.06+i*20, H*0.06+18, 5, 0, Math.PI*2); ctx.fill(); });
-  ctx.fillStyle="#6b7280"; ctx.font=`400 ${H*0.02}px "Courier New",monospace`; ctx.textAlign="center"; ctx.textBaseline="middle";
-  ctx.fillText("app.js", W/2, H*0.06+18);
-  // Clip to code area
-  ctx.rect(W*0.04, H*0.06+36, W*0.92, H*0.82-36); ctx.clip();
-  lines.forEach((line, i) => {
-    const ly = startY + i * lineH;
-    if (ly < H*0.06 || ly > H) return;
-    const revealT = Math.min(1, Math.max(0, (t * lines.length * 1.5) - i));
-    ctx.globalAlpha = easeOut(revealT);
-    // Highlight current line
-    if (Math.floor(t * lines.length * 1.2) === i) {
-      ctx.fillStyle = "rgba(59,130,246,0.12)";
-      ctx.fillRect(W*0.04, ly - lineH*0.2, W*0.92, lineH);
-    }
-    // Line number
-    ctx.fillStyle = "#484f58"; ctx.font=`400 ${H*0.028}px "Courier New",monospace`; ctx.textAlign="right"; ctx.textBaseline="top";
-    ctx.fillText(i+1, W*0.12, ly);
-    // Code with basic syntax coloring
-    let cx2 = W*0.13, lineText = line;
-    const isKeyword = /^(import|const|await|return|console)/.test(line.trim());
-    const col = i===0||i===1 ? colors.keyword : i===2||i===8 ? colors.func : i===5||i===6 ? colors.num : colors.plain;
-    ctx.fillStyle = col; ctx.textAlign="left";
-    ctx.fillText(lineText, cx2, ly);
+  ctx.fillStyle = "#161b22";
+  ctx.beginPath(); ctx.roundRect(W*0.035, H*0.07, W*0.93, 38, [12,12,0,0]); ctx.fill();
+  ["#ff5f57","#febc2e","#28c840"].forEach((c,i)=>{
+    ctx.fillStyle=c; ctx.beginPath(); ctx.arc(W*0.055+i*20, H*0.07+19, 5,0,Math.PI*2); ctx.fill();
   });
-  // Cursor blink
-  const cursorLine = Math.min(lines.length-1, Math.floor(t * lines.length * 1.2));
-  const cursorY = startY + cursorLine * lineH;
-  if (cursorY > H*0.1 && cursorY < H && Math.sin(t * Math.PI * 8) > 0) {
-    ctx.globalAlpha = 0.8;
-    ctx.fillStyle = "#3b82f6";
-    ctx.fillRect(W*0.13 + ctx.measureText(lines[cursorLine]||"").width, cursorY, 2, lineH * 0.85);
-  }
+  ctx.font=`400 ${H*0.021}px ${_FM}`;
+  ctx.fillStyle="#7d8590"; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText(topicName+".js", W/2, H*0.07+19);
+
+  // Gutter separator
+  ctx.strokeStyle="#21262d"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(W*0.11, H*0.07+38); ctx.lineTo(W*0.11, H*0.87); ctx.stroke();
   ctx.restore();
-  drawOverlay(ctx, scene.overlay, W, H, t, pal, 0.94, 0.045);
+
+  // Code lines
+  const lineH = H*0.100;
+  const startY = H*0.07 + 50 + (t * H * 0.22);
+  const revealBase = t * lines.length * 2;
+
+  ctx.save();
+  ctx.rect(W*0.035, H*0.07+38, W*0.93, H*0.80-38); ctx.clip();
+  lines.forEach((code, i) => {
+    const ly = startY + i*lineH;
+    if (ly < H*0.07+38 || ly > H*0.87+lineH) return;
+    const lineReveal = easeOut(Math.min(1, Math.max(0, revealBase - i)));
+    // Active line highlight
+    const activeLine = Math.floor(t * lines.length * 1.5) % lines.length;
+    if (i === activeLine) {
+      ctx.globalAlpha = 0.18 * lineReveal;
+      ctx.fillStyle = pal.accent;
+      ctx.fillRect(W*0.035, ly-lineH*0.38, W*0.93, lineH*0.88);
+    }
+    ctx.globalAlpha = lineReveal * 0.92;
+    // Line number
+    ctx.font=`400 ${H*0.026}px ${_FM}`; ctx.fillStyle=COLORS.dim; ctx.textAlign="right"; ctx.textBaseline="middle";
+    ctx.fillText(i+1, W*0.105, ly);
+    // Code text with colour
+    ctx.font=`400 ${H*0.026}px ${_FM}`; ctx.textAlign="left"; ctx.textBaseline="middle";
+    const isKw = /^(import|const|await|return|console|async)/.test(code.trim());
+    const isFn = /\.(get|post|fetch|query|init|process|save|log|create|add|build|sign)\(/.test(code);
+    ctx.fillStyle = isKw ? COLORS.kw : isFn ? COLORS.fn : code.trim().startsWith("//") ? COLORS.dim : COLORS.plain;
+    ctx.fillText(code, W*0.12, ly);
+    // Cursor blink on active line
+    if (i === activeLine && Math.sin(t*Math.PI*10) > 0) {
+      ctx.globalAlpha = lineReveal * 0.9;
+      ctx.fillStyle = pal.accent;
+      const cw = ctx.measureText(code).width;
+      ctx.fillRect(W*0.12 + cw + 2, ly - lineH*0.36, 2, lineH*0.72);
+    }
+  });
+  ctx.restore();
+
+  postProcess(ctx, W, H, t);
+  drawOverlay(ctx, scene.overlay, W, H, t, pal, 0.96, 0.050);
 }
 
 function renderSceneNetwork(ctx, W, H, t, pal, scene) {
-  ctx.fillStyle = "#070b14"; ctx.fillRect(0,0,W,H);
-  // Generic network nodes — labels derived from scene overlay words or defaults
-  const overlayWords = (scene.overlay||"").toUpperCase().split(/\s+/).filter(w=>w.length>2&&w.length<=6);
-  const defaultLabels = ["CORE","USER","DATA","API","WEB","APP","CDN","AUTH"];
-  const nodeLabels = defaultLabels.map((d,i) => overlayWords[i] || d);
+  const bg = ctx.createRadialGradient(W*0.5,H*0.45,0,W*0.5,H*0.45,H*0.9);
+  bg.addColorStop(0,"#0c1220"); bg.addColorStop(1,"#040710");
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  const overlayWords = (scene.overlay||"").toUpperCase().split(/\s+/).filter(w=>w.length>2&&w.length<=7);
+  const DEF = ["HUB","USER","DATA","API","WEB","APP","CDN","AUTH"];
+  const labels = DEF.map((d,i) => overlayWords[i]||d);
   const nodes = [
-    {x:W*0.5,  y:H*0.42, r:22, label:nodeLabels[0], color:"#3b82f6"},
-    {x:W*0.25, y:H*0.25, r:14, label:nodeLabels[1], color:"#22c55e"},
-    {x:W*0.75, y:H*0.25, r:14, label:nodeLabels[2], color:"#a855f7"},
-    {x:W*0.15, y:H*0.58, r:12, label:nodeLabels[3], color:"#f59e0b"},
-    {x:W*0.82, y:H*0.55, r:12, label:nodeLabels[4], color:"#06b6d4"},
-    {x:W*0.38, y:H*0.68, r:10, label:nodeLabels[5], color:"#ef4444"},
-    {x:W*0.65, y:H*0.7,  r:10, label:nodeLabels[6], color:"#8b5cf6"},
-    {x:W*0.5,  y:H*0.18, r:10, label:nodeLabels[7], color:"#10b981"},
+    {x:W*0.50, y:H*0.42, r:26, label:labels[0], color:pal.accent, main:true},
+    {x:W*0.24, y:H*0.24, r:16, label:labels[1], color:"#22c55e"},
+    {x:W*0.76, y:H*0.24, r:16, label:labels[2], color:"#a855f7"},
+    {x:W*0.14, y:H*0.60, r:13, label:labels[3], color:"#f59e0b"},
+    {x:W*0.84, y:H*0.57, r:13, label:labels[4], color:"#06b6d4"},
+    {x:W*0.36, y:H*0.70, r:11, label:labels[5], color:"#ef4444"},
+    {x:W*0.66, y:H*0.72, r:11, label:labels[6], color:"#8b5cf6"},
+    {x:W*0.50, y:H*0.16, r:11, label:labels[7], color:"#10b981"},
   ];
-  const edges = [[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[1,2],[2,4],[3,5]];
-  const reveal = easeOut(Math.min(1, t * 1.5));
-  // Draw edges
+  const edges=[[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[1,2],[2,4],[3,5]];
+
+  // Edges with animated packets
   ctx.save();
-  edges.forEach(([a,b]) => {
-    const na=nodes[a], nb=nodes[b];
-    const edgeReveal = easeOut(Math.min(1, Math.max(0, t*4 - a*0.3)));
-    ctx.globalAlpha = 0.25 * edgeReveal;
-    ctx.strokeStyle = pal.accent; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(na.x, na.y); ctx.lineTo(nb.x, nb.y); ctx.stroke();
-    // Animated data packet travelling along edge
-    const pkt = (t * 2 + a * 0.3) % 1;
-    const px = na.x + (nb.x-na.x)*pkt, py = na.y + (nb.y-na.y)*pkt;
-    ctx.globalAlpha = 0.8 * edgeReveal;
-    ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI*2); ctx.fill();
+  edges.forEach(([a,b],ei)=>{
+    const na=nodes[a],nb=nodes[b];
+    const er=easeOut(Math.min(1,Math.max(0,t*4-ei*0.2)));
+    // Edge line
+    ctx.globalAlpha=0.20*er;
+    ctx.strokeStyle=na.color; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(na.x,na.y); ctx.lineTo(nb.x,nb.y); ctx.stroke();
+    // Packet
+    const pf=(t*1.8+ei*0.37)%1;
+    const px3=na.x+(nb.x-na.x)*pf, py3=na.y+(nb.y-na.y)*pf;
+    ctx.globalAlpha=0.9*er;
+    ctx.fillStyle="#ffffff";
+    ctx.shadowColor=na.color; ctx.shadowBlur=8;
+    ctx.beginPath(); ctx.arc(px3,py3,3,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
   });
   ctx.restore();
-  // Draw nodes
-  nodes.forEach((n, i) => {
-    const nodeReveal = easeOut(Math.min(1, Math.max(0, t*3 - i*0.2)));
-    ctx.save(); ctx.globalAlpha = nodeReveal;
-    // Pulse ring
-    const pulse = 0.4 + 0.3 * Math.sin(t * Math.PI * 4 + i);
-    ctx.strokeStyle = n.color; ctx.lineWidth = 1.5;
-    ctx.globalAlpha = nodeReveal * pulse;
-    ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 10 + pulse*5, 0, Math.PI*2); ctx.stroke();
-    ctx.globalAlpha = nodeReveal;
-    // Node circle
-    const ng = ctx.createRadialGradient(n.x-n.r*0.3, n.y-n.r*0.3, 2, n.x, n.y, n.r);
-    ng.addColorStop(0, n.color+"cc"); ng.addColorStop(1, n.color+"44");
-    ctx.fillStyle = ng; ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI*2); ctx.fill();
-    ctx.strokeStyle = n.color+"aa"; ctx.lineWidth=1.5; ctx.stroke();
+
+  // Nodes
+  nodes.forEach((n,i)=>{
+    const nr=easeOut(Math.min(1,Math.max(0,t*3.5-i*0.22)));
+    const pulse=0.35+0.3*Math.sin(t*Math.PI*5+i*1.3);
+    ctx.save(); ctx.globalAlpha=nr;
+    // Glow ring
+    ctx.globalAlpha=nr*pulse*0.55;
+    ctx.strokeStyle=n.color; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(n.x,n.y,n.r+12+pulse*6,0,Math.PI*2); ctx.stroke();
+    ctx.globalAlpha=nr;
+    // Node fill
+    const ng2=ctx.createRadialGradient(n.x-n.r*0.3,n.y-n.r*0.3,2,n.x,n.y,n.r);
+    ng2.addColorStop(0,n.color+"ee"); ng2.addColorStop(1,n.color+"33");
+    ctx.fillStyle=ng2;
+    ctx.shadowColor=n.color; ctx.shadowBlur=n.main?22:12;
+    ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.strokeStyle=n.color+"cc"; ctx.lineWidth=1.5; ctx.stroke();
     // Label
-    ctx.fillStyle = "#ffffff"; ctx.font=`700 ${Math.max(10, n.r*0.75)}px Arial,sans-serif`;
-    ctx.textAlign="center"; ctx.textBaseline="middle";
-    ctx.fillText(n.label, n.x, n.y);
+    ctx.font=`700 ${Math.max(9,n.r*0.68)}px ${_FD}`;
+    ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(n.label,n.x,n.y);
     ctx.restore();
   });
-  drawOverlay(ctx, scene.overlay, W, H, t, pal, 0.88);
+
+  postProcess(ctx, W, H, t);
+  drawOverlay(ctx, scene.overlay, W, H, t, pal, 0.86);
 }
 
 function renderSceneTransaction(ctx, W, H, t, pal, scene) {
-  ctx.fillStyle = "#080d14"; ctx.fillRect(0,0,W,H);
-  // Pick activity labels based on detected topic category
-  const cat = window._msTopicCategory || "general";
-  const activitySets = {
-    social:    [{label:"New follower",   amt:"+1.2K",  color:"#22c55e", time:"2s ago"}, {label:"Post shared",     amt:"×847",   color:"#3b82f6", time:"18s ago"}, {label:"Reel viewed",    amt:"+50K",   color:"#a855f7", time:"1m ago"}, {label:"Profile visit",  amt:"+3.1K",  color:"#f59e0b", time:"3m ago"}],
-    fintech:   [{label:"Transfer sent",  amt:"+N50K",  color:"#22c55e", time:"2s ago"}, {label:"Bill paid",       amt:"-N2,400",color:"#3b82f6", time:"18s ago"}, {label:"Savings earned", amt:"+N800",  color:"#a855f7", time:"1m ago"}, {label:"Cashback",       amt:"+N200",  color:"#f59e0b", time:"3m ago"}],
-    crypto:    [{label:"Swap executed",  amt:"+0.42",  color:"#22c55e", time:"2s ago"}, {label:"LP deposited",    amt:"$1,200", color:"#3b82f6", time:"18s ago"}, {label:"Yield earned",   amt:"+12.4%", color:"#a855f7", time:"1m ago"}, {label:"Withdrawal",     amt:"-0.1",   color:"#f59e0b", time:"3m ago"}],
-    ecommerce: [{label:"Order placed",   amt:"+N8,500",color:"#22c55e", time:"2s ago"}, {label:"Item shipped",    amt:"×12",    color:"#3b82f6", time:"18s ago"}, {label:"Review added",   amt:"5 stars",color:"#a855f7", time:"1m ago"}, {label:"Return request", amt:"-N500",  color:"#f59e0b", time:"3m ago"}],
-    health:    [{label:"Workout logged",  amt:"+320cal",color:"#22c55e", time:"2s ago"}, {label:"Steps tracked",  amt:"8,432",  color:"#3b82f6", time:"18s ago"}, {label:"Goal reached",   amt:"100%",   color:"#a855f7", time:"1m ago"}, {label:"Water intake",   amt:"+2L",    color:"#f59e0b", time:"3m ago"}],
-    tech:      [{label:"API call",        amt:"+2.1ms", color:"#22c55e", time:"2s ago"}, {label:"Deploy success", amt:"v2.4.1", color:"#3b82f6", time:"18s ago"}, {label:"User signed up", amt:"+1",     color:"#a855f7", time:"1m ago"}, {label:"DB query",       amt:"0.3ms",  color:"#f59e0b", time:"3m ago"}],
-    food:      [{label:"Order received",  amt:"+N3,200",color:"#22c55e", time:"2s ago"}, {label:"Delivery sent",  amt:"×5",     color:"#3b82f6", time:"18s ago"}, {label:"Review posted",  amt:"4.8/5",  color:"#a855f7", time:"1m ago"}, {label:"Promo redeemed", amt:"-N500",  color:"#f59e0b", time:"3m ago"}],
-    general:   [{label:"New signup",      amt:"+1",     color:"#22c55e", time:"2s ago"}, {label:"Task completed", amt:"×3",     color:"#3b82f6", time:"18s ago"}, {label:"Credit earned",  amt:"+500",   color:"#a855f7", time:"1m ago"}, {label:"Withdrawal",     amt:"-200",   color:"#f59e0b", time:"3m ago"}],
-  };
-  const txns = activitySets[cat] || activitySets.general;
+  const bg = ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,"#07101e"); bg.addColorStop(1,"#030810");
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
 
-  // Generic activity card
-  const cardW = W*0.7, cardH = H*0.22;
-  const cardX = (W-cardW)/2, cardY = H*0.06;
-  const cardReveal = easeOut(Math.min(1, t*2));
-  ctx.save(); ctx.globalAlpha = cardReveal;
-  const wg = ctx.createLinearGradient(cardX,cardY,cardX+cardW,cardY+cardH);
-  wg.addColorStop(0,"#1f2937"); wg.addColorStop(1,"#111827");
-  ctx.fillStyle=wg; ctx.strokeStyle="rgba(59,130,246,0.5)"; ctx.lineWidth=1.5;
-  ctx.beginPath(); ctx.roundRect(cardX,cardY,cardW,cardH,14); ctx.fill(); ctx.stroke();
-  ctx.fillStyle="#6b7280"; ctx.font=`400 ${H*0.02}px "Courier New",monospace`; ctx.textAlign="left"; ctx.textBaseline="top";
-  ctx.fillText("LIVE ACTIVITY", cardX+20, cardY+14);
-  const targetVal = 2487;
-  const dispVal = Math.round(targetVal * easeOut(Math.min(1, t*2.5)));
-  ctx.fillStyle="#ffffff"; ctx.font=`700 ${H*0.07}px Arial,sans-serif`; ctx.textBaseline="top";
-  ctx.fillText(`${dispVal.toLocaleString()} users`, cardX+20, cardY+38);
-  ctx.fillStyle="#22c55e"; ctx.font=`400 ${H*0.022}px Arial,sans-serif`; ctx.textBaseline="top";
-  ctx.fillText("↑ +12.4% today", cardX+20, cardY+cardH-28);
+  const cat = window._msTopicCategory || "general";
+  const actSets = {
+    social:    [{label:"New Follower",   amt:"+1.2K",  color:"#22c55e",time:"2s ago"},{label:"Post Viral",     amt:"×847",   color:"#3b82f6",time:"18s ago"},{label:"Reel Viewed",    amt:"+50K",   color:"#a855f7",time:"1m ago"},{label:"Profile Visit",  amt:"+3.1K",  color:"#f59e0b",time:"3m ago"}],
+    fintech:   [{label:"Transfer Sent",  amt:"+₦50K",  color:"#22c55e",time:"2s ago"},{label:"Bill Paid",      amt:"-₦2,400",color:"#3b82f6",time:"18s ago"},{label:"Savings Earned", amt:"+₦800",  color:"#a855f7",time:"1m ago"},{label:"Cashback",       amt:"+₦200",  color:"#f59e0b",time:"3m ago"}],
+    crypto:    [{label:"Swap Executed",  amt:"+0.42",  color:"#22c55e",time:"2s ago"},{label:"LP Deposited",   amt:"$1,200", color:"#3b82f6",time:"18s ago"},{label:"Yield Earned",   amt:"+12.4%", color:"#a855f7",time:"1m ago"},{label:"Withdrawal",     amt:"-0.1",   color:"#f59e0b",time:"3m ago"}],
+    ecommerce: [{label:"Order Placed",   amt:"+₦8,500",color:"#22c55e",time:"2s ago"},{label:"Item Shipped",   amt:"×12",    color:"#3b82f6",time:"18s ago"},{label:"Review Added",   amt:"5 ★",    color:"#a855f7",time:"1m ago"},{label:"Return Request", amt:"-₦500",  color:"#f59e0b",time:"3m ago"}],
+    general:   [{label:"New Signup",     amt:"+1",     color:"#22c55e",time:"2s ago"},{label:"Task Done",      amt:"×3",     color:"#3b82f6",time:"18s ago"},{label:"Credit Earned",  amt:"+500",   color:"#a855f7",time:"1m ago"},{label:"Withdrawal",     amt:"-200",   color:"#f59e0b",time:"3m ago"}],
+  };
+  const txns = actSets[cat] || actSets.general;
+
+  // Header metrics card
+  const cW2=W*0.92, cH2=H*0.20, cX2=(W-cW2)/2, cY2=H*0.08;
+  const cRev=easeOut(Math.min(1,t*2.2));
+  ctx.save(); ctx.globalAlpha=cRev;
+  ctx.shadowColor="rgba(0,0,0,0.7)"; ctx.shadowBlur=24;
+  ctx.fillStyle="#0f1829";
+  ctx.beginPath(); ctx.roundRect(cX2,cY2,cW2,cH2,10); ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.strokeStyle=`${pal.accent}55`; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.roundRect(cX2,cY2,cW2,cH2,10); ctx.stroke();
+  // Left accent
+  ctx.fillStyle=pal.accent; ctx.fillRect(cX2,cY2,4,cH2);
+  // Label
+  ctx.font=`700 ${H*0.020}px ${_FM}`; ctx.fillStyle=pal.accent;
+  ctx.textAlign="left"; ctx.textBaseline="top";
+  ctx.fillText("LIVE ACTIVITY", cX2+18, cY2+14);
+  // Counter
+  const dispV=Math.round(2487*easeOut(Math.min(1,t*2.8)));
+  ctx.font=`700 ${H*0.075}px ${_FD}`; ctx.fillStyle="#ffffff";
+  ctx.textBaseline="middle";
+  ctx.fillText(dispV.toLocaleString()+" USERS", cX2+18, cY2+cH2*0.62);
+  // Trend
+  ctx.font=`700 ${H*0.024}px ${_FM}`; ctx.fillStyle="#22c55e";
+  ctx.textBaseline="bottom";
+  ctx.fillText("↑ +12.4% TODAY", cX2+18, cY2+cH2-10);
   ctx.restore();
-  const tlY = cardY + cardH + 24;
-  txns.forEach((tx, i) => {
-    const txReveal = easeOut(Math.min(1, Math.max(0, t*3.5 - i*0.3)));
-    const rowY = tlY + i * (H*0.115);
-    const rowX = W*0.15;
-    ctx.save(); ctx.globalAlpha = txReveal;
-    // Slide in from left
-    const slideX = rowX - (1-txReveal)*60;
-    ctx.fillStyle="#111827"; ctx.strokeStyle="rgba(75,85,99,0.4)"; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.roundRect(slideX, rowY, W*0.7, H*0.1, 8); ctx.fill(); ctx.stroke();
-    // Color indicator
-    ctx.fillStyle=tx.color; ctx.beginPath(); ctx.roundRect(slideX+0, rowY, 4, H*0.1, [8,0,0,8]); ctx.fill();
+
+  // Transaction rows
+  const tlY=cY2+cH2+14;
+  txns.forEach((tx,i)=>{
+    const rRev=easeOut(Math.min(1,Math.max(0,t*3.8-0.6-i*0.28)));
+    const rH2=H*0.10, rY=tlY+i*(rH2+8), rX=W*0.04;
+    ctx.save(); ctx.globalAlpha=rRev;
+    const slX=rX-(1-rRev)*60;
+    ctx.shadowColor="rgba(0,0,0,0.5)"; ctx.shadowBlur=10;
+    ctx.fillStyle="#0d1826";
+    ctx.beginPath(); ctx.roundRect(slX,rY,W*0.92,rH2,8); ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.strokeStyle=tx.color+"44"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.roundRect(slX,rY,W*0.92,rH2,8); ctx.stroke();
+    // Left color bar
+    ctx.fillStyle=tx.color; ctx.fillRect(slX,rY,4,rH2);
+    // Icon dot
+    ctx.shadowColor=tx.color; ctx.shadowBlur=10;
+    ctx.fillStyle=tx.color; ctx.beginPath(); ctx.arc(slX+22,rY+rH2/2,5,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
     // Label
-    ctx.fillStyle="#e5e7eb"; ctx.font=`600 ${H*0.03}px Arial,sans-serif`; ctx.textAlign="left"; ctx.textBaseline="middle";
-    ctx.fillText(tx.label, slideX+18, rowY + H*0.05);
+    ctx.font=`700 ${H*0.029}px ${_FB}`; ctx.fillStyle="#e5e7eb";
+    ctx.textAlign="left"; ctx.textBaseline="middle";
+    ctx.fillText(tx.label, slX+36, rY+rH2*0.42);
+    ctx.font=`400 ${H*0.020}px ${_FM}`; ctx.fillStyle="rgba(255,255,255,0.35)";
+    ctx.fillText(tx.time, slX+36, rY+rH2*0.74);
     // Amount
-    ctx.fillStyle=tx.color; ctx.font=`700 ${H*0.032}px Arial,sans-serif`; ctx.textAlign="right";
-    ctx.fillText(tx.amt, slideX + W*0.7 - 12, rowY + H*0.05);
-    // Time
-    ctx.fillStyle="#6b7280"; ctx.font=`400 ${H*0.02}px "Courier New",monospace`; ctx.textAlign="left"; ctx.textBaseline="bottom";
-    ctx.fillText(tx.time, slideX+18, rowY + H*0.1 - 8);
+    ctx.font=`700 ${H*0.034}px ${_FD}`; ctx.fillStyle=tx.color;
+    ctx.textAlign="right";
+    ctx.fillText(tx.amt, slX+W*0.92-18, rY+rH2/2);
     ctx.restore();
   });
-  drawOverlay(ctx, scene.overlay, W, H, t, pal, 0.95, 0.04);
+
+  postProcess(ctx, W, H, t);
 }
 
 function renderSceneLogo(ctx, W, H, t, pal, scene) {
-  ctx.fillStyle = "#050810"; ctx.fillRect(0,0,W,H);
-  const cx = W/2, cy = H*0.44;
-  // Particle field converging to center
-  for (let p = 0; p < 120; p++) {
-    const angle = (p / 120) * Math.PI * 2 + p * 2.4;
-    const maxR = 350;
-    const progress = easeOut(Math.min(1, t * 2));
-    const r = maxR * (1 - progress) + (p % 5) * 3;
-    const px2 = cx + Math.cos(angle) * r;
-    const py2 = cy + Math.sin(angle) * r * 0.6;
-    const alpha = progress * (0.3 + 0.7 * (1 - r/maxR));
-    ctx.save(); ctx.globalAlpha = alpha;
-    ctx.fillStyle = p % 3 === 0 ? pal.accent : p % 3 === 1 ? "#6366f1" : "#22c55e";
-    ctx.beginPath(); ctx.arc(px2, py2, 1.5 + (p%3), 0, Math.PI*2); ctx.fill();
-    ctx.restore();
+  // Cinematic black with subtle radial
+  const bg = ctx.createRadialGradient(W*0.5,H*0.45,0,W*0.5,H*0.45,H);
+  bg.addColorStop(0,`${pal.accent}15`); bg.addColorStop(0.6,"#070b12"); bg.addColorStop(1,"#020407");
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  // Particle burst converging
+  const progress=easeOut(Math.min(1,t*2.2));
+  for (let p=0;p<140;p++) {
+    const angle=(p/140)*Math.PI*2+p*2.39996;
+    const maxR=H*0.58;
+    const r=maxR*(1-progress)+(p%5)*4;
+    const px4=W/2+Math.cos(angle)*r, py4=H*0.45+Math.sin(angle)*r*0.55;
+    const alpha=progress*(0.25+0.65*(1-r/maxR));
+    ctx.save(); ctx.globalAlpha=Math.max(0,alpha);
+    ctx.fillStyle=p%4===0?pal.accent:p%4===1?"#6366f1":p%4===2?"#22c55e":"#ffffff";
+    const sr2=p%3===0?2.5:1.5;
+    ctx.shadowColor=ctx.fillStyle; ctx.shadowBlur=sr2*4;
+    ctx.beginPath(); ctx.arc(px4,py4,sr2,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0; ctx.restore();
   }
 
-  // Logo / Brand reveal
-  const textReveal = easeOut(Math.max(0, (t - 0.3) / 0.5));
-  if (textReveal > 0) {
-    ctx.save();
-    ctx.globalAlpha = textReveal;
-
+  // Reveal
+  const textReveal=easeOut(Math.max(0,(t-0.28)/0.55));
+  if (textReveal>0) {
+    const cx5=W/2, cy5=H*0.44;
+    ctx.save(); ctx.globalAlpha=textReveal;
     if (_msLogoImage) {
-      // Draw uploaded logo image centered
-      const maxLogoW = W * 0.5;
-      const maxLogoH = H * 0.32;
-      const imgAspect = _msLogoImage.width / _msLogoImage.height;
-      let dw = maxLogoW, dh = maxLogoW / imgAspect;
-      if (dh > maxLogoH) { dh = maxLogoH; dw = dh * imgAspect; }
-      // Glow behind logo
-      ctx.shadowColor = pal.accent;
-      ctx.shadowBlur = 60 * textReveal;
-      ctx.drawImage(_msLogoImage, cx - dw/2, cy - dh/2, dw, dh);
-      ctx.shadowBlur = 0;
-
-      // Underline accent
-      ctx.fillStyle = pal.accent;
-      ctx.fillRect(cx - dw/2 * textReveal, cy + dh * 0.55, dw * textReveal, 3);
+      const mLW=W*0.52,mLH=H*0.30,ia=_msLogoImage.width/_msLogoImage.height;
+      let dw=mLW, dh=mLW/ia;
+      if (dh>mLH){dh=mLH;dw=dh*ia;}
+      ctx.shadowColor=pal.accent; ctx.shadowBlur=55*textReveal;
+      ctx.drawImage(_msLogoImage,cx5-dw/2,cy5-dh/2,dw,dh);
+      ctx.shadowBlur=0;
+      ctx.fillStyle=pal.accent;
+      ctx.fillRect(cx5-dw/2*textReveal,cy5+dh*0.54,dw*textReveal,4);
     } else {
-      // Fallback: text logo from overlay or topic
-      const overlay = (scene.overlay || document.getElementById("ms-topic")?.value || "BRAND").trim();
-      let logoFs = H * 0.14;
-      const logoMaxW = W * 0.8;
-      ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      while (logoFs > H * 0.06) {
-        ctx.font = `700 ${logoFs}px Arial, sans-serif`;
-        if (ctx.measureText(overlay.toUpperCase()).width <= logoMaxW) break;
-        logoFs -= 3;
+      const ov=(scene.overlay||document.getElementById("ms-topic")?.value||"BRAND").trim().toUpperCase();
+      let fs=H*0.15, mW=W*0.82;
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      while(fs>H*0.062){ctx.font=`700 ${fs}px ${_FD}`;if(ctx.measureText(ov).width<=mW)break;fs-=3;}
+      ctx.font=`700 ${fs}px ${_FD}`;
+      ctx.shadowColor=pal.accent; ctx.shadowBlur=46*textReveal;
+      ctx.fillStyle="#ffffff";
+      ctx.fillText(ov,cx5,cy5+(1-textReveal)*22);
+      ctx.shadowBlur=0;
+      const tw=Math.min(ctx.measureText(ov).width,mW);
+      ctx.fillStyle=pal.accent;
+      ctx.fillRect(cx5-tw/2*textReveal,cy5+fs*0.68,tw*textReveal,4);
+      // Tagline
+      if(t>0.6){
+        const tlRev=easeOut((t-0.6)/0.35);
+        ctx.globalAlpha=textReveal*tlRev*0.72;
+        ctx.font=`400 ${H*0.024}px ${_FM}`;
+        ctx.fillStyle=pal.sub;
+        ctx.fillText("THREADCRAFT.AI",cx5,cy5+fs*0.82+H*0.06);
       }
-      ctx.font = `700 ${logoFs}px Arial, sans-serif`;
-      ctx.shadowColor = pal.accent; ctx.shadowBlur = 40 * textReveal;
-      ctx.fillStyle = "#ffffff";
-      ctx.fillText(overlay.toUpperCase(), cx, cy);
-      ctx.shadowBlur = 0;
-      // Underline accent
-      const textW = Math.min(ctx.measureText(overlay.toUpperCase()).width, logoMaxW);
-      ctx.fillStyle = pal.accent;
-      ctx.fillRect(cx - textW/2 * textReveal, cy + logoFs * 0.7, textW * textReveal, 3);
     }
+    ctx.restore();
+  }
 
-    ctx.restore();
-  }
   // Lens flare
-  const flareT = Math.max(0, t - 0.5);
-  if (flareT > 0) {
+  if (t>0.52) {
+    const fl=Math.max(0,t-0.52);
     ctx.save();
-    const fg = ctx.createRadialGradient(cx + W*0.15, cy - H*0.1, 0, cx + W*0.15, cy - H*0.1, 120);
-    fg.addColorStop(0, `rgba(255,255,255,${0.6 * easeOut(flareT * 2) * Math.max(0, 1-flareT*3)})`);
-    fg.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = fg; ctx.fillRect(0,0,W,H);
+    const fg=ctx.createRadialGradient(W*0.66,H*0.26,0,W*0.66,H*0.26,H*0.3);
+    fg.addColorStop(0,`rgba(255,255,255,${0.55*easeOut(fl*2)*Math.max(0,1-fl*2.5)})`);
+    fg.addColorStop(1,"rgba(255,255,255,0)");
+    ctx.fillStyle=fg; ctx.fillRect(0,0,W,H);
     ctx.restore();
   }
-  // Voiceover subtitle
-  if (scene.voiceover && t > 0.5) {
-    ctx.save(); ctx.globalAlpha = easeOut((t-0.5)*4);
-    ctx.fillStyle = "#9ca3af"; ctx.font=`400 italic ${H*0.032}px Arial,sans-serif`;
-    ctx.textAlign="center"; ctx.textBaseline="middle";
-    ctx.fillText(`"${scene.voiceover}"`, cx, H*0.72);
+
+  postProcess(ctx, W, H, t);
+  if (scene.voiceover&&t>0.5) {
+    ctx.save(); ctx.globalAlpha=easeOut((t-0.5)*4)*0.72;
+    ctx.font=`400 italic ${H*0.026}px ${_FB}`;
+    ctx.fillStyle="#9ca3af"; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(`"${scene.voiceover}"`,W/2,H*0.74);
     ctx.restore();
   }
 }
 
 function renderSceneTitle(ctx, W, H, t, pal, scene) {
-  ctx.fillStyle = "#080d14"; ctx.fillRect(0,0,W,H);
-  const lineReveal = easeOut(Math.min(1, t * 3));
+  // Dynamic bg: left dark / right with gradient accent band
+  const bg = ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,"#06090f"); bg.addColorStop(0.65,"#080d17"); bg.addColorStop(1,`${pal.accent}18`);
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  // Vertical accent bar — left rail
+  const barReveal=easeOut(Math.min(1,t*3.5));
   ctx.save();
-  ctx.fillStyle = pal.accent;
-  ctx.fillRect(W*0.08, H*0.06, W*0.84 * lineReveal, 2);
+  ctx.fillStyle=pal.accent;
+  ctx.fillRect(W*0.055, H*0.16, 5, H*0.68*barReveal);
   ctx.restore();
 
-  // Overlay text — properly word-wrapped, auto-sized, centered
-  const overlay = scene.overlay || "";
-  if (overlay) {
-    const reveal = easeOut(Math.min(1, t * 2.5));
-    const maxW = W * 0.84;
-    const maxLines = 3;
-    let fs = H * 0.11;
-    const minFs = H * 0.05;
-    let lines = [];
-    while (fs >= minFs) {
-      ctx.font = `700 ${fs}px Arial, sans-serif`;
-      lines = []; let line = "";
-      for (const w of overlay.split(" ")) {
-        const test = line ? line + " " + w : w;
-        if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
-        else line = test;
-      }
-      if (line) lines.push(line);
-      if (lines.length <= maxLines) break;
-      fs -= 2;
-    }
-    if (lines.length > maxLines) lines = lines.slice(0, maxLines);
-    const lh = fs * 1.3;
-    const totalH = lines.length * lh;
-    const startY = H * 0.5 - totalH / 2 + lh / 2;
+  // Horizontal line — top
+  ctx.save(); ctx.globalAlpha=barReveal*0.5;
+  ctx.fillStyle=pal.accent; ctx.fillRect(W*0.055, H*0.165, W*0.88*barReveal, 1.5);
+  ctx.restore();
+
+  // Scene number (large, semi-transparent behind text)
+  const sceneNum=(scene.scene||"").toString();
+  if(sceneNum){
     ctx.save();
-    ctx.globalAlpha = reveal;
-    ctx.font = `700 ${fs}px Arial, sans-serif`;
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.shadowColor = pal.accent; ctx.shadowBlur = 24;
-    lines.forEach((ln, i) => {
-      ctx.fillStyle = i === 0 ? "#ffffff" : pal.accent;
-      ctx.fillText(ln, W / 2, startY + i * lh + (1 - reveal) * 20);
-    });
-    ctx.shadowBlur = 0;
+    ctx.globalAlpha=0.06*barReveal;
+    ctx.font=`700 ${H*0.65}px ${_FD}`;
+    ctx.fillStyle="#ffffff"; ctx.textAlign="right"; ctx.textBaseline="middle";
+    ctx.fillText(sceneNum, W*0.96, H*0.5);
     ctx.restore();
   }
 
-  // Bottom accent line
-  ctx.save();
-  ctx.fillStyle = pal.accent;
-  ctx.fillRect(W*0.08, H*0.94, W*0.5 * lineReveal, 2);
+  // Main headline
+  const overlay=scene.overlay||"";
+  if(overlay) {
+    drawSceneTitle(ctx, W, H, overlay, t, pal, H*0.48, 0.82);
+  }
+
+  // Duration badge
+  if(scene.duration){
+    const dRev=easeOut(Math.min(1,Math.max(0,t*3-0.5)));
+    ctx.save(); ctx.globalAlpha=dRev*0.75;
+    ctx.fillStyle="rgba(255,255,255,0.06)";
+    ctx.beginPath(); ctx.roundRect(W*0.065, H*0.74, W*0.18, H*0.052, 4); ctx.fill();
+    ctx.font=`700 ${H*0.020}px ${_FM}`; ctx.fillStyle=pal.accent;
+    ctx.textAlign="left"; ctx.textBaseline="middle";
+    ctx.fillText("⏱  "+scene.duration.toUpperCase(), W*0.075, H*0.765);
+    ctx.restore();
+  }
+
+  // Bottom rail line
+  ctx.save(); ctx.globalAlpha=barReveal*0.4;
+  ctx.fillStyle=pal.accent; ctx.fillRect(W*0.055, H*0.835, W*0.52*barReveal, 1.5);
   ctx.restore();
+
+  postProcess(ctx, W, H, t);
 }
 
 function renderSceneCTA(ctx, W, H, t, pal, scene) {
-  ctx.fillStyle = "#050810"; ctx.fillRect(0,0,W,H);
-  // Radial glow bg
-  const glow = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, H*0.7);
-  glow.addColorStop(0, `rgba(59,130,246,${0.12 * easeOut(t)})`);
-  glow.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = glow; ctx.fillRect(0,0,W,H);
-  // Big overlay text — wrapped and auto-sized
-  const overlay = scene.overlay || "";
-  const reveal = easeOut(Math.min(1, t*2));
-  if (overlay) {
-    const maxW = W * 0.8; const maxLines = 2;
-    let fs = H * 0.13; const minFs = H * 0.055;
-    let ctaLines = [];
-    while (fs >= minFs) {
-      ctx.font = `700 ${fs}px Arial, sans-serif`;
-      ctaLines = []; let line = "";
-      for (const w of overlay.split(" ")) {
-        const test = line ? line + " " + w : w;
-        if (ctx.measureText(test).width > maxW && line) { ctaLines.push(line); line = w; }
-        else line = test;
-      }
-      if (line) ctaLines.push(line);
-      if (ctaLines.length <= maxLines) break;
-      fs -= 2;
-    }
-    if (ctaLines.length > maxLines) ctaLines = ctaLines.slice(0, maxLines);
-    const lh = fs * 1.2;
-    const startY = H * 0.38 - (ctaLines.length * lh) / 2 + lh / 2;
-    ctx.save(); ctx.globalAlpha = reveal;
-    ctx.font = `700 ${fs}px Arial, sans-serif`;
-    ctx.fillStyle = "#ffffff"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.shadowColor = pal.accent; ctx.shadowBlur = 30;
-    ctaLines.forEach((ln, i) => ctx.fillText(ln, W/2, startY + i * lh + (1-reveal)*30));
-    ctx.shadowBlur = 0;
-    ctx.restore();
-  }
-  // CTA button — uses uploaded logo or topic text
-  if (t > 0.4) {
-    const btnReveal = easeOut((t-0.4)*4);
-    ctx.save(); ctx.globalAlpha = btnReveal;
+  // Dark bg with strong accent radial
+  const bg = ctx.createRadialGradient(W*0.5,H*0.42,0,W*0.5,H*0.42,H*0.9);
+  bg.addColorStop(0,`${pal.accent}1e`); bg.addColorStop(0.6,"#06090f"); bg.addColorStop(1,"#030508");
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
 
-    if (_msLogoImage) {
-      // Show logo above the CTA button area
-      const maxLW = W * 0.35, maxLH = H * 0.18;
-      const ia = _msLogoImage.width / _msLogoImage.height;
-      let dw = maxLW, dh = maxLW / ia;
-      if (dh > maxLH) { dh = maxLH; dw = dh * ia; }
-      ctx.shadowColor = pal.accent; ctx.shadowBlur = 30 * btnReveal;
-      ctx.drawImage(_msLogoImage, W/2 - dw/2, H*0.53, dw, dh);
-      ctx.shadowBlur = 0;
+  // Subtle horizontal scan lines
+  ctx.save(); ctx.globalAlpha=0.04;
+  ctx.fillStyle="#ffffff";
+  for(let sl=0;sl<H;sl+=4) ctx.fillRect(0,sl,W,1);
+  ctx.restore();
+
+  // Radiating lines from center (like a broadcast)
+  const broadReveal=easeOut(Math.min(1,t*1.5));
+  ctx.save(); ctx.globalAlpha=0.06*broadReveal;
+  ctx.strokeStyle=pal.accent; ctx.lineWidth=1;
+  for(let r2=0;r2<12;r2++){
+    const ang=(r2/12)*Math.PI*2;
+    ctx.beginPath(); ctx.moveTo(W/2,H*0.42);
+    ctx.lineTo(W/2+Math.cos(ang)*W*0.7, H*0.42+Math.sin(ang)*H*0.7);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Main headline
+  const overlay=scene.overlay||"";
+  const reveal=easeOut(Math.min(1,t*2.2));
+  if(overlay) {
+    let fs=H*0.115; const minFs=H*0.048;
+    ctx.save();
+    let ctaLines=[];
+    while(fs>=minFs){
+      ctx.font=`700 ${fs}px ${_FD}`;
+      ctaLines=wrapText(ctx,overlay.toUpperCase(),W*0.76);
+      if(ctaLines.length<=2)break; fs-=3;
+    }
+    ctaLines=ctaLines.slice(0,2);
+    const lh2=fs*1.18;
+    const sy2=H*0.35-(ctaLines.length*lh2)/2+lh2/2;
+    ctx.globalAlpha=reveal;
+    ctx.font=`700 ${fs}px ${_FD}`; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctaLines.forEach((ln,i)=>{
+      ctx.fillStyle=i===0?"#ffffff":pal.accent;
+      ctx.shadowColor=pal.accent; ctx.shadowBlur=i===0?0:28;
+      ctx.fillText(ln,W/2,sy2+i*lh2+(1-reveal)*32);
+    });
+    ctx.shadowBlur=0; ctx.restore();
+  }
+
+  // CTA button area
+  if(t>0.38){
+    const bRev=easeOut((t-0.38)*3.5);
+    ctx.save(); ctx.globalAlpha=bRev;
+    if(_msLogoImage){
+      const mLW=W*0.38,mLH=H*0.20;
+      const ia=_msLogoImage.width/_msLogoImage.height;
+      let dw=mLW,dh=mLW/ia;
+      if(dh>mLH){dh=mLH;dw=dh*ia;}
+      ctx.shadowColor=pal.accent; ctx.shadowBlur=32*bRev;
+      ctx.drawImage(_msLogoImage,W/2-dw/2,H*0.55,dw,dh);
+      ctx.shadowBlur=0;
     } else {
-      const btnW=280, btnH=60, btnX=(W-btnW)/2, btnY=H*0.56;
-      const bg = ctx.createLinearGradient(btnX,btnY,btnX+btnW,btnY+btnH);
-      bg.addColorStop(0, pal.accent); bg.addColorStop(1, "#1d4ed8");
-      ctx.fillStyle=bg;
-      ctx.beginPath(); ctx.roundRect(btnX,btnY,btnW,btnH,30); ctx.fill();
-      ctx.fillStyle="#ffffff"; ctx.font=`700 ${H*0.04}px Arial,sans-serif`;
+      const btnW=W*0.38, btnH=H*0.092, btnX=(W-btnW)/2, btnY=H*0.56;
+      // Button glow
+      ctx.shadowColor=pal.accent; ctx.shadowBlur=28*bRev;
+      const btnG=ctx.createLinearGradient(btnX,btnY,btnX+btnW,btnY+btnH);
+      btnG.addColorStop(0,pal.accent); btnG.addColorStop(1,"#1d4ed8");
+      ctx.fillStyle=btnG;
+      ctx.beginPath(); ctx.roundRect(btnX,btnY,btnW,btnH,btnH/2); ctx.fill();
+      ctx.shadowBlur=0;
+      ctx.font=`700 ${H*0.040}px ${_FD}`; ctx.fillStyle="#ffffff";
       ctx.textAlign="center"; ctx.textBaseline="middle";
-      const ctaLabel = (document.getElementById("ms-topic")?.value || "Get Started").trim().slice(0, 20);
-      ctx.fillText(ctaLabel + " →", W/2, btnY+btnH/2);
+      const lbl=(document.getElementById("ms-topic")?.value||"Get Started").trim().slice(0,22).toUpperCase();
+      ctx.fillText(lbl+" →",W/2,btnY+btnH/2);
     }
     ctx.restore();
   }
-  // Voiceover — word-wrapped, capped to canvas
-  if (scene.voiceover && t > 0.5) {
-    const voReveal = easeOut((t-0.5)*3);
-    const voText = `"${scene.voiceover}"`;
-    const voMaxW = W * 0.76;
-    const voFs = H * 0.028;
-    ctx.font = `400 italic ${voFs}px Arial,sans-serif`;
-    const voLines = []; let voLine = "";
-    for (const w of voText.split(" ")) {
-      const test = voLine ? voLine + " " + w : w;
-      if (ctx.measureText(test).width > voMaxW && voLine) { voLines.push(voLine); voLine = w; }
-      else voLine = test;
-    }
-    if (voLine) voLines.push(voLine);
-    const voLH = voFs * 1.4;
-    const voStartY = Math.min(H * 0.78, H - voLines.length * voLH - H * 0.04);
-    ctx.save(); ctx.globalAlpha = voReveal;
-    ctx.fillStyle = "#9ca3af"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    voLines.forEach((ln, i) => ctx.fillText(ln, W/2, voStartY + i * voLH));
+
+  // Voiceover subtitle
+  if(scene.voiceover&&t>0.52){
+    const voRev=easeOut((t-0.52)*3.2);
+    ctx.save(); ctx.globalAlpha=voRev*0.70;
+    ctx.font=`400 italic ${H*0.025}px ${_FB}`;
+    const voLines=wrapText(ctx,`"${scene.voiceover}"`,W*0.72);
+    voLines.slice(0,2).forEach((ln,i)=>{
+      ctx.fillStyle="#9ca3af"; ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText(ln,W/2,H*0.77+i*H*0.038);
+    });
     ctx.restore();
   }
+
+  postProcess(ctx, W, H, t);
 }
 
 async function msRenderVideo() {
