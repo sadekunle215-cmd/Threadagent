@@ -18,6 +18,10 @@ module.exports = async function handler(req, res) {
     return handleMotionScript(req, res, { topic, context, tone, length, ANTHROPIC_API_KEY });
   }
 
+  if (mode === "infographic") {
+    return handleInfographic(req, res, { topic, context: req.body, ANTHROPIC_API_KEY });
+  }
+
   if (mode === "single") {
     return handleSinglePost(req, res, { topic, context, tone, format: req.body.format, ANTHROPIC_API_KEY });
   }
@@ -420,6 +424,111 @@ Return ONLY the JSON array.
     }
 
     return res.status(200).json({ scenes });
+
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+// INFOGRAPHIC LAYOUT HANDLER
+// ══════════════════════════════════════════════════════════════════════
+async function handleInfographic(req, res, { topic, context, ANTHROPIC_API_KEY }) {
+  // context here is the full req.body — extract fields
+  const tweet     = context.tweet    || topic;
+  const topicText = context.topic    || topic;
+  const isHook    = context.isHook   || false;
+  const isCTA     = context.isCTA    || false;
+  const tweetNum  = context.tweetNum  || 1;
+  const tweetTotal= context.tweetTotal|| 1;
+
+  const systemPrompt = `You are an infographic layout designer. Given a tweet or topic, return ONLY a valid JSON object — no markdown fences, no explanation, nothing else.
+
+Choose the best layout type for the content:
+- "stat"  → one big standout number/metric + headline (best for data-driven tweets)
+- "list"  → 3–4 bullet points under a headline (best for tips, steps, features)
+- "data"  → chart or number grid (best for comparisons, percentages, multiple stats)
+- "comp"  → two-column before/after or A vs B (best for comparisons)
+- "quote" → pull quote style (best for opinion, insight, provocative statement)
+
+Return this JSON structure (include only fields relevant to the chosen layout):
+{
+  "layout": "stat|list|data|comp|quote",
+  "headline": "compelling headline — max 8 words, direct and punchy",
+  "subtext": "optional one-line supporting caption",
+  "stat": {
+    "value": "the key number or short text",
+    "unit": "unit symbol like %, x, ms, $ (optional)",
+    "label": "what the stat measures",
+    "pct": null
+  },
+  "points": ["point 1", "point 2", "point 3"],
+  "chartData": [
+    {"label": "Label A", "pct": 65, "value": "65%"},
+    {"label": "Label B", "pct": 35, "value": "35%"}
+  ],
+  "chartType": "bar|donut|numbers",
+  "quoteText": "the quote text if layout is quote",
+  "leftCol": {"label": "Before / Without", "points": ["item", "item", "item"]},
+  "rightCol": {"label": "After / With", "points": ["item", "item", "item"]}
+}
+
+Rules:
+1. Headline must directly reflect the tweet content — not generic
+2. For stat layout: extract or infer the most impactful number from the tweet
+3. For list layout: distill the tweet into 3–4 punchy, scannable points
+4. For comp layout: identify the two sides being contrasted in the tweet
+5. For quote layout: use the most quotable sentence from the tweet as quoteText
+6. Points and labels should be SHORT — max 6 words each
+7. chartData pct values must add up to 100 if multiple items`;
+
+  const userPrompt = `Tweet: "${tweet}"
+Topic: ${topicText}
+Position: tweet ${tweetNum} of ${tweetTotal}${isHook ? " (HOOK — first impression tweet)" : ""}${isCTA ? " (CTA — closing tweet)" : ""}
+
+Return only the JSON object for the best infographic layout for this tweet.`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        temperature: 0.7,
+        messages: [{ role: "user", content: `${systemPrompt}\n\n${userPrompt}` }],
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      return res.status(500).json({ error: err.error?.message || "Anthropic API error" });
+    }
+
+    const data = await response.json();
+    const raw  = data.content[0].text.trim();
+
+    let layout;
+    try {
+      const cleaned = raw.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
+      layout = JSON.parse(cleaned);
+    } catch {
+      // Try to extract JSON object from response
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (match) {
+        try { layout = JSON.parse(match[0]); }
+        catch { return res.status(500).json({ error: "Failed to parse infographic layout", raw }); }
+      } else {
+        return res.status(500).json({ error: "Failed to parse infographic layout", raw });
+      }
+    }
+
+    return res.status(200).json(layout);
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
