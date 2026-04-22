@@ -4764,6 +4764,87 @@ function mkDraw(ctx, W, H) {
   ctx.beginPath(); ctx.roundRect(vX, phoneY+phoneH*0.18, bW, bH*0.65, bW/2); ctx.fillStyle=btnCol; ctx.fill();
   ctx.beginPath(); ctx.roundRect(vX, phoneY+phoneH*0.32, bW, bH*0.65, bW/2); ctx.fillStyle=btnCol; ctx.fill();
 
+  // ── Home indicator (pill at bottom of screen) ──
+  const hiW = sW * 0.32, hiH = Math.max(sH * 0.006, 4);
+  const hiX = sX + sW/2 - hiW/2, hiY = sY + sH - hiH - sH * 0.018;
+  ctx.save();
+  ctx.beginPath(); ctx.roundRect(hiX, hiY, hiW, hiH, hiH/2);
+  ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.fill();
+  ctx.restore();
+
+  // ── Status bar (time + signal + battery) ──
+  ctx.save();
+  const sbY = sY + sH * 0.016;
+  const now = new Date();
+  const hh = now.getHours(), mm = String(now.getMinutes()).padStart(2,'0');
+  const timeStr = `${hh > 12 ? hh - 12 : hh || 12}:${mm}`;
+  ctx.font = `600 ${sW*0.055}px -apple-system, "SF Pro Display", sans-serif`;
+  ctx.fillStyle = (mkBgStyleVal==='light') ? '#111' : '#fff';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText(timeStr, sX + sW*0.07, sbY);
+
+  // Signal dots right side
+  const sigX = sX + sW * 0.72, sigY = sbY;
+  ctx.fillStyle = (mkBgStyleVal==='light') ? '#111' : '#fff';
+  [0,1,2].forEach((i) => {
+    ctx.globalAlpha = 0.5 + i * 0.25;
+    ctx.beginPath(); ctx.arc(sigX + i * sW*0.042, sigY, sW*0.018, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+
+  // Battery icon
+  const batX = sX + sW * 0.84, batY = sbY - sH*0.014;
+  const batW = sW * 0.1, batH = sH * 0.028;
+  ctx.strokeStyle = (mkBgStyleVal==='light') ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.6)';
+  ctx.lineWidth = 1; ctx.beginPath();
+  ctx.roundRect(batX, batY, batW, batH, 2); ctx.stroke();
+  ctx.fillStyle = '#4CAF50'; ctx.globalAlpha = 0.9;
+  ctx.beginPath(); ctx.roundRect(batX+1.5, batY+1.5, batW*0.7-1.5, batH-3, 1.5); ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = (mkBgStyleVal==='light') ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)';
+  ctx.beginPath(); ctx.roundRect(batX+batW, batY+batH*0.3, 2, batH*0.4, 1); ctx.fill();
+
+  ctx.restore();
+
+  // ── Camera system detail (15 Pro: triple lens visible beside island) ──
+  if (dev.notchType === 'island') {
+    // Front camera visible through the island - just a tiny dot
+    ctx.save();
+    const camX = sX + sW * 0.72, camY = sY + sH * 0.025;
+    ctx.beginPath(); ctx.arc(camX, camY, sW * 0.014, 0, Math.PI*2);
+    ctx.fillStyle = '#1a1a2e'; ctx.fill();
+    ctx.beginPath(); ctx.arc(camX, camY, sW * 0.008, 0, Math.PI*2);
+    ctx.fillStyle = '#2d3561'; ctx.fill();
+    ctx.beginPath(); ctx.arc(camX, camY, sW * 0.003, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(120,160,255,0.7)'; ctx.fill();
+    ctx.restore();
+  }
+
+  // ── USB-C port at bottom of phone ──
+  ctx.save();
+  const usbW = phoneW * 0.2, usbH = phoneH * 0.012;
+  const usbX = phoneX + phoneW/2 - usbW/2;
+  const usbY = phoneY + phoneH - usbH/2;
+  ctx.beginPath(); ctx.roundRect(usbX, usbY - usbH, usbW, usbH, usbH/2);
+  ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fill();
+  ctx.beginPath(); ctx.roundRect(usbX + 1, usbY - usbH + 1, usbW - 2, usbH - 2, usbH/2);
+  const usbGrad = ctx.createLinearGradient(usbX, usbY, usbX, usbY - usbH);
+  usbGrad.addColorStop(0, 'rgba(60,60,60,0.8)');
+  usbGrad.addColorStop(1, 'rgba(30,30,30,0.5)');
+  ctx.fillStyle = usbGrad; ctx.fill();
+
+  // speaker grille dots beside USB-C
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  for(let sp=0; sp<4; sp++) {
+    ctx.beginPath();
+    ctx.arc(phoneX + phoneW*0.32 + sp*phoneW*0.05, phoneY + phoneH - phoneH*0.008, phoneH*0.003, 0, Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(phoneX + phoneW*0.6 + sp*phoneW*0.05, phoneY + phoneH - phoneH*0.008, phoneH*0.003, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.restore();
+
   ctx.restore(); // untilt
 
   // ── Decorative sprinkles ──
@@ -5377,19 +5458,45 @@ async function wcStep7Generate() {
   if (!ok) { wcRemoveTyping(); return; }
 
   try {
-    const body = {
-      topic: WC.chosenTopic, context, tone,
-      length: isThread ? "short" : "single",
-      mode: isThread ? "thread" : "single",
-      short_form: true
-    };
-    if (!isThread) body.format = "short_post";
-
-    const res  = await fetch("/api/generate", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
-    const raw  = await res.text();
     let data;
-    try { data = JSON.parse(raw); } catch(e) { throw new Error("Server error — please try again"); }
-    if (!res.ok) throw new Error(data.error || "Generation failed");
+    // ── Try backend first, fall back to direct Claude API ──
+    try {
+      const body = {
+        topic: WC.chosenTopic, context, tone,
+        length: isThread ? "short" : "single",
+        mode: isThread ? "thread" : "single",
+        short_form: true
+      };
+      if (!isThread) body.format = "short_post";
+      const res = await fetch("/api/generate", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
+      const raw = await res.text();
+      try { data = JSON.parse(raw); } catch(e) { throw new Error("parse_fail"); }
+      if (!res.ok) throw new Error(data.error || "api_fail");
+    } catch(_backendErr) {
+      // Fallback: call Claude API directly
+      const systemPrompt = isThread
+        ? `You are a viral social media content writer. Generate a Twitter/X thread of exactly 5 tweets about the given topic. Return ONLY valid JSON: {"tweets":["tweet1","tweet2","tweet3","tweet4","tweet5"]}. Each tweet max 280 chars. Hook first tweet. No hashtag spam. Tone: ${tone}.`
+        : `You are a viral social media content writer. Write a single punchy ${WC.platform} post about the given topic. Return ONLY valid JSON: {"post":"your post text here"}. Max 280 chars for Twitter. Conversational, engaging. Tone: ${tone}.`;
+      const userPrompt = `Topic: ${WC.chosenTopic}\nContext: ${context}`;
+      const claudeRes = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 800,
+          system: systemPrompt,
+          messages: [{ role: "user", content: userPrompt }]
+        })
+      });
+      const claudeData = await claudeRes.json();
+      const rawText = claudeData.content?.[0]?.text || "";
+      const clean = rawText.replace(/```json|```/g, "").trim();
+      data = JSON.parse(clean);
+    }
 
     wcRemoveTyping();
     if (isThread) {
@@ -5562,6 +5669,44 @@ function wcScrollBottom() {
 })();
 
 
+</script>
+
+<!-- ── Floating Message Button ── -->
+<div id="tcFloatBtn" onclick="tcToggleMsg()" style="position:fixed;bottom:24px;right:20px;z-index:9999;width:54px;height:54px;background:#E0161A;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 24px rgba(224,22,26,0.55);transition:transform .2s;" onmouseenter="this.style.transform='scale(1.1)'" onmouseleave="this.style.transform='scale(1)'">
+  <svg width="24" height="24" fill="white" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+  <span id="tcMsgDot" style="position:absolute;top:8px;right:8px;width:9px;height:9px;background:#fff;border-radius:50%;border:2px solid #E0161A;"></span>
+</div>
+
+<div id="tcMsgMenu" style="display:none;position:fixed;bottom:88px;right:20px;z-index:9998;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.18);min-width:230px;border:1px solid #eee;">
+  <div style="padding:12px 16px 8px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#888;border-bottom:1px solid #f0f0f0;">Need help?</div>
+  <a href="https://wa.me/qr/MIHEJWWIZYI7K1" target="_blank" style="display:flex;align-items:center;gap:12px;padding:14px 18px;text-decoration:none;color:#111;font-size:14px;font-weight:600;border-bottom:1px solid #f4f4f4;transition:background .15s;" onmouseenter="this.style.background='#fafafa'" onmouseleave="this.style.background='transparent'">
+    <span style="width:36px;height:36px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </span>
+    <div><div style="font-size:13px;font-weight:700;color:#111">Contact Support</div><div style="font-size:11px;color:#888;font-weight:400;margin-top:1px">Chat with us on WhatsApp</div></div>
+  </a>
+  <a href="https://wa.me/qr/MIHEJWWIZYI7K1" target="_blank" style="display:flex;align-items:center;gap:12px;padding:14px 18px;text-decoration:none;color:#111;font-size:14px;font-weight:600;transition:background .15s;" onmouseenter="this.style.background='#fafafa'" onmouseleave="this.style.background='transparent'">
+    <span style="width:36px;height:36px;background:#E0161A;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+    </span>
+    <div><div style="font-size:13px;font-weight:700;color:#111">Suggest a Feature</div><div style="font-size:11px;color:#888;font-weight:400;margin-top:1px">Report bugs or ideas</div></div>
+  </a>
+</div>
+
+<script>
+function tcToggleMsg() {
+  const m = document.getElementById('tcMsgMenu');
+  const d = document.getElementById('tcMsgDot');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+  if (d) d.style.display = 'none';
+}
+document.addEventListener('click', function(e) {
+  const btn = document.getElementById('tcFloatBtn');
+  const menu = document.getElementById('tcMsgMenu');
+  if (btn && menu && !btn.contains(e.target) && !menu.contains(e.target)) {
+    menu.style.display = 'none';
+  }
+});
 </script>
 </body>
 </html>
