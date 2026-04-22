@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ThreadCraft — AI Thread Agent</title>
+  <!-- ── Favicon & App Icons ── -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMWEwMDAyIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzBhMGEwYSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0idGgiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6I2UwMTYxYSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNmNDM0MzciLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iMjIiIHJ5PSIyMiIgZmlsbD0idXJsKCNiZykiLz4KICA8ZWxsaXBzZSBjeD0iNTAiIGN5PSIxMCIgcng9IjQwIiByeT0iMTYiIGZpbGw9InJnYmEoMjI0LDIyLDI2LDAuMTgpIi8+CiAgPHJlY3QgeD0iMTgiIHk9IjI2IiB3aWR0aD0iNjQiIGhlaWdodD0iNyIgcng9IjMuNSIgZmlsbD0idXJsKCN0aCkiLz4KICA8cmVjdCB4PSI0MyIgeT0iMzMiIHdpZHRoPSIxNCIgaGVpZ2h0PSI4IiBmaWxsPSJ1cmwoI3RoKSIvPgogIDxyZWN0IHg9IjI0IiB5PSI0NyIgd2lkdGg9IjUyIiBoZWlnaHQ9IjUuNSIgcng9IjIuNzUiIGZpbGw9IiNmZmZmZmYiIG9wYWNpdHk9IjAuODgiLz4KICA8cmVjdCB4PSIyNCIgeT0iNTciIHdpZHRoPSI0MCIgaGVpZ2h0PSI1LjUiIHJ4PSIyLjc1IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjU1Ii8+CiAgPHJlY3QgeD0iMjQiIHk9IjY3IiB3aWR0aD0iMzAiIGhlaWdodD0iNS41IiByeD0iMi43NSIgZmlsbD0iI2UwMTYxYSIgb3BhY2l0eT0iMC44Ii8+CiAgPGNpcmNsZSBjeD0iMTgiIGN5PSI0OS43NSIgcj0iMi41IiBmaWxsPSIjZTAxNjFhIi8+CiAgPGNpcmNsZSBjeD0iMTgiIGN5PSI1OS43NSIgcj0iMi41IiBmaWxsPSIjZTAxNjFhIiBvcGFjaXR5PSIwLjU1Ii8+CiAgPGNpcmNsZSBjeD0iMTgiIGN5PSI2OS43NSIgcj0iMi41IiBmaWxsPSIjZTAxNjFhIiBvcGFjaXR5PSIwLjQiLz4KPC9zdmc+" />
+  <link rel="alternate icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMWEwMDAyIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzBhMGEwYSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0idGgiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6I2UwMTYxYSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNmNDM0MzciLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iMjIiIHJ5PSIyMiIgZmlsbD0idXJsKCNiZykiLz4KICA8ZWxsaXBzZSBjeD0iNTAiIGN5PSIxMCIgcng9IjQwIiByeT0iMTYiIGZpbGw9InJnYmEoMjI0LDIyLDI2LDAuMTgpIi8+CiAgPHJlY3QgeD0iMTgiIHk9IjI2IiB3aWR0aD0iNjQiIGhlaWdodD0iNyIgcng9IjMuNSIgZmlsbD0idXJsKCN0aCkiLz4KICA8cmVjdCB4PSI0MyIgeT0iMzMiIHdpZHRoPSIxNCIgaGVpZ2h0PSI4IiBmaWxsPSJ1cmwoI3RoKSIvPgogIDxyZWN0IHg9IjI0IiB5PSI0NyIgd2lkdGg9IjUyIiBoZWlnaHQ9IjUuNSIgcng9IjIuNzUiIGZpbGw9IiNmZmZmZmYiIG9wYWNpdHk9IjAuODgiLz4KICA8cmVjdCB4PSIyNCIgeT0iNTciIHdpZHRoPSI0MCIgaGVpZ2h0PSI1LjUiIHJ4PSIyLjc1IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjU1Ii8+CiAgPHJlY3QgeD0iMjQiIHk9IjY3IiB3aWR0aD0iMzAiIGhlaWdodD0iNS41IiByeD0iMi43NSIgZmlsbD0iI2UwMTYxYSIgb3BhY2l0eT0iMC44Ii8+CiAgPGNpcmNsZSBjeD0iMTgiIGN5PSI0OS43NSIgcj0iMi41IiBmaWxsPSIjZTAxNjFhIi8+CiAgPGNpcmNsZSBjeD0iMTgiIGN5PSI1OS43NSIgcj0iMi41IiBmaWxsPSIjZTAxNjFhIiBvcGFjaXR5PSIwLjU1Ii8+CiAgPGNpcmNsZSBjeD0iMTgiIGN5PSI2OS43NSIgcj0iMi41IiBmaWxsPSIjZTAxNjFhIiBvcGFjaXR5PSIwLjQiLz4KPC9zdmc+" />
+  <meta name="theme-color" content="#e0161a" />
+  <meta name="description" content="ThreadCraft — AI-powered thread, post and motion video generator for creators." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -580,23 +586,6 @@
     .btn-ttw-ignore:hover{color:var(--muted2)}
 
     /* ══ MOTION SCRIPT PAGE ══ */
-    /* Logo upload zone */
-    .ms-logo-zone{border:2px dashed var(--border);border-radius:12px;padding:20px 16px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--surface)}
-    .ms-logo-zone:hover,.ms-logo-zone.drag-over{border-color:var(--red);background:rgba(224,22,26,.04)}
-    .ms-logo-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-    .ms-logo-preview{display:none;align-items:center;gap:14px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-top:10px}
-    .ms-logo-preview.visible{display:flex}
-    .ms-logo-thumb{width:52px;height:52px;object-fit:contain;border-radius:6px;border:1px solid var(--border);background:var(--surface2);flex-shrink:0}
-    .ms-logo-info{flex:1;min-width:0}
-    .ms-logo-name{font-family:var(--mono);font-size:11px;color:var(--muted2);letter-spacing:.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .ms-logo-size{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.5px;margin-top:2px}
-    .ms-logo-remove{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;padding:4px 8px;cursor:pointer;flex-shrink:0;transition:all .2s}
-    .ms-logo-remove:hover{border-color:var(--red);color:var(--red)}
-    /* Smart context chip */
-    .ms-context-chip{display:none;align-items:center;gap:6px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:20px;padding:4px 10px;margin-top:8px;width:fit-content}
-    .ms-context-chip.visible{display:inline-flex}
-    .ms-context-chip::before{content:'';width:6px;height:6px;border-radius:50%;background:#3b82f6;flex-shrink:0}
-    .ms-context-chip span{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3b82f6}
     .scene-list{display:flex;flex-direction:column;gap:12px;margin-top:8px}
     .scene-card{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;animation:fadeUp .3s ease forwards;animation-delay:calc(var(--i)*.05s);opacity:0;box-shadow:0 1px 4px rgba(0,0,0,.05)}
     .scene-card-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border)}
@@ -1581,30 +1570,8 @@
     <div class="form-section">
       <div class="step-label">Configure Video Script</div>
       <div class="field">
-        <label>Project Logo / Image <span style="color:var(--muted);font-size:9px;letter-spacing:1px">(optional — used in video)</span></label>
-        <div class="ms-logo-zone" id="msLogoZone">
-          <input type="file" id="msLogoFile" accept="image/*" onchange="msHandleLogoUpload(this)" />
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);margin-bottom:6px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-          <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.5px;line-height:1.7">
-            <strong style="color:var(--muted2);display:block;font-size:12px;margin-bottom:2px">Upload your logo or product image</strong>
-            It will appear in the video render instead of generic graphics
-          </div>
-        </div>
-        <div class="ms-logo-preview" id="msLogoPreview">
-          <img class="ms-logo-thumb" id="msLogoThumb" src="" alt="Logo" />
-          <div class="ms-logo-info">
-            <div class="ms-logo-name" id="msLogoName">logo.png</div>
-            <div class="ms-logo-size" id="msLogoSize"></div>
-          </div>
-          <button class="ms-logo-remove" onclick="msClearLogo()">✕ Remove</button>
-        </div>
-      </div>
-      <div class="field">
         <label>Project / Topic *</label>
-        <input type="text" id="ms-topic" placeholder="e.g. UI/UX frontend trailers for Perena" oninput="msDetectTopicContext(this.value)" />
-        <div class="ms-context-chip" id="msContextChip">
-          <span id="msContextChipLabel">SOCIAL MEDIA</span>
-        </div>
+        <input type="text" id="ms-topic" placeholder="e.g. UI/UX frontend trailers for Perena" />
       </div>
       <div class="field">
         <label>Context &amp; Brief (optional but improves output)</label>
@@ -3012,9 +2979,7 @@ async function msGenerate(sceneCount, cost){
         topic, context,
         tone: msSelectedStyle,
         length: msSelectedLen,
-        mode: "motion",
-        topicKind: window._msTopicKind || null,
-        hasLogo: !!window._msLogoDataURL
+        mode: "motion"
       })
     });
     const data = await res.json();
@@ -3114,356 +3079,22 @@ function msDownloadScript(){
 function showMsError(m){ const b=document.getElementById("msErrorBox"); b.textContent=`// ${m}`; b.classList.add("visible"); }
 
 // ══════════════════════════════════════════════════════
+// MOTION VIDEO RENDERER v2 — Scene-specific animations
 // ══════════════════════════════════════════════════════
-// LOGO UPLOAD + SMART CONTEXT DETECTION
-// ══════════════════════════════════════════════════════
+let _msVideoBlob = null;
 
-window._msLogoDataURL = null;   // base64 image used in video render
-window._msLogoImg     = null;   // HTMLImageElement (pre-decoded for canvas)
-window._msTopicKind   = null;   // detected context kind
-
-// ── Logo upload handler ──
-function msHandleLogoUpload(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const maxMB = 8;
-  if (file.size > maxMB * 1024 * 1024) {
-    alert(`Logo file is too large — please use an image under ${maxMB}MB.`);
-    input.value = ""; return;
-  }
-  const reader = new FileReader();
-  reader.onload = e => {
-    const dataURL = e.target.result;
-    window._msLogoDataURL = dataURL;
-    // Pre-decode into an Image so canvas draws are instant
-    const img = new Image();
-    img.onload = () => { window._msLogoImg = img; };
-    img.src = dataURL;
-    // Preview
-    document.getElementById("msLogoThumb").src = dataURL;
-    document.getElementById("msLogoName").textContent = file.name;
-    document.getElementById("msLogoSize").textContent =
-      (file.size / 1024).toFixed(0) + " KB · " + file.type.replace("image/","").toUpperCase();
-    document.getElementById("msLogoPreview").classList.add("visible");
-    document.getElementById("msLogoZone").style.display = "none";
-  };
-  reader.readAsDataURL(file);
-}
-
-function msClearLogo() {
-  window._msLogoDataURL = null;
-  window._msLogoImg     = null;
-  document.getElementById("msLogoFile").value = "";
-  document.getElementById("msLogoPreview").classList.remove("visible");
-  document.getElementById("msLogoZone").style.display = "";
-}
-
-// ── Smart topic context detection ──
-// Detects what kind of content the user is describing and surfaces a chip
-function msDetectTopicContext(text) {
-  const t = (text || "").toLowerCase();
-  const chip  = document.getElementById("msContextChip");
-  const label = document.getElementById("msContextChipLabel");
-
-  const kinds = [
-    { key:"social",     pat:/facebook|instagram|twitter|tiktok|social media|reel|post|content creator|influencer|viral/, label:"SOCIAL MEDIA" },
-    { key:"ecommerce",  pat:/shop|store|product|sell|ecommerce|buy now|checkout|cart|marketplace|woocommerce|shopify/,   label:"E-COMMERCE" },
-    { key:"saas",       pat:/saas|dashboard|platform|software|app|tool|subscription|user|feature|launch/,               label:"SAAS / PRODUCT" },
-    { key:"finance",    pat:/finance|fintech|payment|wallet|bank|invest|trading|crypto|defi|blockchain/,                label:"FINTECH" },
-    { key:"agency",     pat:/agency|portfolio|freelance|client|design|branding|creative|studio/,                        label:"AGENCY / BRAND" },
-    { key:"education",  pat:/course|learn|teach|education|tutorial|student|school|training|bootcamp/,                   label:"EDUCATION" },
-    { key:"health",     pat:/health|fitness|gym|workout|nutrition|wellness|medical|doctor|clinic/,                      label:"HEALTH / FITNESS" },
-    { key:"food",       pat:/food|restaurant|cafe|recipe|chef|meal|delivery|kitchen|bakery/,                            label:"FOOD & BEVERAGE" },
-    { key:"real_estate",pat:/real estate|property|house|home|apartment|rent|mortgage|realty/,                          label:"REAL ESTATE" },
-  ];
-
-  for (const k of kinds) {
-    if (k.pat.test(t)) {
-      window._msTopicKind = k.key;
-      label.textContent = k.label;
-      chip.classList.add("visible");
-      return;
-    }
-  }
-  window._msTopicKind = null;
-  chip.classList.remove("visible");
-}
-
-// ── Draw logo onto canvas (used inside scene renderers) ──
-// Places the uploaded logo at position (cx, cy) with given maxSize
-function msDrawLogo(ctx, cx, cy, maxSize, alpha) {
-  const img = window._msLogoImg;
-  if (!img || !img.complete) return false;
-  const ar = img.naturalWidth / img.naturalHeight;
-  let dw = maxSize, dh = maxSize / ar;
-  if (dh > maxSize) { dh = maxSize; dw = maxSize * ar; }
-  ctx.save();
-  ctx.globalAlpha = (alpha !== undefined ? alpha : 1);
-  ctx.drawImage(img, cx - dw/2, cy - dh/2, dw, dh);
-  ctx.restore();
-  return true;
-}
-
-// ── Draw social media UI mock based on topic kind ──
-function msDrawSocialMock(ctx, W, H, t, pal, scene, kind) {
-  const reveal = easeOut(Math.min(1, t * 2));
-  // Phone frame
-  const phoneW = W * 0.38, phoneH = H * 0.82;
-  const px = (W - phoneW) / 2, py = (H - phoneH) / 2;
-  ctx.save();
-  ctx.globalAlpha = reveal;
-  // Phone body
-  const pg = ctx.createLinearGradient(px, py, px+phoneW, py+phoneH);
-  pg.addColorStop(0, "#1e1e2e"); pg.addColorStop(1, "#111120");
-  ctx.fillStyle = pg; ctx.strokeStyle = "rgba(255,255,255,0.12)"; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.roundRect(px, py, phoneW, phoneH, 22); ctx.fill(); ctx.stroke();
-  // Screen area
-  const sx = px+6, sy = py+14, sw = phoneW-12, sh = phoneH-28;
-  ctx.fillStyle = kind==="instagram" ? "#09090f" : kind==="facebook" ? "#18191a" : "#000";
-  ctx.beginPath(); ctx.roundRect(sx, sy, sw, sh, 14); ctx.fill();
-  ctx.restore();
-
-  // Platform header bar
-  ctx.save(); ctx.globalAlpha = reveal;
-  ctx.fillStyle = kind==="facebook" ? "#1877f2" : kind==="twitter" ? "#1da1f2" : "#833ab4";
-  ctx.beginPath(); ctx.roundRect(sx, sy, sw, sh*0.11, [14,14,0,0]); ctx.fill();
-  ctx.fillStyle="#fff"; ctx.font=`700 ${sw*0.11}px Arial,sans-serif`;
-  ctx.textAlign="center"; ctx.textBaseline="middle";
-  const platformName = kind==="facebook"?"Facebook":kind==="twitter"?"X / Twitter":"Instagram";
-  ctx.fillText(platformName, sx+sw/2, sy+sh*0.055);
-  ctx.restore();
-
-  // Post card inside phone
-  const postY = sy + sh*0.13;
-  const postH = sh*0.52;
-  ctx.save(); ctx.globalAlpha = reveal;
-  ctx.fillStyle="#fff"; ctx.strokeStyle="rgba(0,0,0,.1)"; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.roundRect(sx+6, postY, sw-12, postH, 8); ctx.fill(); ctx.stroke();
-  // Avatar circle
-  ctx.fillStyle = pal.accent;
-  ctx.beginPath(); ctx.arc(sx+20, postY+14, 10, 0, Math.PI*2); ctx.fill();
-  // Name line
-  ctx.fillStyle="#111"; ctx.font=`600 ${sw*0.09}px Arial,sans-serif`;
-  ctx.textAlign="left"; ctx.textBaseline="middle";
-  const shortName = (scene.overlay||"Your Brand").split(/\s+/).slice(0,2).join(" ");
-  ctx.fillText(shortName, sx+34, postY+14);
-  // Post image area — use logo if available, else accent gradient
-  const imgY = postY+30, imgH = postH*0.45;
-  const hasLogo = msDrawLogo(ctx, sx+sw/2-6, imgY+imgH/2, Math.min(sw-24, imgH*0.8), easeOut(Math.min(1, t*3-0.3)));
-  if (!hasLogo) {
-    const ig = ctx.createLinearGradient(sx+6, imgY, sx+sw-12, imgY+imgH);
-    ig.addColorStop(0, pal.accent+"cc"); ig.addColorStop(1, "#6366f1cc");
-    ctx.fillStyle=ig;
-    ctx.fillRect(sx+6, imgY, sw-12, imgH);
-  }
-  // Like / comment / share row — drawn as vector icons, no emoji
-  const likeY = imgY + imgH + 10;
-  const iconSize = sw * 0.09;
-  const iconAlpha = easeOut(Math.min(1, Math.max(0, t*3-0.4)));
-  ctx.save(); ctx.globalAlpha = iconAlpha * reveal;
-
-  // Heart icon (like)
-  const hx = sx + 12, hy = likeY;
-  ctx.fillStyle = "#e0161a";
-  ctx.beginPath();
-  ctx.moveTo(hx + iconSize*0.5, hy + iconSize*0.35);
-  ctx.bezierCurveTo(hx + iconSize*0.5, hy + iconSize*0.15, hx + iconSize*0.8, hy + iconSize*0.1, hx + iconSize*0.8, hy + iconSize*0.32);
-  ctx.bezierCurveTo(hx + iconSize*0.8, hy + iconSize*0.52, hx + iconSize*0.5, hy + iconSize*0.72, hx + iconSize*0.5, hy + iconSize*0.72);
-  ctx.bezierCurveTo(hx + iconSize*0.5, hy + iconSize*0.72, hx + iconSize*0.2, hy + iconSize*0.52, hx + iconSize*0.2, hy + iconSize*0.32);
-  ctx.bezierCurveTo(hx + iconSize*0.2, hy + iconSize*0.1, hx + iconSize*0.5, hy + iconSize*0.15, hx + iconSize*0.5, hy + iconSize*0.35);
-  ctx.fill();
-
-  // Chat bubble icon (comment)
-  const cx2 = sx + 12 + sw*0.28, cy2 = likeY;
-  ctx.fillStyle = "#6b7280";
-  ctx.beginPath();
-  ctx.roundRect(cx2, cy2 + iconSize*0.05, iconSize*0.85, iconSize*0.65, iconSize*0.12);
-  ctx.fill();
-  ctx.fillStyle = "#fff";
-  ctx.beginPath();
-  ctx.moveTo(cx2 + iconSize*0.15, cy2 + iconSize*0.72);
-  ctx.lineTo(cx2 + iconSize*0.08, cy2 + iconSize*0.9);
-  ctx.lineTo(cx2 + iconSize*0.38, cy2 + iconSize*0.72);
-  ctx.fill();
-
-  // Share / arrow icon
-  const sx2 = sx + 12 + sw*0.56, sy2 = likeY;
-  ctx.strokeStyle = "#6b7280"; ctx.lineWidth = iconSize*0.1; ctx.lineCap="round";
-  ctx.beginPath();
-  ctx.moveTo(sx2 + iconSize*0.1, sy2 + iconSize*0.5);
-  ctx.lineTo(sx2 + iconSize*0.75, sy2 + iconSize*0.5);
-  ctx.moveTo(sx2 + iconSize*0.5, sy2 + iconSize*0.2);
-  ctx.lineTo(sx2 + iconSize*0.75, sy2 + iconSize*0.5);
-  ctx.lineTo(sx2 + iconSize*0.5, sy2 + iconSize*0.8);
-  ctx.stroke();
-
-  ctx.restore();
-  ctx.restore();
-
-  // Engagement stats below phone
-  const statsReveal = easeOut(Math.min(1, Math.max(0, t*3-0.5)));
-  if (statsReveal > 0) {
-    ctx.save(); ctx.globalAlpha = statsReveal;
-    const stats = [["REACH","12.4K"],["LIKES","3.1K"],["SHARES","847"]];
-    stats.forEach((s, i) => {
-      const bx = W*0.08 + i*(W*0.28), by = py + phoneH + 16;
-      ctx.fillStyle="#1f2937"; ctx.strokeStyle="rgba(59,130,246,.3)"; ctx.lineWidth=1;
-      ctx.beginPath(); ctx.roundRect(bx, by, W*0.22, 40, 8); ctx.fill(); ctx.stroke();
-      ctx.fillStyle="#6b7280"; ctx.font=`400 ${H*0.018}px "Courier New",monospace`; ctx.textAlign="left"; ctx.textBaseline="top";
-      ctx.fillText(s[0], bx+10, by+6);
-      ctx.fillStyle=pal.accent; ctx.font=`700 ${H*0.028}px Arial,sans-serif`;
-      ctx.fillText(s[1], bx+10, by+20);
-    });
-    ctx.restore();
-  }
-  drawOverlay(ctx, scene.overlay, W, H, t, pal, 0.94, 0.038);
-}
-
-// ── Draw ecommerce product showcase ──
-function msDrawEcommerceMock(ctx, W, H, t, pal, scene) {
-  ctx.fillStyle="#0a0a12"; ctx.fillRect(0,0,W,H);
-  const reveal = easeOut(Math.min(1, t * 2));
-  // Product card
-  const cardW=W*0.55, cardH=H*0.75, cardX=(W-cardW)/2, cardY=H*0.1;
-  ctx.save(); ctx.globalAlpha=reveal;
-  ctx.fillStyle="#161622"; ctx.strokeStyle="rgba(255,255,255,.08)"; ctx.lineWidth=1.5;
-  ctx.beginPath(); ctx.roundRect(cardX,cardY,cardW,cardH,16); ctx.fill(); ctx.stroke();
-  // Product image area
-  const hasLogo = msDrawLogo(ctx, W/2, cardY+cardH*0.3, cardH*0.38, easeOut(Math.min(1,t*2.5-0.2)));
-  if (!hasLogo) {
-    const ig = ctx.createRadialGradient(W/2,cardY+cardH*0.3,10,W/2,cardY+cardH*0.3,cardH*0.22);
-    ig.addColorStop(0,pal.accent+"44"); ig.addColorStop(1,"transparent");
-    ctx.fillStyle=ig; ctx.fillRect(cardX,cardY,cardW,cardH*0.55);
-  }
-  // Product info
-  const infoY = cardY+cardH*0.58;
-  ctx.fillStyle="#fff"; ctx.font=`700 ${H*0.042}px Arial,sans-serif`; ctx.textAlign="center"; ctx.textBaseline="top";
-  const title = (scene.overlay||"Product Name").split(" ").slice(0,3).join(" ");
-  ctx.fillText(title, W/2, infoY);
-  ctx.fillStyle=pal.accent; ctx.font=`700 ${H*0.052}px Arial,sans-serif`;
-  ctx.fillText("₦" + (Math.round(4999 + Math.random()*10000)).toLocaleString(), W/2, infoY+H*0.05);
-  // Buy button
-  const btnReveal = easeOut(Math.min(1,Math.max(0,(t-0.5)*3)));
-  ctx.globalAlpha = btnReveal;
-  const btnY = infoY+H*0.12;
-  const bg = ctx.createLinearGradient(W/2-80,btnY,W/2+80,btnY+38);
-  bg.addColorStop(0,pal.accent); bg.addColorStop(1,pal.accent+"bb");
-  ctx.fillStyle=bg; ctx.beginPath(); ctx.roundRect(W/2-80,btnY,160,40,20); ctx.fill();
-  ctx.fillStyle="#fff"; ctx.font=`700 ${H*0.032}px Arial,sans-serif`;
-  ctx.fillText("BUY NOW →", W/2, btnY+20);
-  ctx.restore();
-  drawOverlay(ctx, scene.overlay, W, H, t, pal, 0.94, 0.038);
-}
-
-// ── Upgraded renderSceneLogo — uses uploaded logo if available ──
-function renderSceneLogoSmart(ctx, W, H, t, pal, scene) {
-  ctx.fillStyle = "#050810"; ctx.fillRect(0,0,W,H);
-  const cx = W/2, cy = H*0.44;
-  // Particle field
-  for (let p = 0; p < 120; p++) {
-    const angle = (p / 120) * Math.PI * 2 + p * 2.4;
-    const maxR = 350;
-    const progress = easeOut(Math.min(1, t * 2));
-    const r = maxR * (1 - progress) + (p % 5) * 3;
-    const px2 = cx + Math.cos(angle) * r;
-    const py2 = cy + Math.sin(angle) * r * 0.6;
-    const alpha = progress * (0.3 + 0.7 * (1 - r/maxR));
-    ctx.save(); ctx.globalAlpha = alpha;
-    ctx.fillStyle = p % 3 === 0 ? pal.accent : p % 3 === 1 ? "#6366f1" : "#22c55e";
-    ctx.beginPath(); ctx.arc(px2, py2, 1.5 + (p%3), 0, Math.PI*2); ctx.fill();
-    ctx.restore();
-  }
-  // Logo reveal
-  const textReveal = easeOut(Math.max(0, (t - 0.3) / 0.5));
-  if (textReveal > 0) {
-    // If user uploaded a logo, draw it; otherwise fall back to text
-    const logoDrawn = msDrawLogo(ctx, cx, cy, Math.min(W*0.38, H*0.42) * textReveal, textReveal);
-    if (!logoDrawn) {
-      ctx.save(); ctx.globalAlpha = textReveal;
-      const overlay = scene.overlay || "BRAND";
-      let logoFs = H * 0.14;
-      const logoMaxW = W * 0.8;
-      ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      while (logoFs > H * 0.06) {
-        ctx.font = `700 ${logoFs}px Arial, sans-serif`;
-        if (ctx.measureText(overlay.toUpperCase()).width <= logoMaxW) break;
-        logoFs -= 3;
-      }
-      ctx.font = `700 ${logoFs}px Arial, sans-serif`;
-      ctx.shadowColor = pal.accent; ctx.shadowBlur = 40 * textReveal;
-      ctx.fillStyle = "#ffffff";
-      ctx.fillText(overlay.toUpperCase(), cx, cy);
-      ctx.shadowBlur = 0;
-      const textW = Math.min(ctx.measureText(overlay.toUpperCase()).width, logoMaxW);
-      ctx.fillStyle = pal.accent;
-      ctx.fillRect(cx - textW/2 * textReveal, cy + logoFs*0.7, textW * textReveal, 3);
-      ctx.restore();
-    } else {
-      // Glow ring behind the logo
-      ctx.save(); ctx.globalAlpha = textReveal * 0.4;
-      const gr = ctx.createRadialGradient(cx,cy,10,cx,cy,H*0.28);
-      gr.addColorStop(0, pal.accent+"55"); gr.addColorStop(1, "transparent");
-      ctx.fillStyle=gr; ctx.fillRect(0,0,W,H);
-      ctx.restore();
-    }
-  }
-  // Lens flare
-  const flareT = Math.max(0, t - 0.5);
-  if (flareT > 0) {
-    ctx.save();
-    const fg = ctx.createRadialGradient(cx+W*0.15,cy-H*0.1,0,cx+W*0.15,cy-H*0.1,120);
-    fg.addColorStop(0,`rgba(255,255,255,${0.6*easeOut(flareT*2)*Math.max(0,1-flareT*3)})`);
-    fg.addColorStop(1,"rgba(255,255,255,0)");
-    ctx.fillStyle=fg; ctx.fillRect(0,0,W,H);
-    ctx.restore();
-  }
-  if (scene.voiceover && t > 0.5) {
-    ctx.save(); ctx.globalAlpha = easeOut((t-0.5)*4);
-    ctx.fillStyle="#9ca3af"; ctx.font=`400 italic ${H*0.032}px Arial,sans-serif`;
-    ctx.textAlign="center"; ctx.textBaseline="middle";
-    ctx.fillText(`"${scene.voiceover}"`, cx, H*0.72);
-    ctx.restore();
-  }
-}
-
-// ── Smart scene dispatcher based on topic kind + visual keywords ──
-function msDetectSceneType(scene, sceneIndex) {
+// ── Detect scene type from visual description keywords ──
+function msDetectSceneType(scene) {
   const v = (scene.visual || "").toLowerCase();
   const o = (scene.overlay || "").toLowerCase();
-  const kind = window._msTopicKind || "";
-
-  // Hard keyword matches first
   if (v.includes("logo") || v.includes("brand") || v.includes("particle") || v.includes("materializ")) return "logo";
   if (v.includes("dashboard") || v.includes("chart") || v.includes("graph") || v.includes("metric") || v.includes("ui")) return "dashboard";
-  if (v.includes("code") || v.includes("snippet") || (v.includes("line") && v.includes("scroll"))) return "code";
+  if (v.includes("code") || v.includes("snippet") || v.includes("line") && v.includes("scroll")) return "code";
   if (v.includes("network") || v.includes("node") || v.includes("connection") || v.includes("map")) return "network";
   if (v.includes("wallet") || v.includes("transaction") || v.includes("timeline") || v.includes("payment")) return "transaction";
-  if (v.includes("globe") || v.includes("planet") || v.includes("solar system") || v.includes("jupiter") || v.includes("saturn") || (v.includes("orbit") && v.includes("planet"))) return "globe";
-  if (v.includes("cta") || o.includes("start") || o.includes("get") || o.includes("join") || o.includes("try") || o.includes("buy") || o.includes("shop")) return "cta";
-  if (v.includes("phone") || v.includes("mobile") || v.includes("post") || v.includes("feed") || v.includes("social") || v.includes("instagram") || v.includes("facebook") || v.includes("twitter") || v.includes("tiktok")) return "social";
-  if (v.includes("product") || v.includes("shop") || v.includes("store") || v.includes("price") || v.includes("checkout")) return "ecommerce";
-
-  // Topic-kind fallback: steer scenes toward the right visual style
-  if (kind === "social") {
-    const socialCycle = ["social","logo","title","social","cta","social","network"];
-    return socialCycle[sceneIndex % socialCycle.length];
-  }
-  if (kind === "ecommerce") {
-    const ecCycle = ["ecommerce","logo","title","ecommerce","dashboard","cta","ecommerce"];
-    return ecCycle[sceneIndex % ecCycle.length];
-  }
-  if (kind === "saas") {
-    const saasCycle = ["dashboard","logo","code","network","dashboard","cta","title"];
-    return saasCycle[sceneIndex % saasCycle.length];
-  }
-  if (kind === "finance") {
-    const finCycle = ["dashboard","transaction","logo","network","dashboard","cta","title"];
-    return finCycle[sceneIndex % finCycle.length];
-  }
-
-  // Generic spread fallback
-  const fallbacks = ["title","dashboard","network","code","transaction","logo","cta"];
-  return fallbacks[sceneIndex % fallbacks.length];
+  if (v.includes("globe") || v.includes("orbit") || v.includes("planet") || v.includes("space")) return "globe";
+  if (v.includes("cta") || o.includes("start") || o.includes("get") || o.includes("join") || o.includes("try")) return "cta";
+  return "title";
 }
 
 // ── Easing ──
@@ -3622,15 +3253,8 @@ function renderSceneDashboard(ctx, W, H, t, pal, scene) {
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
   const dashTitle = (scene.overlay||"").toUpperCase().slice(0,30) || "LIVE DASHBOARD";
   ctx.fillText(dashTitle, W/2, cardY+22);
-  // Animated bar chart — seeded from scene text so each scene looks different
-  function sceneHash(str) {
-    let h = 5381;
-    for (let i = 0; i < (str||"").length; i++) h = ((h << 5) + h) ^ str.charCodeAt(i);
-    return Math.abs(h);
-  }
-  const seed = sceneHash((scene.visual||"") + (scene.overlay||"") + (scene.scene||0));
-  function seededRand(n) { return ((seed * (n + 1) * 2654435761) >>> 0) / 4294967296; }
-  const bars = Array.from({length:8}, (_,i) => 0.35 + seededRand(i) * 0.58);
+  // Animated bar chart
+  const bars = [0.65, 0.82, 0.45, 0.91, 0.73, 0.58, 0.88, 0.76];
   const barAreaX = cardX + 40, barAreaY = cardY + 60, barAreaH = cardH - 110, barAreaW = cardW - 80;
   const bw = (barAreaW / bars.length) - 8;
   bars.forEach((val, i) => {
@@ -3638,14 +3262,15 @@ function renderSceneDashboard(ctx, W, H, t, pal, scene) {
     const bx = barAreaX + i * (bw + 8);
     const bh = barAreaH * animVal;
     const by = barAreaY + barAreaH - bh;
+    // Bar bg
     ctx.fillStyle = "rgba(59,130,246,0.1)";
     ctx.beginPath(); ctx.roundRect(bx, barAreaY, bw, barAreaH, 4); ctx.fill();
-    const hue1 = (200 + (seed % 60)) % 360;
-    const hue2 = (hue1 + 30) % 360;
+    // Bar fill
     const barGrad = ctx.createLinearGradient(0, by, 0, by+bh);
-    barGrad.addColorStop(0, `hsl(${hue1},80%,55%)`); barGrad.addColorStop(1, `hsl(${hue2},85%,35%)`);
+    barGrad.addColorStop(0, "#3b82f6"); barGrad.addColorStop(1, "#1d4ed8");
     ctx.fillStyle = barGrad;
     ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, [4,4,0,0]); ctx.fill();
+    // Value label
     ctx.fillStyle = "#9ca3af"; ctx.font = `400 ${H*0.018}px Arial,sans-serif`;
     ctx.textAlign = "center"; ctx.textBaseline = "top";
     ctx.fillText((val*100).toFixed(0)+"%", bx+bw/2, barAreaY + barAreaH + 6);
@@ -3654,11 +3279,8 @@ function renderSceneDashboard(ctx, W, H, t, pal, scene) {
   const pulse = 0.5 + 0.5 * Math.sin(t * Math.PI * 8);
   ctx.fillStyle = `rgba(34,197,94,${pulse})`; ctx.beginPath(); ctx.arc(cardX+cardW-20, cardY+22, 5, 0, Math.PI*2); ctx.fill();
   ctx.restore();
-  // Stat pills — seeded per scene
-  const statUsers = Math.round(1.2 + seededRand(10) * 98.8) + "K";
-  const statRate  = (70 + seededRand(11) * 29).toFixed(1) + "%";
-  const statTotal = "₦" + (0.3 + seededRand(12) * 9.5).toFixed(1) + "M";
-  const stats = [["USERS", statUsers], ["RATE", statRate], ["TOTAL", statTotal]];
+  // Stat pills below chart
+  const stats = [["USERS","24.5K"], ["RATE","96.2%"], ["TOTAL","₦1.8M"]];
   stats.forEach((s, i) => {
     const px = W*0.1 + i*(W*0.27), py = cardY + cardH + 14;
     ctx.save(); ctx.globalAlpha = easeOut(Math.min(1, Math.max(0, t*3 - 0.4 - i*0.15)));
@@ -4125,18 +3747,8 @@ async function msRenderVideo() {
   const sceneRenderers = {
     globe: renderSceneGlobe, dashboard: renderSceneDashboard,
     code: renderSceneCode, network: renderSceneNetwork,
-    transaction: renderSceneTransaction, logo: renderSceneLogoSmart,
+    transaction: renderSceneTransaction, logo: renderSceneLogo,
     title: renderSceneTitle, cta: renderSceneCTA,
-    social: (ctx,W,H,t,pal,scene) => {
-      ctx.fillStyle="#07070f"; ctx.fillRect(0,0,W,H);
-      const kind = window._msTopicKind;
-      const platform = kind==="social" ?
-        (/(facebook|fb)/.test((scene.visual||"").toLowerCase()) ? "facebook" :
-         /(twitter|x\b)/.test((scene.visual||"").toLowerCase()) ? "twitter" : "instagram")
-        : "instagram";
-      msDrawSocialMock(ctx,W,H,t,pal,scene,platform);
-    },
-    ecommerce: (ctx,W,H,t,pal,scene) => msDrawEcommerceMock(ctx,W,H,t,pal,scene),
   };
 
   const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
@@ -4167,7 +3779,7 @@ async function msRenderVideo() {
   for (let si = 0; si < scenes.length; si++) {
     const raw     = scenes[si];
     const scene   = typeof raw==="object" ? raw : {scene:si+1,duration:"",visual:"",overlay:raw,voiceover:"",mood:""};
-    const type    = msDetectSceneType(scene, si);
+    const type    = msDetectSceneType(scene);
     const renderFn= sceneRenderers[type] || renderSceneTitle;
     const frames  = Math.round(sceneDurs[si] * fps);
     const msPerFrame = 1000 / fps;
