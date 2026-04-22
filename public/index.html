@@ -1423,6 +1423,26 @@
         <label>Topic / Tweet Text *</label>
         <textarea id="inf-text" placeholder="Describe what you'd like the infographic to visualise..." style="min-height:120px"></textarea>
       </div>
+
+      <!-- Infographic colour picker -->
+      <div class="brand-color-row" style="margin-bottom:20px">
+        <label>Infographic Colour Theme</label>
+        <div class="gradient-presets" id="infColorPresets">
+          <button class="preset active" data-c1="#6366f1" data-c2="#a855f7" data-dark="false" onclick="infSelectPreset(this)"><span style="background:linear-gradient(135deg,#6366f1,#a855f7)"></span>Violet</button>
+          <button class="preset" data-c1="#0ea5e9" data-c2="#6366f1" data-dark="false" onclick="infSelectPreset(this)"><span style="background:linear-gradient(135deg,#0ea5e9,#6366f1)"></span>Ocean</button>
+          <button class="preset" data-c1="#e0161a" data-c2="#7f1d1d" data-dark="false" onclick="infSelectPreset(this)"><span style="background:linear-gradient(135deg,#e0161a,#7f1d1d)"></span>Crimson</button>
+          <button class="preset" data-c1="#059669" data-c2="#064e3b" data-dark="false" onclick="infSelectPreset(this)"><span style="background:linear-gradient(135deg,#059669,#064e3b)"></span>Forest</button>
+          <button class="preset" data-c1="#f97316" data-c2="#9a3412" data-dark="false" onclick="infSelectPreset(this)"><span style="background:linear-gradient(135deg,#f97316,#9a3412)"></span>Ember</button>
+          <button class="preset" data-c1="#1e293b" data-c2="#0f172a" data-dark="false" onclick="infSelectPreset(this)"><span style="background:linear-gradient(135deg,#1e293b,#0f172a)"></span>Slate</button>
+          <button class="preset" data-c1="#f8fafc" data-c2="#cbd5e1" data-dark="true" onclick="infSelectPreset(this)"><span style="background:linear-gradient(135deg,#f8fafc,#cbd5e1);border:1px solid #ccc"></span>Light</button>
+        </div>
+        <div class="custom-colors">
+          <div class="custom-color-field"><span>Color A</span><input type="color" id="inf-color1" value="#6366f1" oninput="infOnCustomColor()" /></div>
+          <div class="custom-color-field"><span>Color B</span><input type="color" id="inf-color2" value="#a855f7" oninput="infOnCustomColor()" /></div>
+          <div class="custom-color-field"><span>Light text bg</span><input type="checkbox" id="inf-darkTextMode" onchange="infOnCustomColor()" /></div>
+        </div>
+      </div>
+
       <div class="field">
         <label>Your X Handle (optional)</label>
         <input type="text" id="inf-xHandle" placeholder="@yourhandle" autocomplete="off" />
@@ -1545,6 +1565,38 @@
 </div><!-- end appRoot -->
 
 <script>
+// ── Firebase availability guard ──
+// Runs before everything — if Firebase CDN scripts didn't load (e.g. opened as local file),
+// show a clear message instead of a cryptic crash.
+(function() {
+  if (typeof firebase === 'undefined') {
+    document.addEventListener('DOMContentLoaded', function() {
+      const ov = document.getElementById('initOverlay');
+      if (ov) {
+        ov.style.background = '#fff';
+        ov.style.display = 'flex';
+        ov.style.flexDirection = 'column';
+        ov.style.alignItems = 'center';
+        ov.style.justifyContent = 'center';
+        ov.style.gap = '16px';
+        ov.innerHTML = `
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px;color:#111">
+            THREAD<span style="color:#e0161a">CRAFT</span>
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:13px;color:#e0161a;letter-spacing:1px;text-align:center;padding:0 24px">
+            ⚠ Firebase SDK failed to load
+          </div>
+          <div style="font-family:'DM Sans',sans-serif;font-size:14px;color:#555;text-align:center;max-width:300px;line-height:1.7">
+            This file must be opened from your web server, not as a local file.<br><br>
+            Visit <strong>threadcraft.pro</strong> or deploy to your server.
+          </div>`;
+      }
+    });
+    // Throw a controlled error to stop the rest of the script from running
+    throw new Error('Firebase SDK not loaded — file opened locally or CDN blocked.');
+  }
+})();
+
 // ─── CARD STYLE STATE ─────────────────────────────────────────────────────────
 let cardStyle = { c1:"#6366f1", c2:"#a855f7", darkText:false };
 
@@ -1604,17 +1656,21 @@ function drawBarChart(ctx, data, x, y, w, h, accentC, textC, bgC) {
   const n = Math.min(data.length, 5);
   const gap = 18;
   const barH = Math.min(58, (h-(n-1)*gap)/n);
-  const lblW = 160, valW = 90, barAreaW = w-lblW-valW-20;
+  const lblW = 190, valW = 100, barAreaW = w-lblW-valW-24;
 
   for(let i=0;i<n;i++) {
     const d=data[i], by=y+i*(barH+gap);
     const pct=Math.min(100,Math.max(0,d.pct||0));
     const fillW=Math.max(8,(pct/100)*barAreaW);
+    const fontSize = Math.min(22,barH*.4);
 
-    // label
-    ctx.font=`400 ${Math.min(22,barH*.4)}px 'DM Sans',sans-serif`;
+    // label — clip to lblW with ellipsis
+    ctx.font=`400 ${fontSize}px 'DM Sans',sans-serif`;
     ctx.fillStyle=textC+"cc"; ctx.textBaseline="middle"; ctx.textAlign="left";
-    ctx.fillText(d.label||"", x, by+barH/2);
+    let lbl = d.label||"";
+    while(lbl.length>3 && ctx.measureText(lbl).width > lblW-12) lbl=lbl.slice(0,-1);
+    if(lbl !== (d.label||"")) lbl += "…";
+    ctx.fillText(lbl, x, by+barH/2);
 
     // track bg with subtle glow
     ctx.fillStyle=bgC;
@@ -2066,14 +2122,16 @@ function _list(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c
 function _data(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c2,darkText,W,cY,cH,pX,TEXT_MAX_X){
   TEXT_MAX_X=TEXT_MAX_X||Math.round(W*0.57);
 
+  let headlineBottom = cY;
   if(d.headline){
     const hs=d.headline.length>40?32:d.headline.length>25?42:52;
     ctx.font=`700 ${hs}px 'DM Sans',sans-serif`;
     ctx.fillStyle=TEXT; ctx.textBaseline="alphabetic";
-    wrapText(ctx,d.headline,pX,cY+hs+16,TEXT_MAX_X-pX,hs*1.28,cY+hs*2.6);
+    headlineBottom = wrapText(ctx,d.headline,pX,cY+hs+16,TEXT_MAX_X-pX,hs*1.28,cY+hs*2.6);
   }
 
-  const top=cY+150, dH=cH-158;
+  const top = Math.max(cY+150, headlineBottom+20);
+  const dH=cH-(top-cY)-8;
   if(d.chartData&&d.chartData.length){
     if(d.chartType==="donut"&&d.chartData.length===1){
       const cd=d.chartData[0];
@@ -4597,18 +4655,24 @@ function mkDraw(ctx, W, H) {
   const tiltDeg = +document.getElementById('mkTilt').value || 0;
   const shadowAmt = +document.getElementById('mkShadow').value / 100;
 
-  // ── Phone dimensions ──
+  // ── Phone dimensions — real iPhone proportions ──
   const dev = MK_DEVICES[mkDevice] || MK_DEVICES['15pro'];
-  const phoneH = Math.min(W,H) * scale * (W>=H ? 0.85 : 0.72);
-  const phoneW = phoneH * (dev.sideW * 2 + (1 - dev.sideW*2)) / dev.screenRatio * 0.52;
-  const phoneX = W/2 - phoneW/2 + offX;
-  const phoneY = H/2 - phoneH/2 + offY;
+  // screenRatio = H/W (portrait) = ~2.167 for modern iPhones
+  // phoneW/phoneH should match the phone's real W:H ≈ 0.461
+  const phoneH = Math.min(W, H) * scale * (W >= H ? 0.80 : 0.68);
+  const phoneW = phoneH / dev.screenRatio; // correct — no fudge factor
+  
+  // Layout: wide canvas → phone right + text left; otherwise phone centered
+  const isWide = W > H * 1.1;
+  const phoneCenter_X = isWide ? W * 0.66 : W / 2;
+  const phoneX = phoneCenter_X - phoneW / 2 + offX;
+  const phoneY = H / 2 - phoneH / 2 + offY;
 
   ctx.save();
   // tilt
-  ctx.translate(W/2+offX, H/2+offY);
+  ctx.translate(phoneCenter_X+offX, H/2+offY);
   ctx.rotate(tiltDeg * Math.PI/180);
-  ctx.translate(-(W/2+offX), -(H/2+offY));
+  ctx.translate(-(phoneCenter_X+offX), -(H/2+offY));
 
   // ── Drop shadow ──
   if (shadowAmt > 0) {
@@ -4702,31 +4766,123 @@ function mkDraw(ctx, W, H) {
 
   ctx.restore(); // untilt
 
-  // ── Text overlays on canvas ──
+  // ── Decorative sprinkles ──
+  ctx.save();
+  const {r:sr, g:sg, b:sb} = mkHexToRgb(acc);
+  // Floating circles
+  const circles = [
+    {cx:W*0.05, cy:H*0.12, r:W*0.025, a:0.18},
+    {cx:W*0.92, cy:H*0.08, r:W*0.015, a:0.12},
+    {cx:W*0.88, cy:H*0.9,  r:W*0.03,  a:0.10},
+    {cx:W*0.08, cy:H*0.85, r:W*0.018, a:0.14},
+    {cx:W*0.95, cy:H*0.5,  r:W*0.01,  a:0.20},
+    {cx:W*0.02, cy:H*0.5,  r:W*0.012, a:0.16},
+  ];
+  circles.forEach(c=>{
+    const rg = ctx.createRadialGradient(c.cx,c.cy,0,c.cx,c.cy,c.r);
+    rg.addColorStop(0,`rgba(${sr},${sg},${sb},${c.a})`);
+    rg.addColorStop(1,`rgba(${sr},${sg},${sb},0)`);
+    ctx.fillStyle=rg; ctx.beginPath(); ctx.arc(c.cx,c.cy,c.r,0,Math.PI*2); ctx.fill();
+  });
+  // Cross/plus decorations
+  ctx.strokeStyle=`rgba(${sr},${sg},${sb},0.25)`; ctx.lineWidth=1.5;
+  [[W*0.1,H*0.35],[W*0.9,H*0.65],[W*0.5,H*0.95]].forEach(([px,py])=>{
+    const sz=W*0.012;
+    ctx.beginPath(); ctx.moveTo(px-sz,py); ctx.lineTo(px+sz,py); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px,py-sz); ctx.lineTo(px,py+sz); ctx.stroke();
+  });
+  // Small dots scattered
+  ctx.fillStyle=`rgba(${sr},${sg},${sb},0.35)`;
+  [[W*0.15,H*0.92],[W*0.78,H*0.06],[W*0.03,H*0.65],[W*0.96,H*0.35],[W*0.5,H*0.04]].forEach(([px,py])=>{
+    ctx.beginPath(); ctx.arc(px,py,W*0.006,0,Math.PI*2); ctx.fill();
+  });
+  // Corner accent lines
+  ctx.strokeStyle=`rgba(${sr},${sg},${sb},0.3)`; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(0,H*0.05); ctx.lineTo(W*0.05,H*0.05); ctx.lineTo(W*0.05,0); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W,H*0.95); ctx.lineTo(W*0.95,H*0.95); ctx.lineTo(W*0.95,H); ctx.stroke();
+  ctx.restore();
+
+  // ── Text overlays ──
   const headline = (document.getElementById('mkHeadline')||{}).value||'';
   const subline  = (document.getElementById('mkSubline')||{}).value||'';
   const handle   = (document.getElementById('mkHandle')||{}).value||'';
+  const lightBg  = mkBgStyleVal==='light';
+  const textPrimary   = lightBg ? '#111111' : '#ffffff';
+  const textSecondary = lightBg ? '#444444' : 'rgba(255,255,255,0.75)';
 
-  const textY = phoneY + phoneH + H*0.045;
-  const lightBg = mkBgStyleVal==='light';
+  if (isWide && (headline || subline || handle)) {
+    // Text on LEFT side beside the phone
+    const txAreaX = W * 0.04;
+    const txAreaW = W * 0.52 - txAreaX - phoneW / 2 - W*0.02;
+    let ty = H * 0.30;
 
-  if (headline) {
-    ctx.font=`700 ${W*0.052}px "Bebas Neue",sans-serif`;
-    ctx.fillStyle = lightBg ? '#111' : '#ffffff';
-    ctx.textAlign='center'; ctx.textBaseline='top';
-    ctx.fillText(headline, W/2+offX, textY);
-  }
-  if (subline) {
-    ctx.font=`400 ${W*0.026}px "DM Sans",sans-serif`;
-    ctx.fillStyle = lightBg ? '#444' : 'rgba(255,255,255,0.7)';
-    ctx.textAlign='center'; ctx.textBaseline='top';
-    ctx.fillText(subline, W/2+offX, textY + (headline ? W*0.058 : 0));
-  }
-  if (handle) {
-    ctx.font=`400 ${W*0.022}px "DM Mono",monospace`;
+    // Accent line above text
     ctx.fillStyle = acc;
-    ctx.textAlign='center'; ctx.textBaseline='top';
-    ctx.fillText(handle, W/2+offX, H - H*0.06);
+    ctx.fillRect(txAreaX, ty - H*0.04, Math.min(txAreaW*0.4, W*0.06), 3);
+    ty += 4;
+
+    if(headline){
+      ctx.save();
+      ctx.font=`700 ${W*0.042}px "Bebas Neue",sans-serif`;
+      ctx.fillStyle = textPrimary; ctx.textAlign='left'; ctx.textBaseline='top';
+      // Word-wrap headline into txAreaW
+      const words=headline.split(' '); let line='', lineY=ty;
+      const lh = W*0.048;
+      words.forEach(w=>{
+        const test=line?line+' '+w:w;
+        if(ctx.measureText(test).width>txAreaW&&line){
+          ctx.fillText(line,txAreaX,lineY); line=w; lineY+=lh;
+        } else line=test;
+      });
+      if(line) ctx.fillText(line,txAreaX,lineY);
+      ty = lineY + lh + H*0.02;
+      ctx.restore();
+    }
+    if(subline){
+      ctx.save();
+      ctx.font=`400 ${W*0.020}px "DM Sans",sans-serif`;
+      ctx.fillStyle = textSecondary; ctx.textAlign='left'; ctx.textBaseline='top';
+      const words=subline.split(' '); let line='', lineY=ty;
+      const lh=W*0.024;
+      words.forEach(w=>{
+        const test=line?line+' '+w:w;
+        if(ctx.measureText(test).width>txAreaW&&line){
+          ctx.fillText(line,txAreaX,lineY); line=w; lineY+=lh;
+        } else line=test;
+      });
+      if(line) ctx.fillText(line,txAreaX,lineY);
+      ty = lineY + lh + H*0.015;
+      ctx.restore();
+    }
+    if(handle){
+      ctx.font=`500 ${W*0.016}px "DM Mono",monospace`;
+      ctx.fillStyle = acc; ctx.textAlign='left'; ctx.textBaseline='top';
+      ctx.fillText(handle, txAreaX, ty);
+      // Underline
+      ctx.fillStyle=acc+'55';
+      ctx.fillRect(txAreaX, ty+W*0.019, ctx.measureText(handle).width, 2);
+    }
+  } else {
+    // Text BELOW phone (original behavior)
+    const textY = phoneY + phoneH + H * 0.045;
+    if (headline) {
+      ctx.font=`700 ${W*0.052}px "Bebas Neue",sans-serif`;
+      ctx.fillStyle = textPrimary;
+      ctx.textAlign='center'; ctx.textBaseline='top';
+      ctx.fillText(headline, phoneCenter_X+offX, textY);
+    }
+    if (subline) {
+      ctx.font=`400 ${W*0.026}px "DM Sans",sans-serif`;
+      ctx.fillStyle = textSecondary;
+      ctx.textAlign='center'; ctx.textBaseline='top';
+      ctx.fillText(subline, phoneCenter_X+offX, textY + (headline ? W*0.058 : 0));
+    }
+    if (handle) {
+      ctx.font=`400 ${W*0.022}px "DM Mono",monospace`;
+      ctx.fillStyle = acc;
+      ctx.textAlign='center'; ctx.textBaseline='top';
+      ctx.fillText(handle, phoneCenter_X+offX, H - H*0.06);
+    }
   }
 
   // accent strip at top
@@ -4806,6 +4962,23 @@ function infInitTmpls() {
 }
 
 // Override the infographic generate to add watermark
+function infSelectPreset(btn) {
+  document.querySelectorAll('#infColorPresets .preset').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  pageStyles.inf.c1 = btn.dataset.c1;
+  pageStyles.inf.c2 = btn.dataset.c2;
+  pageStyles.inf.darkText = btn.dataset.dark === 'true';
+  document.getElementById('inf-color1').value = pageStyles.inf.c1;
+  document.getElementById('inf-color2').value = pageStyles.inf.c2;
+  document.getElementById('inf-darkTextMode').checked = pageStyles.inf.darkText;
+}
+function infOnCustomColor() {
+  document.querySelectorAll('#infColorPresets .preset').forEach(b=>b.classList.remove('active'));
+  pageStyles.inf.c1 = document.getElementById('inf-color1').value;
+  pageStyles.inf.c2 = document.getElementById('inf-color2').value;
+  pageStyles.inf.darkText = document.getElementById('inf-darkTextMode').checked;
+}
+
 async function infGenerate() {
   if(!currentUser){showAuthScreen('login');return;}
   const text=document.getElementById('inf-text').value.trim();
@@ -4819,10 +4992,22 @@ async function infGenerate() {
     const res = await fetch('/api/generate', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ topic: text, mode: 'infographic', tweet: text })
+      body: JSON.stringify({ topic: text, mode: 'infographic', tweet: text, chartStyle: infCurrentStyle||'bars' })
     });
     const data = await res.json();
     if(!res.ok) throw new Error(data.error || 'Infographic generation failed');
+
+    // If backend doesn't honour chartStyle, force-map layout to match user's selected template
+    const styleLayoutMap = { bars:'data', stats:'stat', timeline:'list' };
+    if(infCurrentStyle && styleLayoutMap[infCurrentStyle] && !data.layout) {
+      data.layout = styleLayoutMap[infCurrentStyle];
+    } else if(infCurrentStyle === 'bars' && data.layout === 'stat') {
+      data.layout = 'data'; // override stat → data for bar chart
+    } else if(infCurrentStyle === 'stats' && data.layout === 'data' && (!data.chartData || !data.chartData.length)) {
+      data.layout = 'stat';
+    } else if(infCurrentStyle === 'timeline') {
+      data.layout = 'list';
+    }
 
     const style=pageStyles.inf||{c1:'#6366f1',c2:'#a855f7',darkText:false};
     const handle=document.getElementById('inf-xHandle').value.trim();
@@ -5055,9 +5240,8 @@ async function wcStep4Analyse() {
   WC.step = 4;
   wcHideInput();
 
-  // Check balance before calling AI
   if (!currentUser) { showAuthScreen('login'); return; }
-  if (userBalance < 10) {
+  if (userBalance < 20) {
     wcBotMsg(`You need at least ₦20 to get AI suggestions. Top up your wallet!`);
     setTimeout(openTopup, 800);
     document.getElementById("wcRestartBtn").classList.add("visible");
@@ -5066,22 +5250,47 @@ async function wcStep4Analyse() {
 
   wcShowTyping();
   try {
-    const res  = await fetch("/api/suggest", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ platform: WC.platform, handle: WC.handle, examples: WC.examples }) });
-    const text = await res.text();
-    let data;
-    try { data = JSON.parse(text); } catch(e) { throw new Error("Could not analyse your style — skipping to manual"); }
-    if (!res.ok) throw new Error(data.error || "Analysis failed");
+    const prompt = `You are a content strategist. Analyse these social media posts/description to detect the creator's writing style for ${WC.platform}.
+
+Examples/Description:
+${WC.examples}
+
+Return ONLY a valid JSON object — no markdown fences, no explanation, no extra text:
+{
+  "tone": "one of: conversational / bold / educational / personal / analytical",
+  "topics": ["topic 1", "topic 2", "topic 3"],
+  "ideas": ["specific content idea 1 (full sentence)", "specific content idea 2 (full sentence)", "specific content idea 3 (full sentence)"],
+  "style_notes": "one-sentence description of the creator's voice"
+}`;
+
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 600,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const raw = await res.json();
+    const textBlock = (raw.content || []).find(b => b.type === "text");
+    if (!textBlock) throw new Error("No response from AI");
+
+    let jsonStr = textBlock.text.trim();
+    // Strip any accidental markdown fences
+    jsonStr = jsonStr.replace(/^```json?\s*/i, "").replace(/```\s*$/,"").trim();
+    const data = JSON.parse(jsonStr);
+
     WC.detectedStyle = data;
     wcRemoveTyping();
 
-    // ₦20 charge for the AI suggestion response
-    const ok = await deduct(20, "What Can I Create — AI suggestions");
+    const ok = await deduct(20, "What Can I Create — AI style analysis");
     if (!ok) { document.getElementById("wcRestartBtn").classList.add("visible"); return; }
 
     wcStep5ShowSuggestions(data);
   } catch(err) {
     wcRemoveTyping();
-    wcBotMsg(`Hmm, couldn't auto-detect style right now. Let's go manual.`);
+    wcBotMsg(`Couldn't auto-detect style right now. Let's go manual.`);
     setTimeout(wcStep5Fallback, 700);
   }
 }
@@ -5173,7 +5382,7 @@ async function wcStep7Generate() {
   if (!currentUser) { showAuthScreen('login'); return; }
 
   const isThread = WC.chosenFormat === "thread";
-  const cost = 20; // flat ₦20 for What Can I Create
+  const cost = 20;
 
   if (userBalance < cost) {
     wcBotMsg(`You need ₦${cost} to generate this. Top up your wallet and come back!`);
@@ -5183,40 +5392,84 @@ async function wcStep7Generate() {
   }
 
   wcShowTyping();
-  const tone   = WC.detectedStyle?.tone || "conversational";
-  const context = [
+  const tone    = WC.detectedStyle?.tone || "conversational";
+  const styleNote = WC.detectedStyle?.style_notes || "";
+  const contextStr = [
     `Platform: ${WC.platform}`,
-    WC.detectedStyle?.style_notes ? `Style: ${WC.detectedStyle.style_notes}` : "",
-    WC.examples ? `User examples: ${WC.examples.slice(0, 400)}` : "",
+    styleNote ? `Voice/style: ${styleNote}` : "",
+    WC.examples ? `Creator examples: ${WC.examples.slice(0, 300)}` : "",
   ].filter(Boolean).join("\n");
 
   const ok = await deduct(cost, `What Can I Create — content generation`);
   if (!ok) { wcRemoveTyping(); return; }
 
   try {
-    const body = {
-      topic: WC.chosenTopic, context, tone,
-      length: isThread ? "short" : "single",
-      mode: isThread ? "thread" : "single",
-      short_form: true  // signal to keep output concise
-    };
-    if (!isThread) { body.format = "short_post"; }
+    let prompt, data;
 
-    const res  = await fetch("/api/generate", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
-    const raw  = await res.text();
-    let data;
-    try { data = JSON.parse(raw); } catch(e) { throw new Error("Server error — please try again"); }
-    if (!res.ok) throw new Error(data.error || "Generation failed");
+    if (isThread) {
+      prompt = `You are a viral Twitter/X thread writer. Write a punchy 5-tweet thread about:
+
+Topic: ${WC.chosenTopic}
+${contextStr}
+Tone: ${tone}
+
+Rules:
+- Exactly 5 tweets
+- Each tweet ≤ 280 characters
+- Hook on tweet 1, CTA on tweet 5
+- No hashtags unless very natural
+- Return ONLY a JSON array of 5 strings, no markdown, no explanation:
+["tweet 1 text", "tweet 2 text", "tweet 3 text", "tweet 4 text", "tweet 5 text"]`;
+
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 800,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+      const raw = await res.json();
+      const textBlock = (raw.content || []).find(b => b.type === "text");
+      if (!textBlock) throw new Error("No response from AI");
+      let jsonStr = textBlock.text.trim().replace(/^```json?\s*/i,"").replace(/```\s*$/,"").trim();
+      const tweets = JSON.parse(jsonStr);
+      if (!Array.isArray(tweets) || tweets.length === 0) throw new Error("Invalid thread data");
+      data = { tweets: tweets.slice(0, 5) };
+    } else {
+      prompt = `Write a single compelling ${WC.platform} post about:
+
+Topic: ${WC.chosenTopic}
+${contextStr}
+Tone: ${tone}
+
+Rules:
+- Max 280 characters for Twitter/X, longer for LinkedIn/Facebook
+- No hashtag spam
+- Return ONLY the post text, nothing else — no quotes, no label, no explanation`;
+
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 400,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+      const raw = await res.json();
+      const textBlock = (raw.content || []).find(b => b.type === "text");
+      if (!textBlock) throw new Error("No response from AI");
+      data = { post: textBlock.text.trim() };
+    }
 
     wcRemoveTyping();
     if (isThread) {
-      // For short-form threads, cap at 5 tweets max
-      const tweets = (data.tweets || []).slice(0, 5);
-      wcRenderThreadResult(tweets);
+      wcRenderThreadResult(data.tweets);
     } else {
-      let post = data.post || (Array.isArray(data.tweets) ? data.tweets[0] : "");
-      // Trim post to ~280 chars for short-form
-      if (post.length > 300) post = post.slice(0, 280).trimEnd() + "…";
+      let post = data.post || "";
+      if (WC.platform === "twitter" && post.length > 300) post = post.slice(0, 277).trimEnd() + "…";
       wcRenderPostResult(post);
     }
   } catch(err) {
