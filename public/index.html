@@ -2948,6 +2948,8 @@ async function msGenerate(sceneCount, cost){
   // if this token changes (i.e. a new script was generated since).
   const sessionToken = Date.now().toString(36) + Math.random().toString(36).slice(2);
   window._msSessionToken = sessionToken;
+  // Store exact key so the render guard can verify nothing changed
+  window._msGenerationKey = topic.trim().toLowerCase() + "|||" + context.trim().toLowerCase().slice(0, 80);
 
   const btn = document.getElementById("msGenerateBtn");
   btn.disabled=true; btn.textContent="GENERATING...";
@@ -3658,12 +3660,15 @@ async function msRenderVideo() {
     if (eb) { eb.textContent = "// Generate a script first before rendering video."; eb.classList.add("visible"); }
     return;
   }
-  // Safety: ensure the scenes belong to the latest generation,
-  // not a previous topic that happened to share a prefix.
-  const currentTopic = (document.getElementById("ms-topic")?.value || "").trim().toLowerCase();
-  if (window._msScenesTopic && currentTopic && window._msScenesTopic !== currentTopic) {
+  // Safety: ensure the scenes are from the latest generation.
+  // We compare the exact topic+context key captured at generation time.
+  const _msTopicEl   = document.getElementById("ms-topic");
+  const _msContextEl = document.getElementById("ms-context");
+  const currentKey = (_msTopicEl?.value||"").trim().toLowerCase()
+    + "|||" + (_msContextEl?.value||"").trim().toLowerCase().slice(0, 80);
+  if (!window._msGenerationKey || currentKey !== window._msGenerationKey) {
     const eb = document.getElementById("msErrorBox");
-    if (eb) { eb.textContent = "// Topic changed — regenerate the script first."; eb.classList.add("visible"); }
+    if (eb) { eb.textContent = "// Script is out of date — regenerate for the current topic first."; eb.classList.add("visible"); }
     return;
   }
 
@@ -5484,6 +5489,26 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("gigUrl")?.addEventListener("keydown", e => { if(e.key==="Enter") fetchBrief(); });
   document.getElementById("topic")?.addEventListener("keydown", e => { if(e.key==="Enter"&&!e.shiftKey) handleGenerateClick(); });
   document.getElementById("ct-topic")?.addEventListener("keydown", e => { if(e.key==="Enter"&&!e.shiftKey) handleCtGenerateClick(); });
+
+  // Invalidate stale scenes when the motion script topic or context changes
+  function msInvalidateScenes() {
+    if (!window._msScenes) return; // nothing to invalidate
+    window._msScenes = null;
+    window._msGenerationKey = null;
+    window._msScenesTopic = null;
+    window._msSessionToken = null;
+    _msVideoBlob = null;
+    const scSec = document.getElementById("msSceneSection");
+    if (scSec) scSec.classList.remove("visible");
+    const vidSec = document.getElementById("msVideoSection");
+    if (vidSec) vidSec.style.display = "none";
+    const prevSec = document.getElementById("msVideoPreview");
+    if (prevSec) prevSec.style.display = "none";
+    const eb = document.getElementById("msErrorBox");
+    if (eb) { eb.textContent = "// Topic changed — click Generate Script to create a fresh script."; eb.classList.add("visible"); }
+  }
+  document.getElementById("ms-topic")?.addEventListener("input", msInvalidateScenes);
+  document.getElementById("ms-context")?.addEventListener("input", msInvalidateScenes);
   gfxInitTmpls();
   gfxAttachEvents();
   infInitTmpls();
@@ -5707,14 +5732,18 @@ function openWork(id) {
     setTimeout(() => document.getElementById("infPreviewSec").scrollIntoView({behavior:"smooth",block:"start"}), 300);
 
   } else if (w.type === "motion") {
-    // Pre-fill topic field and restore scenes
+    // Pre-fill topic field and restore scenes for review only
     if (document.getElementById("ms-topic")) document.getElementById("ms-topic").value = w.topic || "";
+    // Clear generation key — render is blocked until user regenerates
+    window._msGenerationKey = null;
+    window._msSessionToken  = null;
     showPage("pageMotionScript");
     if (Array.isArray(w.content)) {
-      // Restore scenes without generating a new session token
-      // (user can view/edit but must regenerate to render new video)
       window._msScenesTopic = (w.topic || "").toLowerCase();
-      msRenderScenes(w.content, window._msSessionToken);
+      msRenderScenes(w.content, null);
+      // Warn that they need to regenerate before rendering
+      const eb = document.getElementById("msErrorBox");
+      if (eb) { eb.textContent = "// Restored from history — click Generate Script first before rendering video."; eb.classList.add("visible"); }
     }
   }
 }
