@@ -4525,7 +4525,6 @@ async function doSignup() {
   if (pass.length < 6) { showAuthError("Password must be at least 6 characters."); return; }
   try {
     await auth.createUserWithEmailAndPassword(email, pass);
-    sessionStorage.setItem("tcNewUser", "1");
   } catch(e) {
     showAuthError(e.message.replace("Firebase: ",""));
   }
@@ -4635,8 +4634,8 @@ function doTopup() {
 // PAGE ROUTING
 // ══════════════════════════════════════════════════════
 function showPage(id) {
-  // Block Motion Script for newly registered users — show Coming Soon instead
-  if (id === "pageMotionScript" && sessionStorage.getItem("tcNewUser") === "1") {
+  // ── COMING SOON: remove the next 4 lines when ready to launch Motion Script ──
+  if (id === "pageMotionScript" && currentUser?.email !== "sadekunle215@gmail.com") {
     document.getElementById("comingSoonOverlay").classList.add("visible");
     return;
   }
