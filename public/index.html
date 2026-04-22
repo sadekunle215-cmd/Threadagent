@@ -4601,6 +4601,10 @@ function mkDarken(hex, amt=0.6) {
   const {r,g,b}=mkHexToRgb(hex);
   return `rgb(${Math.round(r*amt)},${Math.round(g*amt)},${Math.round(b*amt)})`;
 }
+function mkLighten(hex, amt=0.2) {
+  const {r,g,b}=mkHexToRgb(hex);
+  return `rgb(${Math.min(255,Math.round(r+(255-r)*amt))},${Math.min(255,Math.round(g+(255-g)*amt))},${Math.min(255,Math.round(b+(255-b)*amt))})`;
+}
 
 function mkDraw(ctx, W, H) {
   ctx.clearRect(0,0,W,H);
@@ -4684,17 +4688,38 @@ function mkDraw(ctx, W, H) {
 
   // ── Phone body ──
   const cr = phoneW * dev.cornerR;
-  ctx.beginPath();
-  ctx.roundRect(phoneX, phoneY, phoneW, phoneH, cr);
-  ctx.fillStyle = dev.colorFrame||'#222';
-  ctx.fill();
+
+  // Outer shadow layer for depth
+  ctx.save();
+  ctx.shadowColor = `rgba(0,0,0,${shadowAmt * 0.85 + 0.15})`;
+  ctx.shadowBlur = phoneH * 0.10;
+  ctx.shadowOffsetY = phoneH * 0.055;
+  ctx.beginPath(); ctx.roundRect(phoneX, phoneY, phoneW, phoneH, cr);
+  ctx.fillStyle = '#000'; ctx.fill();
+  ctx.restore();
   ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetY=0;
 
-  // ── Side bezels highlight ──
+  // Main body fill — dark titanium/aluminum base
   ctx.beginPath(); ctx.roundRect(phoneX, phoneY, phoneW, phoneH, cr);
-  const bev=ctx.createLinearGradient(phoneX,phoneY,phoneX+phoneW,phoneY);
-  bev.addColorStop(0,'rgba(255,255,255,0.18)'); bev.addColorStop(0.5,'rgba(255,255,255,0.04)'); bev.addColorStop(1,'rgba(255,255,255,0.12)');
-  ctx.fillStyle=bev; ctx.fill();
+  const bodyGrad = ctx.createLinearGradient(phoneX, phoneY, phoneX + phoneW, phoneY + phoneH);
+  const fc = dev.colorFrame || '#222';
+  bodyGrad.addColorStop(0, mkLighten(fc, 0.18));
+  bodyGrad.addColorStop(0.3, fc);
+  bodyGrad.addColorStop(0.7, mkDarken(fc, 0.15));
+  bodyGrad.addColorStop(1, mkLighten(fc, 0.08));
+  ctx.fillStyle = bodyGrad; ctx.fill();
+
+  // ── Metallic edge band (the polished/brushed side frame) ──
+  // Draw a slightly smaller rounded rect as the inner edge to simulate the frame band
+  const frameInset = phoneW * 0.018;
+  ctx.beginPath(); ctx.roundRect(phoneX + frameInset, phoneY + frameInset, phoneW - frameInset*2, phoneH - frameInset*2, cr * 0.88);
+  const frameBand = ctx.createLinearGradient(phoneX, phoneY, phoneX + phoneW, phoneY);
+  frameBand.addColorStop(0,    'rgba(255,255,255,0.22)');
+  frameBand.addColorStop(0.15, 'rgba(255,255,255,0.06)');
+  frameBand.addColorStop(0.5,  'rgba(0,0,0,0.08)');
+  frameBand.addColorStop(0.85, 'rgba(255,255,255,0.04)');
+  frameBand.addColorStop(1,    'rgba(255,255,255,0.18)');
+  ctx.strokeStyle = frameBand; ctx.lineWidth = phoneW * 0.016; ctx.stroke();
 
   // ── Screen area ──
   const sw = dev.sideW, topBezel=0.045, botBezel=0.04;
@@ -4763,62 +4788,6 @@ function mkDraw(ctx, W, H) {
   const vX=phoneX-bW*0.6;
   ctx.beginPath(); ctx.roundRect(vX, phoneY+phoneH*0.18, bW, bH*0.65, bW/2); ctx.fillStyle=btnCol; ctx.fill();
   ctx.beginPath(); ctx.roundRect(vX, phoneY+phoneH*0.32, bW, bH*0.65, bW/2); ctx.fillStyle=btnCol; ctx.fill();
-
-  // ── Home indicator (pill at bottom of screen) ──
-  const hiW = sW * 0.32, hiH = Math.max(sH * 0.006, 4);
-  const hiX = sX + sW/2 - hiW/2, hiY = sY + sH - hiH - sH * 0.018;
-  ctx.save();
-  ctx.beginPath(); ctx.roundRect(hiX, hiY, hiW, hiH, hiH/2);
-  ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.fill();
-  ctx.restore();
-
-  // ── Status bar (time + signal + battery) ──
-  ctx.save();
-  const sbY = sY + sH * 0.016;
-  const now = new Date();
-  const hh = now.getHours(), mm = String(now.getMinutes()).padStart(2,'0');
-  const timeStr = `${hh > 12 ? hh - 12 : hh || 12}:${mm}`;
-  ctx.font = `600 ${sW*0.055}px -apple-system, "SF Pro Display", sans-serif`;
-  ctx.fillStyle = (mkBgStyleVal==='light') ? '#111' : '#fff';
-  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-  ctx.fillText(timeStr, sX + sW*0.07, sbY);
-
-  // Signal dots right side
-  const sigX = sX + sW * 0.72, sigY = sbY;
-  ctx.fillStyle = (mkBgStyleVal==='light') ? '#111' : '#fff';
-  [0,1,2].forEach((i) => {
-    ctx.globalAlpha = 0.5 + i * 0.25;
-    ctx.beginPath(); ctx.arc(sigX + i * sW*0.042, sigY, sW*0.018, 0, Math.PI*2); ctx.fill();
-  });
-  ctx.globalAlpha = 1;
-
-  // Battery icon
-  const batX = sX + sW * 0.84, batY = sbY - sH*0.014;
-  const batW = sW * 0.1, batH = sH * 0.028;
-  ctx.strokeStyle = (mkBgStyleVal==='light') ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.6)';
-  ctx.lineWidth = 1; ctx.beginPath();
-  ctx.roundRect(batX, batY, batW, batH, 2); ctx.stroke();
-  ctx.fillStyle = '#4CAF50'; ctx.globalAlpha = 0.9;
-  ctx.beginPath(); ctx.roundRect(batX+1.5, batY+1.5, batW*0.7-1.5, batH-3, 1.5); ctx.fill();
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = (mkBgStyleVal==='light') ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)';
-  ctx.beginPath(); ctx.roundRect(batX+batW, batY+batH*0.3, 2, batH*0.4, 1); ctx.fill();
-
-  ctx.restore();
-
-  // ── Camera system detail (15 Pro: triple lens visible beside island) ──
-  if (dev.notchType === 'island') {
-    // Front camera visible through the island - just a tiny dot
-    ctx.save();
-    const camX = sX + sW * 0.72, camY = sY + sH * 0.025;
-    ctx.beginPath(); ctx.arc(camX, camY, sW * 0.014, 0, Math.PI*2);
-    ctx.fillStyle = '#1a1a2e'; ctx.fill();
-    ctx.beginPath(); ctx.arc(camX, camY, sW * 0.008, 0, Math.PI*2);
-    ctx.fillStyle = '#2d3561'; ctx.fill();
-    ctx.beginPath(); ctx.arc(camX, camY, sW * 0.003, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(120,160,255,0.7)'; ctx.fill();
-    ctx.restore();
-  }
 
   // ── USB-C port at bottom of phone ──
   ctx.save();
@@ -5474,9 +5443,10 @@ async function wcStep7Generate() {
       if (!res.ok) throw new Error(data.error || "api_fail");
     } catch(_backendErr) {
       // Fallback: call Claude API directly
+      const platformLimit = WC.platform === 'twitter' ? 280 : 500;
       const systemPrompt = isThread
-        ? `You are a viral social media content writer. Generate a Twitter/X thread of exactly 5 tweets about the given topic. Return ONLY valid JSON: {"tweets":["tweet1","tweet2","tweet3","tweet4","tweet5"]}. Each tweet max 280 chars. Hook first tweet. No hashtag spam. Tone: ${tone}.`
-        : `You are a viral social media content writer. Write a single punchy ${WC.platform} post about the given topic. Return ONLY valid JSON: {"post":"your post text here"}. Max 280 chars for Twitter. Conversational, engaging. Tone: ${tone}.`;
+        ? `You are a viral Twitter/X thread writer. Generate EXACTLY 5 tweets as a thread. Each tweet MUST be under 280 characters. No hashtag spam. First tweet is a strong hook. Return ONLY raw JSON, no markdown, no extra text: {"tweets":["tweet1","tweet2","tweet3","tweet4","tweet5"]}. Tone: ${tone}.`
+        : `You are a viral social media writer. Write ONE single post, maximum ${platformLimit} characters HARD LIMIT — this is NOT a thread, NOT an article, just ONE punchy post. No line breaks. Under ${platformLimit} chars total. Return ONLY raw JSON: {"post":"your single post here"}. Tone: ${tone}.`;
       const userPrompt = `Topic: ${WC.chosenTopic}\nContext: ${context}`;
       const claudeRes = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
@@ -5503,7 +5473,15 @@ async function wcStep7Generate() {
       wcRenderThreadResult((data.tweets || []).slice(0, 5));
     } else {
       let post = data.post || (Array.isArray(data.tweets) ? data.tweets[0] : "");
-      if (WC.platform === "twitter" && post.length > 300) post = post.slice(0, 277).trimEnd() + "…";
+      // Enforce single-post: strip multiple paragraphs, take first block only
+      post = post.split(/\n\n/)[0].trim();
+      const limit = WC.platform === 'twitter' ? 280 : 500;
+      if (post.length > limit) {
+        // Try to trim at last sentence boundary within limit
+        const trimmed = post.slice(0, limit);
+        const lastDot = Math.max(trimmed.lastIndexOf('. '), trimmed.lastIndexOf('! '), trimmed.lastIndexOf('? '));
+        post = lastDot > limit * 0.5 ? trimmed.slice(0, lastDot + 1) : trimmed.trimEnd() + '…';
+      }
       wcRenderPostResult(post);
     }
   } catch(err) {
