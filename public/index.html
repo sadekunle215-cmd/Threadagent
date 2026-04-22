@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ThreadCraft — AI Thread Agent</title>
   <!-- ── Favicon & App Icons ── -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMWEwMDAyIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzBhMGEwYSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0idGgiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6I2UwMTYxYSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNmNDM0MzciLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iMjIiIHJ5PSIyMiIgZmlsbD0idXJsKCNiZykiLz4KICA8ZWxsaXBzZSBjeD0iNTAiIGN5PSIxMCIgcng9IjQwIiByeT0iMTYiIGZpbGw9InJnYmEoMjI0LDIyLDI2LDAuMTgpIi8+CiAgPHJlY3QgeD0iMTgiIHk9IjI2IiB3aWR0aD0iNjQiIGhlaWdodD0iNyIgcng9IjMuNSIgZmlsbD0idXJsKCN0aCkiLz4KICA8cmVjdCB4PSI0MyIgeT0iMzMiIHdpZHRoPSIxNCIgaGVpZ2h0PSI4IiBmaWxsPSJ1cmwoI3RoKSIvPgogIDxyZWN0IHg9IjI0IiB5PSI0NyIgd2lkdGg9IjUyIiBoZWlnaHQ9IjUuNSIgcng9IjIuNzUiIGZpbGw9IiNmZmZmZmYiIG9wYWNpdHk9IjAuODgiLz4KICA8cmVjdCB4PSIyNCIgeT0iNTciIHdpZHRoPSI0MCIgaGVpZ2h0PSI1LjUiIHJ4PSIyLjc1IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjU1Ii8+CiAgPHJlY3QgeD0iMjQiIHk9IjY3IiB3aWR0aD0iMzAiIGhlaWdodD0iNS41IiByeD0iMi43NSIgZmlsbD0iI2UwMTYxYSIgb3BhY2l0eT0iMC44Ii8+CiAgPGNpcmNsZSBjeD0iMTgiIGN5PSI0OS43NSIgcj0iMi41IiBmaWxsPSIjZTAxNjFhIi8+CiAgPGNpcmNsZSBjeD0iMTgiIGN5PSI1OS43NSIgcj0iMi41IiBmaWxsPSIjZTAxNjFhIiBvcGFjaXR5PSIwLjU1Ii8+CiAgPGNpcmNsZSBjeD0iMTgiIGN5PSI2OS43NSIgcj0iMi41IiBmaWxsPSIjZTAxNjFhIiBvcGFjaXR5PSIwLjQiLz4KPC9zdmc+" />
-  <link rel="alternate icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=" />
-  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMWEwMDAyIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzBhMGEwYSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0idGgiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6I2UwMTYxYSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNmNDM0MzciLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iMjIiIHJ5PSIyMiIgZmlsbD0idXJsKCNiZykiLz4KICA8ZWxsaXBzZSBjeD0iNTAiIGN5PSIxMCIgcng9IjQwIiByeT0iMTYiIGZpbGw9InJnYmEoMjI0LDIyLDI2LDAuMTgpIi8+CiAgPHJlY3QgeD0iMTgiIHk9IjI2IiB3aWR0aD0iNjQiIGhlaWdodD0iNyIgcng9IjMuNSIgZmlsbD0idXJsKCN0aCkiLz4KICA8cmVjdCB4PSI0MyIgeT0iMzMiIHdpZHRoPSIxNCIgaGVpZ2h0PSI4IiBmaWxsPSJ1cmwoI3RoKSIvPgogIDxyZWN0IHg9IjI0IiB5PSI0NyIgd2lkdGg9IjUyIiBoZWlnaHQ9IjUuNSIgcng9IjIuNzUiIGZpbGw9IiNmZmZmZmYiIG9wYWNpdHk9IjAuODgiLz4KICA8cmVjdCB4PSIyNCIgeT0iNTciIHdpZHRoPSI0MCIgaGVpZ2h0PSI1LjUiIHJ4PSIyLjc1IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjU1Ii8+CiAgPHJlY3QgeD0iMjQiIHk9IjY3IiB3aWR0aD0iMzAiIGhlaWdodD0iNS41IiByeD0iMi43NSIgZmlsbD0iI2UwMTYxYSIgb3BhY2l0eT0iMC44Ii8+CiAgPGNpcmNsZSBjeD0iMTgiIGN5PSI0OS43NSIgcj0iMi41IiBmaWxsPSIjZTAxNjFhIi8+CiAgPGNpcmNsZSBjeD0iMTgiIGN5PSI1OS43NSIgcj0iMi41IiBmaWxsPSIjZTAxNjFhIiBvcGFjaXR5PSIwLjU1Ii8+CiAgPGNpcmNsZSBjeD0iMTgiIGN5PSI2OS43NSIgcj0iMi41IiBmaWxsPSIjZTAxNjFhIiBvcGFjaXR5PSIwLjQiLz4KPC9zdmc+" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230a0a0a'/%3E%3Crect x='16' y='28' width='68' height='10' rx='5' fill='%23e0161a'/%3E%3Crect x='16' y='44' width='50' height='7' rx='3.5' fill='%23ffffff' opacity='.85'/%3E%3Crect x='16' y='56' width='38' height='7' rx='3.5' fill='%23ffffff' opacity='.55'/%3E%3Crect x='16' y='68' width='26' height='7' rx='3.5' fill='%23e0161a' opacity='.8'/%3E%3Ccircle cx='76' cy='60' r='14' fill='none' stroke='%23e0161a' stroke-width='3'/%3E%3Cpath d='M71 60l4 4 8-8' stroke='%23e0161a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230a0a0a'/%3E%3Crect x='16' y='28' width='68' height='10' rx='5' fill='%23e0161a'/%3E%3Crect x='16' y='44' width='50' height='7' rx='3.5' fill='%23ffffff' opacity='.85'/%3E%3Crect x='16' y='56' width='38' height='7' rx='3.5' fill='%23ffffff' opacity='.55'/%3E%3Crect x='16' y='68' width='26' height='7' rx='3.5' fill='%23e0161a' opacity='.8'/%3E%3Ccircle cx='76' cy='60' r='14' fill='none' stroke='%23e0161a' stroke-width='3'/%3E%3Cpath d='M71 60l4 4 8-8' stroke='%23e0161a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" />
   <meta name="theme-color" content="#e0161a" />
   <meta name="description" content="ThreadCraft — AI-powered thread, post and motion video generator for creators." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1577,6 +1576,26 @@
         <label>Context &amp; Brief (optional but improves output)</label>
         <textarea id="ms-context" placeholder="Paste gig details, brand notes, target audience, key messages..."></textarea>
       </div>
+      <!-- Logo Upload -->
+      <div class="field">
+        <label>Brand Logo / Image (optional — used in video scenes)</label>
+        <div id="msLogoUploadArea" style="border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s;background:#fff;position:relative" onclick="document.getElementById('msLogoInput').click()" ondragover="event.preventDefault();this.style.borderColor='var(--red)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="msHandleLogoDrop(event)">
+          <input type="file" id="msLogoInput" accept="image/*" style="display:none" onchange="msHandleLogoFile(this.files[0])">
+          <div id="msLogoPlaceholder">
+            <svg width="32" height="32" fill="none" viewBox="0 0 24 24" style="color:var(--muted);margin-bottom:8px"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.5"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="M3 15l5-5 4 4 3-3 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.5px">Click or drag your logo / brand image here</div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px;opacity:.7">PNG, JPG, SVG — transparent background works best</div>
+          </div>
+          <div id="msLogoPreview" style="display:none;align-items:center;gap:14px;justify-content:center">
+            <img id="msLogoImg" style="max-height:60px;max-width:160px;border-radius:8px;border:1px solid var(--border)" />
+            <div>
+              <div id="msLogoName" style="font-family:var(--mono);font-size:11px;color:var(--muted2);margin-bottom:6px"></div>
+              <button onclick="event.stopPropagation();msClearLogo()" style="font-family:var(--mono);font-size:10px;color:var(--red);background:none;border:1px solid rgba(224,22,26,.3);border-radius:6px;padding:4px 10px;cursor:pointer;letter-spacing:.5px">Remove</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="field">
         <label>Video Length</label>
         <div class="motion-length-row">
@@ -2911,6 +2930,42 @@ function setFetchLoading(active){const btn=document.getElementById("fetchBtn"),s
 let msSelectedLen   = "30";
 let msSelectedStyle = "cinematic";
 
+// ── Logo upload helpers ──
+let _msLogoImage = null; // HTMLImageElement or null
+
+function msHandleLogoFile(file) {
+  if (!file || !file.type.startsWith("image/")) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      _msLogoImage = img;
+      document.getElementById("msLogoImg").src = e.target.result;
+      document.getElementById("msLogoName").textContent = file.name.length > 28 ? file.name.slice(0, 25) + "..." : file.name;
+      document.getElementById("msLogoPlaceholder").style.display = "none";
+      document.getElementById("msLogoPreview").style.display = "flex";
+      document.getElementById("msLogoUploadArea").style.borderColor = "var(--red)";
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function msHandleLogoDrop(e) {
+  e.preventDefault();
+  document.getElementById("msLogoUploadArea").style.borderColor = "var(--border)";
+  const file = e.dataTransfer.files[0];
+  if (file) msHandleLogoFile(file);
+}
+
+function msClearLogo() {
+  _msLogoImage = null;
+  document.getElementById("msLogoInput").value = "";
+  document.getElementById("msLogoPlaceholder").style.display = "block";
+  document.getElementById("msLogoPreview").style.display = "none";
+  document.getElementById("msLogoUploadArea").style.borderColor = "var(--border)";
+}
+
 function msSelectLen(btn){
   document.querySelectorAll(".motion-len-btn").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
@@ -2971,6 +3026,21 @@ async function msGenerate(sceneCount, cost){
   if (vidSec) vidSec.style.display = "none";
 
   try{
+    // Detect topic category for smarter scene visuals
+    const topicLower = (topic + " " + context).toLowerCase();
+    let topicCategory = "general";
+    if (topicLower.match(/facebook|instagram|twitter|tiktok|social media|youtube|linkedin|whatsapp|snapchat/)) topicCategory = "social";
+    else if (topicLower.match(/fintech|bank|payment|transfer|wallet|finance|money|naira|usd|loan|savings|invest/)) topicCategory = "fintech";
+    else if (topicLower.match(/crypto|bitcoin|ethereum|solana|defi|nft|blockchain|web3|token|swap/)) topicCategory = "crypto";
+    else if (topicLower.match(/ecommerce|shop|store|product|fashion|clothing|brand|retail|marketplace/)) topicCategory = "ecommerce";
+    else if (topicLower.match(/health|medical|fitness|workout|wellness|gym|nutrition|diet|hospital/)) topicCategory = "health";
+    else if (topicLower.match(/ai|machine learning|saas|software|app|tech|startup|platform|dashboard|code|developer/)) topicCategory = "tech";
+    else if (topicLower.match(/food|restaurant|delivery|eat|cook|recipe|meal|chef/)) topicCategory = "food";
+    else if (topicLower.match(/real estate|property|home|house|land|mortgage|rent/)) topicCategory = "realestate";
+    else if (topicLower.match(/education|learn|course|school|student|university|training|skill/)) topicCategory = "education";
+
+    window._msTopicCategory = topicCategory;
+
     // Route through backend /api/generate with mode:"motion"
     const res = await fetch("/api/generate", {
       method: "POST",
@@ -2979,13 +3049,29 @@ async function msGenerate(sceneCount, cost){
         topic, context,
         tone: msSelectedStyle,
         length: msSelectedLen,
-        mode: "motion"
+        mode: "motion",
+        topicCategory,
+        hasLogo: !!_msLogoImage,
+        brandName: topic.trim()
       })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Motion script generation failed");
-    const scenes = data.scenes || data.tweets;
+    let scenes = data.scenes || data.tweets;
     if (!Array.isArray(scenes) || scenes.length === 0) throw new Error("No scenes returned — please try again");
+
+    // Strip all emojis from every scene field (no emojis in video text)
+    const stripEmoji = str => (str || "").replace(/[\u{1F300}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}\u{1F100}-\u{1F1FF}\u{1F200}-\u{1F2FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}]/gu, "").replace(/[\u2000-\u206F]/g, "").trim();
+    scenes = scenes.map(s => {
+      if (typeof s === "string") return stripEmoji(s);
+      return {
+        ...s,
+        visual:     stripEmoji(s.visual),
+        overlay:    stripEmoji(s.overlay),
+        voiceover:  stripEmoji(s.voiceover),
+        mood:       stripEmoji(s.mood),
+      };
+    });
     msRenderScenes(scenes, sessionToken);
     // Save to work history
     saveWork("motion", topic, scenes, cost);
@@ -3157,13 +3243,27 @@ function drawHUD(ctx, W, H, pal, sceneNum, totalScenes, t) {
   // bottom line
   ctx.fillStyle = pal.accent;
   ctx.fillRect(0, H - 3, W * Math.min(1, t * 2), 3);
-  // labels
+
+  const hudY = H - 14;
+  const topic = (document.getElementById("ms-topic")?.value || "").trim().toUpperCase().slice(0, 32) || "THREADCRAFT";
+
+  if (_msLogoImage) {
+    // Draw uploaded logo in bottom-left HUD slot
+    const lh = H * 0.042;
+    const lw = lh * (_msLogoImage.width / _msLogoImage.height);
+    ctx.globalAlpha = Math.min(1, t * 4) * 0.65;
+    ctx.drawImage(_msLogoImage, 32, H - lh - 10, Math.min(lw, W * 0.2), lh);
+  } else {
+    ctx.font = `400 ${H*0.022}px "Courier New", monospace`;
+    ctx.fillStyle = pal.sub;
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+    ctx.fillText(topic, 40, hudY);
+  }
+
   ctx.font = `400 ${H*0.022}px "Courier New", monospace`;
   ctx.fillStyle = pal.sub;
-  ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
-  ctx.fillText("THREADCRAFT", 40, H - 14);
-  ctx.textAlign = "right";
-  ctx.fillText(`${sceneNum} / ${totalScenes}`, W - 40, H - 14);
+  ctx.textAlign = "right"; ctx.textBaseline = "alphabetic";
+  ctx.fillText(`${sceneNum} / ${totalScenes}`, W - 40, hudY);
   ctx.restore();
 }
 
@@ -3232,29 +3332,56 @@ function renderSceneDashboard(ctx, W, H, t, pal, scene) {
   for (let gx = 0; gx < W; gx += 60) { ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,H); ctx.stroke(); }
   for (let gy = 0; gy < H; gy += 60) { ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke(); }
   ctx.restore();
+
+  // Build stats from topic + overlay text — nothing is hardcoded
+  const cat = window._msTopicCategory || "general";
+  const topicRaw = (document.getElementById("ms-topic")?.value || "").trim();
+  const overlayWords = (scene.overlay || topicRaw).toUpperCase().replace(/[^A-Z0-9\s]/g,"").trim();
+  // Title: use overlay text truncated, never a hardcoded string
+  const dashTitle = overlayWords.slice(0, 28) || topicRaw.toUpperCase().slice(0, 28) || "LIVE DASHBOARD";
+
+  // Bar data: seeded from overlay text so it's unique per scene but stable
+  const seed = (scene.overlay || topicRaw || "x").split("").reduce((a,c) => a + c.charCodeAt(0), 0);
+  const bars = Array.from({length: 8}, (_, i) => {
+    const v = ((seed * (i + 3) * 7919) % 100) / 100;
+    return 0.3 + v * 0.65; // always between 30% and 95%
+  });
+
+  // Stat pills: topic-aware labels and values
+  const statSets = {
+    social:    [["REACH",  "2.4M"], ["ENGAGE", "8.7%"], ["GROWTH", "+34%"]],
+    fintech:   [["USERS",  "18K"],  ["VOLUME", "N12M"], ["RATE",   "99.1%"]],
+    crypto:    [["TVL",    "$4.2M"],["APY",    "18.4%"],["TXS",    "92K"]],
+    ecommerce: [["ORDERS", "3.1K"], ["GMV",    "N8.6M"],["CONV",   "4.2%"]],
+    health:    [["USERS",  "9.4K"], ["STREAK", "21d"],  ["GOALS",  "87%"]],
+    tech:      [["MAU",    "45K"],  ["UPTIME", "99.9%"],["CALLS",  "1.2M"]],
+    food:      [["ORDERS", "1.8K"], ["RATING", "4.8/5"],["DELIVER","94%"]],
+    realestate:[["LISTINGS","340"], ["VIEWS",  "12K"],  ["LEADS",  "8.4%"]],
+    education: [["STUDENTS","6.2K"],["COMPLT", "78%"],  ["RATING", "4.9/5"]],
+    general:   [["USERS",  "12.4K"],["RATE",   "94.2%"],["TOTAL",  "+28%"]],
+  };
+  const stats = statSets[cat] || statSets.general;
+
   // Main dashboard card
   const reveal = easeOut(Math.min(1, t * 2));
   const cardX = W*0.05, cardW = W*0.9;
-  const cardY = H*0.08 + (1 - reveal) * 40, cardH = H*0.65;
+  const cardY = H*0.08 + (1 - reveal) * 40, cardH = H*0.62;
   ctx.save();
   ctx.globalAlpha = reveal;
-  // Card bg
   ctx.fillStyle = "#111827";
   ctx.strokeStyle = "rgba(59,130,246,0.4)"; ctx.lineWidth = 1.5;
   ctx.beginPath(); ctx.roundRect(cardX, cardY, cardW, cardH, 12); ctx.fill(); ctx.stroke();
   // Card header bar
   ctx.fillStyle = "#1f2937";
   ctx.beginPath(); ctx.roundRect(cardX, cardY, cardW, 44, [12,12,0,0]); ctx.fill();
-  // Header dots
   ["#ef4444","#f59e0b","#22c55e"].forEach((c,i) => {
     ctx.fillStyle = c; ctx.beginPath(); ctx.arc(cardX+20+i*20, cardY+22, 6, 0, Math.PI*2); ctx.fill();
   });
   ctx.fillStyle = "#6b7280"; ctx.font = `400 ${H*0.022}px "Courier New",monospace`;
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  const dashTitle = (scene.overlay||"").toUpperCase().slice(0,30) || "LIVE DASHBOARD";
   ctx.fillText(dashTitle, W/2, cardY+22);
-  // Animated bar chart
-  const bars = [0.65, 0.82, 0.45, 0.91, 0.73, 0.58, 0.88, 0.76];
+
+  // Animated bar chart — colour tinted by palette accent
   const barAreaX = cardX + 40, barAreaY = cardY + 60, barAreaH = cardH - 110, barAreaW = cardW - 80;
   const bw = (barAreaW / bars.length) - 8;
   bars.forEach((val, i) => {
@@ -3262,25 +3389,23 @@ function renderSceneDashboard(ctx, W, H, t, pal, scene) {
     const bx = barAreaX + i * (bw + 8);
     const bh = barAreaH * animVal;
     const by = barAreaY + barAreaH - bh;
-    // Bar bg
-    ctx.fillStyle = "rgba(59,130,246,0.1)";
+    ctx.fillStyle = "rgba(59,130,246,0.08)";
     ctx.beginPath(); ctx.roundRect(bx, barAreaY, bw, barAreaH, 4); ctx.fill();
-    // Bar fill
     const barGrad = ctx.createLinearGradient(0, by, 0, by+bh);
-    barGrad.addColorStop(0, "#3b82f6"); barGrad.addColorStop(1, "#1d4ed8");
+    barGrad.addColorStop(0, pal.accent + "dd"); barGrad.addColorStop(1, "#1d4ed8");
     ctx.fillStyle = barGrad;
     ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, [4,4,0,0]); ctx.fill();
-    // Value label
     ctx.fillStyle = "#9ca3af"; ctx.font = `400 ${H*0.018}px Arial,sans-serif`;
     ctx.textAlign = "center"; ctx.textBaseline = "top";
     ctx.fillText((val*100).toFixed(0)+"%", bx+bw/2, barAreaY + barAreaH + 6);
   });
-  // Live indicator
+
+  // Live indicator pulse
   const pulse = 0.5 + 0.5 * Math.sin(t * Math.PI * 8);
   ctx.fillStyle = `rgba(34,197,94,${pulse})`; ctx.beginPath(); ctx.arc(cardX+cardW-20, cardY+22, 5, 0, Math.PI*2); ctx.fill();
   ctx.restore();
-  // Stat pills below chart
-  const stats = [["USERS","24.5K"], ["RATE","96.2%"], ["TOTAL","₦1.8M"]];
+
+  // Stat pills — topic-aware
   stats.forEach((s, i) => {
     const px = W*0.1 + i*(W*0.27), py = cardY + cardH + 14;
     ctx.save(); ctx.globalAlpha = easeOut(Math.min(1, Math.max(0, t*3 - 0.4 - i*0.15)));
@@ -3288,7 +3413,7 @@ function renderSceneDashboard(ctx, W, H, t, pal, scene) {
     ctx.beginPath(); ctx.roundRect(px, py, W*0.22, 44, 8); ctx.fill(); ctx.stroke();
     ctx.fillStyle = "#6b7280"; ctx.font=`400 ${H*0.018}px "Courier New",monospace`; ctx.textAlign="left"; ctx.textBaseline="middle";
     ctx.fillText(s[0], px+12, py+14);
-    ctx.fillStyle="#3b82f6"; ctx.font=`700 ${H*0.028}px Arial,sans-serif`;
+    ctx.fillStyle = pal.accent; ctx.font=`700 ${H*0.028}px Arial,sans-serif`;
     ctx.fillText(s[1], px+12, py+32);
     ctx.restore();
   });
@@ -3297,20 +3422,22 @@ function renderSceneDashboard(ctx, W, H, t, pal, scene) {
 
 function renderSceneCode(ctx, W, H, t, pal, scene) {
   ctx.fillStyle = "#0d1117"; ctx.fillRect(0,0,W,H);
-  const lines = [
-    "import { createApp } from './core/app';",
-    "const app = await createApp({ config });",
-    "const users = await app.db.getUsers({",
-    "  filter: { active: true },",
-    "  limit: 100,",
-    "  orderBy: 'createdAt',",
-    "});",
-    "const result = await app.process({",
-    "  data: users.records,",
-    "});",
-    "const output = await result.save();",
-    "console.log('Done:', output.count);",
-  ];
+
+  // Pick code lines based on topic category — no hardcoded Jupiter/DeFi code
+  const cat = window._msTopicCategory || "general";
+  const topicName = (document.getElementById("ms-topic")?.value || "app").trim().replace(/\s+/g, "_").toLowerCase().slice(0, 16);
+  const codeSets = {
+    social:    [`import { SocialAPI } from './${topicName}';`, `const posts = await SocialAPI.getFeed({ limit: 50 });`, `const reach = posts.reduce((a,p) => a + p.impressions, 0);`, `const topPost = posts.sort((a,b) => b.likes - a.likes)[0];`, `await SocialAPI.boost(topPost.id, { budget: 5000 });`, `console.log('Boosted:', topPost.title);`],
+    fintech:   [`import { PaymentGateway } from './${topicName}';`, `const txn = await PaymentGateway.transfer({`, `  from: user.walletId, to: recipient.id,`, `  amount: 50000, currency: 'NGN',`, `});`, `console.log('Transfer:', txn.status, txn.ref);`],
+    crypto:    [`import { SwapSDK } from './${topicName}';`, `const quote = await SwapSDK.getQuote({ inputMint, outputMint });`, `const tx = await SwapSDK.buildTx({ quote, userPubKey });`, `const sig = await wallet.signAndSend(tx);`, `console.log('Swapped:', sig);`],
+    ecommerce: [`import { StoreAPI } from './${topicName}';`, `const products = await StoreAPI.getProducts({ inStock: true });`, `const cart = await StoreAPI.createCart(userId);`, `await StoreAPI.addToCart(cart.id, products[0].sku, 1);`, `const order = await StoreAPI.checkout(cart.id, paymentInfo);`, `console.log('Order:', order.id, order.total);`],
+    health:    [`import { HealthTracker } from './${topicName}';`, `const session = await HealthTracker.startWorkout('strength');`, `await HealthTracker.logSet({ exercise: 'squat', reps: 10 });`, `const stats = await HealthTracker.endSession(session.id);`, `console.log('Calories:', stats.calories, 'Duration:', stats.mins);`],
+    tech:      [`import { ${topicName}SDK } from './sdk';`, `const client = new ${topicName}SDK({ apiKey: process.env.KEY });`, `const data = await client.fetch({ query: userQuery, limit: 100 });`, `const result = await client.process(data.records);`, `await client.store(result); console.log('Done:', result.count);`],
+    food:      [`import { OrdersAPI } from './${topicName}';`, `const menu = await OrdersAPI.getMenu({ available: true });`, `const order = await OrdersAPI.placeOrder({ items, userId });`, `await OrdersAPI.assignRider(order.id);`, `const eta = await OrdersAPI.trackDelivery(order.id);`, `console.log('ETA:', eta.minutes, 'mins');`],
+    general:   [`import { ${topicName} } from './core';`, `const instance = await ${topicName}.init({ config });`, `const users = await instance.db.query({ active: true });`, `const result = await instance.process(users.data);`, `await result.save(); console.log('Processed:', result.count);`],
+  };
+  const lines = codeSets[cat] || codeSets.general;
+
   const scrollOffset = t * H * 0.4;
   const lineH = H * 0.058;
   const startY = H * 0.12 - scrollOffset;
@@ -3418,7 +3545,21 @@ function renderSceneNetwork(ctx, W, H, t, pal, scene) {
 
 function renderSceneTransaction(ctx, W, H, t, pal, scene) {
   ctx.fillStyle = "#080d14"; ctx.fillRect(0,0,W,H);
-  // Generic activity card — no crypto-specific labels
+  // Pick activity labels based on detected topic category
+  const cat = window._msTopicCategory || "general";
+  const activitySets = {
+    social:    [{label:"New follower",   amt:"+1.2K",  color:"#22c55e", time:"2s ago"}, {label:"Post shared",     amt:"×847",   color:"#3b82f6", time:"18s ago"}, {label:"Reel viewed",    amt:"+50K",   color:"#a855f7", time:"1m ago"}, {label:"Profile visit",  amt:"+3.1K",  color:"#f59e0b", time:"3m ago"}],
+    fintech:   [{label:"Transfer sent",  amt:"+N50K",  color:"#22c55e", time:"2s ago"}, {label:"Bill paid",       amt:"-N2,400",color:"#3b82f6", time:"18s ago"}, {label:"Savings earned", amt:"+N800",  color:"#a855f7", time:"1m ago"}, {label:"Cashback",       amt:"+N200",  color:"#f59e0b", time:"3m ago"}],
+    crypto:    [{label:"Swap executed",  amt:"+0.42",  color:"#22c55e", time:"2s ago"}, {label:"LP deposited",    amt:"$1,200", color:"#3b82f6", time:"18s ago"}, {label:"Yield earned",   amt:"+12.4%", color:"#a855f7", time:"1m ago"}, {label:"Withdrawal",     amt:"-0.1",   color:"#f59e0b", time:"3m ago"}],
+    ecommerce: [{label:"Order placed",   amt:"+N8,500",color:"#22c55e", time:"2s ago"}, {label:"Item shipped",    amt:"×12",    color:"#3b82f6", time:"18s ago"}, {label:"Review added",   amt:"5 stars",color:"#a855f7", time:"1m ago"}, {label:"Return request", amt:"-N500",  color:"#f59e0b", time:"3m ago"}],
+    health:    [{label:"Workout logged",  amt:"+320cal",color:"#22c55e", time:"2s ago"}, {label:"Steps tracked",  amt:"8,432",  color:"#3b82f6", time:"18s ago"}, {label:"Goal reached",   amt:"100%",   color:"#a855f7", time:"1m ago"}, {label:"Water intake",   amt:"+2L",    color:"#f59e0b", time:"3m ago"}],
+    tech:      [{label:"API call",        amt:"+2.1ms", color:"#22c55e", time:"2s ago"}, {label:"Deploy success", amt:"v2.4.1", color:"#3b82f6", time:"18s ago"}, {label:"User signed up", amt:"+1",     color:"#a855f7", time:"1m ago"}, {label:"DB query",       amt:"0.3ms",  color:"#f59e0b", time:"3m ago"}],
+    food:      [{label:"Order received",  amt:"+N3,200",color:"#22c55e", time:"2s ago"}, {label:"Delivery sent",  amt:"×5",     color:"#3b82f6", time:"18s ago"}, {label:"Review posted",  amt:"4.8/5",  color:"#a855f7", time:"1m ago"}, {label:"Promo redeemed", amt:"-N500",  color:"#f59e0b", time:"3m ago"}],
+    general:   [{label:"New signup",      amt:"+1",     color:"#22c55e", time:"2s ago"}, {label:"Task completed", amt:"×3",     color:"#3b82f6", time:"18s ago"}, {label:"Credit earned",  amt:"+500",   color:"#a855f7", time:"1m ago"}, {label:"Withdrawal",     amt:"-200",   color:"#f59e0b", time:"3m ago"}],
+  };
+  const txns = activitySets[cat] || activitySets.general;
+
+  // Generic activity card
   const cardW = W*0.7, cardH = H*0.22;
   const cardX = (W-cardW)/2, cardY = H*0.06;
   const cardReveal = easeOut(Math.min(1, t*2));
@@ -3429,7 +3570,6 @@ function renderSceneTransaction(ctx, W, H, t, pal, scene) {
   ctx.beginPath(); ctx.roundRect(cardX,cardY,cardW,cardH,14); ctx.fill(); ctx.stroke();
   ctx.fillStyle="#6b7280"; ctx.font=`400 ${H*0.02}px "Courier New",monospace`; ctx.textAlign="left"; ctx.textBaseline="top";
   ctx.fillText("LIVE ACTIVITY", cardX+20, cardY+14);
-  // Animated counter
   const targetVal = 2487;
   const dispVal = Math.round(targetVal * easeOut(Math.min(1, t*2.5)));
   ctx.fillStyle="#ffffff"; ctx.font=`700 ${H*0.07}px Arial,sans-serif`; ctx.textBaseline="top";
@@ -3437,13 +3577,6 @@ function renderSceneTransaction(ctx, W, H, t, pal, scene) {
   ctx.fillStyle="#22c55e"; ctx.font=`400 ${H*0.022}px Arial,sans-serif`; ctx.textBaseline="top";
   ctx.fillText("↑ +12.4% today", cardX+20, cardY+cardH-28);
   ctx.restore();
-  // Generic activity timeline — words derived from scene overlay
-  const txns = [
-    {label:"New signup",     amt:"+1",    color:"#22c55e", time:"2s ago"},
-    {label:"Task completed", amt:"×3",    color:"#3b82f6", time:"18s ago"},
-    {label:"Credit earned",  amt:"+₦500", color:"#a855f7", time:"1m ago"},
-    {label:"Withdrawal",     amt:"-₦200", color:"#f59e0b", time:"3m ago"},
-  ];
   const tlY = cardY + cardH + 24;
   txns.forEach((tx, i) => {
     const txReveal = easeOut(Math.min(1, Math.max(0, t*3.5 - i*0.3)));
@@ -3461,7 +3594,7 @@ function renderSceneTransaction(ctx, W, H, t, pal, scene) {
     ctx.fillText(tx.label, slideX+18, rowY + H*0.05);
     // Amount
     ctx.fillStyle=tx.color; ctx.font=`700 ${H*0.032}px Arial,sans-serif`; ctx.textAlign="right";
-    ctx.fillText(tx.amt+" SOL", slideX + W*0.7 - 12, rowY + H*0.05);
+    ctx.fillText(tx.amt, slideX + W*0.7 - 12, rowY + H*0.05);
     // Time
     ctx.fillStyle="#6b7280"; ctx.font=`400 ${H*0.02}px "Courier New",monospace`; ctx.textAlign="left"; ctx.textBaseline="bottom";
     ctx.fillText(tx.time, slideX+18, rowY + H*0.1 - 8);
@@ -3474,7 +3607,6 @@ function renderSceneLogo(ctx, W, H, t, pal, scene) {
   ctx.fillStyle = "#050810"; ctx.fillRect(0,0,W,H);
   const cx = W/2, cy = H*0.44;
   // Particle field converging to center
-  const seed = 42;
   for (let p = 0; p < 120; p++) {
     const angle = (p / 120) * Math.PI * 2 + p * 2.4;
     const maxR = 350;
@@ -3488,31 +3620,51 @@ function renderSceneLogo(ctx, W, H, t, pal, scene) {
     ctx.beginPath(); ctx.arc(px2, py2, 1.5 + (p%3), 0, Math.PI*2); ctx.fill();
     ctx.restore();
   }
-  // Brand name reveal
+
+  // Logo / Brand reveal
   const textReveal = easeOut(Math.max(0, (t - 0.3) / 0.5));
   if (textReveal > 0) {
     ctx.save();
     ctx.globalAlpha = textReveal;
-    const overlay = scene.overlay || "BRAND";
-    // Glow layers
-    // Auto-size overlay so it never overflows canvas
-    let logoFs = H * 0.14;
-    const logoMaxW = W * 0.8;
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    while (logoFs > H * 0.06) {
+
+    if (_msLogoImage) {
+      // Draw uploaded logo image centered
+      const maxLogoW = W * 0.5;
+      const maxLogoH = H * 0.32;
+      const imgAspect = _msLogoImage.width / _msLogoImage.height;
+      let dw = maxLogoW, dh = maxLogoW / imgAspect;
+      if (dh > maxLogoH) { dh = maxLogoH; dw = dh * imgAspect; }
+      // Glow behind logo
+      ctx.shadowColor = pal.accent;
+      ctx.shadowBlur = 60 * textReveal;
+      ctx.drawImage(_msLogoImage, cx - dw/2, cy - dh/2, dw, dh);
+      ctx.shadowBlur = 0;
+
+      // Underline accent
+      ctx.fillStyle = pal.accent;
+      ctx.fillRect(cx - dw/2 * textReveal, cy + dh * 0.55, dw * textReveal, 3);
+    } else {
+      // Fallback: text logo from overlay or topic
+      const overlay = (scene.overlay || document.getElementById("ms-topic")?.value || "BRAND").trim();
+      let logoFs = H * 0.14;
+      const logoMaxW = W * 0.8;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      while (logoFs > H * 0.06) {
+        ctx.font = `700 ${logoFs}px Arial, sans-serif`;
+        if (ctx.measureText(overlay.toUpperCase()).width <= logoMaxW) break;
+        logoFs -= 3;
+      }
       ctx.font = `700 ${logoFs}px Arial, sans-serif`;
-      if (ctx.measureText(overlay.toUpperCase()).width <= logoMaxW) break;
-      logoFs -= 3;
+      ctx.shadowColor = pal.accent; ctx.shadowBlur = 40 * textReveal;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(overlay.toUpperCase(), cx, cy);
+      ctx.shadowBlur = 0;
+      // Underline accent
+      const textW = Math.min(ctx.measureText(overlay.toUpperCase()).width, logoMaxW);
+      ctx.fillStyle = pal.accent;
+      ctx.fillRect(cx - textW/2 * textReveal, cy + logoFs * 0.7, textW * textReveal, 3);
     }
-    ctx.font = `700 ${logoFs}px Arial, sans-serif`;
-    ctx.shadowColor = pal.accent; ctx.shadowBlur = 40 * textReveal;
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText(overlay.toUpperCase(), cx, cy);
-    ctx.shadowBlur = 0;
-    // Underline accent
-    const textW = Math.min(ctx.measureText(overlay.toUpperCase()).width, logoMaxW);
-    ctx.fillStyle = pal.accent;
-    ctx.fillRect(cx - textW/2 * textReveal, cy + logoFs * 0.7, textW * textReveal, 3);
+
     ctx.restore();
   }
   // Lens flare
@@ -3625,18 +3777,31 @@ function renderSceneCTA(ctx, W, H, t, pal, scene) {
     ctx.shadowBlur = 0;
     ctx.restore();
   }
-  // CTA button
+  // CTA button — uses uploaded logo or topic text
   if (t > 0.4) {
     const btnReveal = easeOut((t-0.4)*4);
-    const btnW=280, btnH=60, btnX=(W-btnW)/2, btnY=H*0.56;
     ctx.save(); ctx.globalAlpha = btnReveal;
-    const bg = ctx.createLinearGradient(btnX,btnY,btnX+btnW,btnY+btnH);
-    bg.addColorStop(0,"#3b82f6"); bg.addColorStop(1,"#1d4ed8");
-    ctx.fillStyle=bg;
-    ctx.beginPath(); ctx.roundRect(btnX,btnY,btnW,btnH,30); ctx.fill();
-    ctx.fillStyle="#ffffff"; ctx.font=`700 ${H*0.04}px Arial,sans-serif`;
-    ctx.textAlign="center"; ctx.textBaseline="middle";
-    ctx.fillText("Get Started →", W/2, btnY+btnH/2);
+
+    if (_msLogoImage) {
+      // Show logo above the CTA button area
+      const maxLW = W * 0.35, maxLH = H * 0.18;
+      const ia = _msLogoImage.width / _msLogoImage.height;
+      let dw = maxLW, dh = maxLW / ia;
+      if (dh > maxLH) { dh = maxLH; dw = dh * ia; }
+      ctx.shadowColor = pal.accent; ctx.shadowBlur = 30 * btnReveal;
+      ctx.drawImage(_msLogoImage, W/2 - dw/2, H*0.53, dw, dh);
+      ctx.shadowBlur = 0;
+    } else {
+      const btnW=280, btnH=60, btnX=(W-btnW)/2, btnY=H*0.56;
+      const bg = ctx.createLinearGradient(btnX,btnY,btnX+btnW,btnY+btnH);
+      bg.addColorStop(0, pal.accent); bg.addColorStop(1, "#1d4ed8");
+      ctx.fillStyle=bg;
+      ctx.beginPath(); ctx.roundRect(btnX,btnY,btnW,btnH,30); ctx.fill();
+      ctx.fillStyle="#ffffff"; ctx.font=`700 ${H*0.04}px Arial,sans-serif`;
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      const ctaLabel = (document.getElementById("ms-topic")?.value || "Get Started").trim().slice(0, 20);
+      ctx.fillText(ctaLabel + " →", W/2, btnY+btnH/2);
+    }
     ctx.restore();
   }
   // Voiceover — word-wrapped, capped to canvas
