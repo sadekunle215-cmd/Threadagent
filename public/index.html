@@ -3078,17 +3078,21 @@ function showMsError(m){ const b=document.getElementById("msErrorBox"); b.textCo
 let _msVideoBlob = null;
 
 // ── Detect scene type from visual description keywords ──
-function msDetectSceneType(scene) {
+// sceneIndex is used to spread unmatched scenes across varied renderers instead of all defaulting to one type
+function msDetectSceneType(scene, sceneIndex) {
   const v = (scene.visual || "").toLowerCase();
   const o = (scene.overlay || "").toLowerCase();
   if (v.includes("logo") || v.includes("brand") || v.includes("particle") || v.includes("materializ")) return "logo";
   if (v.includes("dashboard") || v.includes("chart") || v.includes("graph") || v.includes("metric") || v.includes("ui")) return "dashboard";
-  if (v.includes("code") || v.includes("snippet") || v.includes("line") && v.includes("scroll")) return "code";
+  if (v.includes("code") || v.includes("snippet") || (v.includes("line") && v.includes("scroll"))) return "code";
   if (v.includes("network") || v.includes("node") || v.includes("connection") || v.includes("map")) return "network";
   if (v.includes("wallet") || v.includes("transaction") || v.includes("timeline") || v.includes("payment")) return "transaction";
-  if (v.includes("globe") || v.includes("orbit") || v.includes("planet") || v.includes("space")) return "globe";
+  // globe: require specific planetary/globe keywords — avoid matching generic "space" or "orbit"
+  if (v.includes("globe") || v.includes("planet") || v.includes("solar system") || v.includes("jupiter") || v.includes("saturn") || (v.includes("orbit") && v.includes("planet"))) return "globe";
   if (v.includes("cta") || o.includes("start") || o.includes("get") || o.includes("join") || o.includes("try")) return "cta";
-  return "title";
+  // Spread unmatched scenes across renderers so they don't all look the same
+  const fallbacks = ["title", "dashboard", "network", "code", "transaction", "logo", "cta"];
+  return fallbacks[(sceneIndex || 0) % fallbacks.length];
 }
 
 // ── Easing ──
@@ -3773,7 +3777,7 @@ async function msRenderVideo() {
   for (let si = 0; si < scenes.length; si++) {
     const raw     = scenes[si];
     const scene   = typeof raw==="object" ? raw : {scene:si+1,duration:"",visual:"",overlay:raw,voiceover:"",mood:""};
-    const type    = msDetectSceneType(scene);
+    const type    = msDetectSceneType(scene, si);
     const renderFn= sceneRenderers[type] || renderSceneTitle;
     const frames  = Math.round(sceneDurs[si] * fps);
     const msPerFrame = 1000 / fps;
