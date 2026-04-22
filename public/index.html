@@ -655,6 +655,17 @@
     .work-filter-btn:hover{border-color:var(--muted2);color:var(--text)}
     .work-filter-btn.active{border-color:var(--red);color:var(--red);background:rgba(224,22,26,.07)}
     .work-loading{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;padding:32px;display:flex;align-items:center;justify-content:center;gap:8px}
+
+    /* ══ COMING SOON OVERLAY ══ */
+    #comingSoonOverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
+    #comingSoonOverlay.visible{display:flex}
+    .cs-box{background:#fff;border:1px solid var(--border);border-radius:22px;max-width:400px;width:100%;padding:40px 32px 36px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.2);animation:fadeUp .3s ease}
+    .cs-icon{width:64px;height:64px;background:rgba(245,166,35,.12);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.8rem;color:var(--accent2)}
+    .cs-badge{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--accent2);border:1px solid rgba(245,166,35,.4);border-radius:20px;padding:4px 12px;margin-bottom:14px}
+    .cs-title{font-family:var(--display);font-size:32px;letter-spacing:3px;color:var(--text);line-height:1;margin-bottom:10px}
+    .cs-sub{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.4px;line-height:1.8;margin-bottom:28px}
+    .cs-dismiss{width:100%;background:linear-gradient(135deg,var(--red2),var(--red3));color:#fff;border:none;border-radius:12px;font-family:var(--display);font-size:15px;letter-spacing:2px;padding:14px;cursor:pointer;transition:opacity .2s}
+    .cs-dismiss:hover{opacity:.88}
   </style>
 </head>
 <body>
@@ -4514,6 +4525,7 @@ async function doSignup() {
   if (pass.length < 6) { showAuthError("Password must be at least 6 characters."); return; }
   try {
     await auth.createUserWithEmailAndPassword(email, pass);
+    sessionStorage.setItem("tcNewUser", "1");
   } catch(e) {
     showAuthError(e.message.replace("Firebase: ",""));
   }
@@ -4623,6 +4635,11 @@ function doTopup() {
 // PAGE ROUTING
 // ══════════════════════════════════════════════════════
 function showPage(id) {
+  // Block Motion Script for newly registered users — show Coming Soon instead
+  if (id === "pageMotionScript" && sessionStorage.getItem("tcNewUser") === "1") {
+    document.getElementById("comingSoonOverlay").classList.add("visible");
+    return;
+  }
   document.querySelectorAll(".app-page").forEach(p => p.classList.remove("active"));
   document.getElementById(id).classList.add("active");
   window.scrollTo(0,0);
@@ -6644,6 +6661,17 @@ function wcScrollBottom() {
 
 
 </script>
+
+<!-- ══ COMING SOON OVERLAY ══ -->
+<div id="comingSoonOverlay">
+  <div class="cs-box">
+    <div class="cs-icon"><i class="fa-solid fa-film"></i></div>
+    <div class="cs-badge">Coming Soon</div>
+    <div class="cs-title">Motion Script</div>
+    <div class="cs-sub">This feature is being rolled out to all accounts.<br>New users will get access very soon — stay tuned!</div>
+    <button class="cs-dismiss" onclick="document.getElementById('comingSoonOverlay').classList.remove('visible')">Got It →</button>
+  </div>
+</div>
 
 <!-- ── Floating Message Button ── -->
 <div id="tcFloatBtn" onclick="tcToggleMsg()" style="position:fixed;bottom:24px;right:20px;z-index:9999;width:54px;height:54px;background:#E0161A;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 24px rgba(224,22,26,0.55);transition:transform .2s;" onmouseenter="this.style.transform='scale(1.1)'" onmouseleave="this.style.transform='scale(1)'">
