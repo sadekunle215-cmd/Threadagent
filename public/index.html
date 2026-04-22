@@ -611,6 +611,11 @@
     .motion-length-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
     .motion-len-btn{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:8px 14px;cursor:pointer;transition:all .2s}
     .motion-len-btn:hover{border-color:var(--muted2);color:var(--text)}
+    .inf-pat-btn.active{border-color:var(--red)!important;color:var(--red)!important;background:rgba(224,22,26,.1)!important}
+    .inf-pat-btn:hover:not(.active){border-color:var(--muted2)!important;color:var(--text)!important}
+    #inf-show-mockup:checked+span{background:var(--red)}
+    #inf-show-mockup+span::before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s}
+    #inf-show-mockup:checked+span::before{transform:translateX(18px)}
     .motion-len-btn.active{border-color:var(--red);color:var(--red);background:rgba(224,22,26,.08)}
   </style>
 </head>
@@ -1443,6 +1448,52 @@
         </div>
       </div>
 
+      <!-- Content Alignment -->
+      <div class="brand-color-row" style="margin-bottom:20px">
+        <label>Content Alignment</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+          <button class="preset active" id="inf-align-left" onclick="infSetAlign('left',this)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="flex-shrink:0"><rect x="1" y="3" width="14" height="2" rx="1"/><rect x="1" y="7" width="10" height="2" rx="1"/><rect x="1" y="11" width="12" height="2" rx="1"/></svg>Left
+          </button>
+          <button class="preset" id="inf-align-center" onclick="infSetAlign('center',this)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="flex-shrink:0"><rect x="1" y="3" width="14" height="2" rx="1"/><rect x="3" y="7" width="10" height="2" rx="1"/><rect x="2" y="11" width="12" height="2" rx="1"/></svg>Center
+          </button>
+          <button class="preset" id="inf-align-right" onclick="infSetAlign('right',this)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="flex-shrink:0"><rect x="1" y="3" width="14" height="2" rx="1"/><rect x="5" y="7" width="10" height="2" rx="1"/><rect x="3" y="11" width="12" height="2" rx="1"/></svg>Right
+          </button>
+        </div>
+        <p style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px;letter-spacing:.3px">Controls where the content area sits on the infographic canvas.</p>
+      </div>
+
+      <!-- Background Pattern -->
+      <div class="brand-color-row" style="margin-bottom:20px">
+        <label>Background Pattern / Overlay</label>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px" id="infBgPatterns">
+          <button class="inf-pat-btn active" data-pat="none" onclick="infSetPattern('none',this)" style="border:1px solid var(--border);border-radius:8px;padding:8px 6px;cursor:pointer;background:var(--surface);font-family:var(--mono);font-size:10px;color:var(--muted2);letter-spacing:.3px;text-align:center;transition:all .15s">None</button>
+          <button class="inf-pat-btn" data-pat="dots" onclick="infSetPattern('dots',this)" style="border:1px solid var(--border);border-radius:8px;padding:8px 6px;cursor:pointer;background:var(--surface);font-family:var(--mono);font-size:10px;color:var(--muted2);letter-spacing:.3px;text-align:center;transition:all .15s">· · · Dots</button>
+          <button class="inf-pat-btn" data-pat="grid" onclick="infSetPattern('grid',this)" style="border:1px solid var(--border);border-radius:8px;padding:8px 6px;cursor:pointer;background:var(--surface);font-family:var(--mono);font-size:10px;color:var(--muted2);letter-spacing:.3px;text-align:center;transition:all .15s">⊞ Grid</button>
+          <button class="inf-pat-btn" data-pat="diag" onclick="infSetPattern('diag',this)" style="border:1px solid var(--border);border-radius:8px;padding:8px 6px;cursor:pointer;background:var(--surface);font-family:var(--mono);font-size:10px;color:var(--muted2);letter-spacing:.3px;text-align:center;transition:all .15s">╱╱ Diagonal</button>
+          <button class="inf-pat-btn" data-pat="hexagon" onclick="infSetPattern('hexagon',this)" style="border:1px solid var(--border);border-radius:8px;padding:8px 6px;cursor:pointer;background:var(--surface);font-family:var(--mono);font-size:10px;color:var(--muted2);letter-spacing:.3px;text-align:center;transition:all .15s">⬡ Hex</button>
+          <button class="inf-pat-btn" data-pat="waves" onclick="infSetPattern('waves',this)" style="border:1px solid var(--border);border-radius:8px;padding:8px 6px;cursor:pointer;background:var(--surface);font-family:var(--mono);font-size:10px;color:var(--muted2);letter-spacing:.3px;text-align:center;transition:all .15s">∿ Waves</button>
+          <button class="inf-pat-btn" data-pat="circuit" onclick="infSetPattern('circuit',this)" style="border:1px solid var(--border);border-radius:8px;padding:8px 6px;cursor:pointer;background:var(--surface);font-family:var(--mono);font-size:10px;color:var(--muted2);letter-spacing:.3px;text-align:center;transition:all .15s">◫ Circuit</button>
+          <button class="inf-pat-btn" data-pat="halftone" onclick="infSetPattern('halftone',this)" style="border:1px solid var(--border);border-radius:8px;padding:8px 6px;cursor:pointer;background:var(--surface);font-family:var(--mono);font-size:10px;color:var(--muted2);letter-spacing:.3px;text-align:center;transition:all .15s">◉ Halftone</button>
+          <button class="inf-pat-btn" data-pat="cross" onclick="infSetPattern('cross',this)" style="border:1px solid var(--border);border-radius:8px;padding:8px 6px;cursor:pointer;background:var(--surface);font-family:var(--mono);font-size:10px;color:var(--muted2);letter-spacing:.3px;text-align:center;transition:all .15s">✚ Cross</button>
+          <button class="inf-pat-btn" data-pat="topography" onclick="infSetPattern('topography',this)" style="border:1px solid var(--border);border-radius:8px;padding:8px 6px;cursor:pointer;background:var(--surface);font-family:var(--mono);font-size:10px;color:var(--muted2);letter-spacing:.3px;text-align:center;transition:all .15s">⌇ Topo</button>
+          <button class="inf-pat-btn" data-pat="noise" onclick="infSetPattern('noise',this)" style="border:1px solid var(--border);border-radius:8px;padding:8px 6px;cursor:pointer;background:var(--surface);font-family:var(--mono);font-size:10px;color:var(--muted2);letter-spacing:.3px;text-align:center;transition:all .15s">▒ Noise</button>
+        </div>
+        <!-- Mockup on-demand toggle -->
+        <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(224,22,26,0.05);border:1px solid rgba(224,22,26,0.2);border-radius:10px;padding:12px 14px;margin-top:4px">
+          <div>
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:3px">Phone Mockup Overlay</div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.3px">Show an iPhone mockup frame on the right side of the infographic</div>
+          </div>
+          <label class="toggle-switch" style="flex-shrink:0;margin-left:12px">
+            <input type="checkbox" id="inf-show-mockup" onchange="infToggleMockup(this)">
+            <span style="position:absolute;cursor:pointer;inset:0;background:var(--border2);border-radius:12px;transition:.3s"></span>
+          </label>
+        </div>
+      </div>
+
       <div class="field">
         <label>Your X Handle (optional)</label>
         <input type="text" id="inf-xHandle" placeholder="@yourhandle" autocomplete="off" />
@@ -1821,11 +1872,220 @@ function darkenHex(hex, amt) {
   return `rgb(${Math.max(0,Math.round(r*(1-amt)))},${Math.max(0,Math.round(g*(1-amt)))},${Math.max(0,Math.round(b*(1-amt)))})`;
 }
 
+// ─── INFOGRAPHIC STATE ────────────────────────────────────────────────────────
+let infContentAlign = 'left';   // 'left' | 'center' | 'right'
+let infBgPattern    = 'none';   // pattern key
+let infShowMockup   = false;
+
+function infSetAlign(align, btn) {
+  infContentAlign = align;
+  document.querySelectorAll('#inf-align-left,#inf-align-center,#inf-align-right').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function infSetPattern(pat, btn) {
+  infBgPattern = pat;
+  document.querySelectorAll('.inf-pat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function infToggleMockup(cb) { infShowMockup = cb.checked; }
+
+// ─── SVG ICON PATHS for list items (replaces emojis) ─────────────────────────
+const INF_ICONS = [
+  // 0 star
+  'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
+  // 1 arrow right
+  'M5 12h14M12 5l7 7-7 7',
+  // 2 check circle
+  'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3',
+  // 3 zap / lightning
+  'M13 2 3 14h9l-1 8 10-12h-9l1-8z',
+  // 4 target
+  'M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2 2 6.48 2 12s4.48 10 10 10zM12 18c3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6 2.69 6 6 6zM12 14c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z',
+  // 5 shield
+  'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
+  // 6 trending up
+  'M23 6l-9.5 9.5-5-5L1 18M17 6h6v6',
+  // 7 award
+  'M12 15c4.42 0 8-3.58 8-8s-3.58-8-8-8-8 3.58-8 8 3.58 8 8 8zM8.21 13.89 7 23l5-3 5 3-1.21-9.12',
+];
+
+function infGetIconPath(index) {
+  return INF_ICONS[index % INF_ICONS.length];
+}
+
+function drawSVGIcon(ctx, pathStr, cx, cy, size, color) {
+  // Parse and draw a simplified SVG path on canvas
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = size * 0.08;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Scale from 24x24 viewBox to size×size centered at cx,cy
+  const s = size / 24;
+  ctx.translate(cx - size/2, cy - size/2);
+  ctx.scale(s, s);
+
+  const path = new Path2D(pathStr);
+  // Stroke only (icon outline style)
+  ctx.strokeStyle = color;
+  ctx.stroke(path);
+  ctx.restore();
+}
+
+// ─── BACKGROUND PATTERN RENDERER ─────────────────────────────────────────────
+function drawInfPattern(ctx, W, H, pat, darkText, c1) {
+  if (!pat || pat === 'none') return;
+  ctx.save();
+  const col = darkText ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.07)';
+  ctx.strokeStyle = col;
+  ctx.fillStyle = col;
+  ctx.lineWidth = 1;
+
+  if (pat === 'dots') {
+    for (let px = 0; px < W; px += 28) for (let py = 0; py < H; py += 28) {
+      ctx.beginPath(); ctx.arc(px, py, 1.8, 0, Math.PI*2); ctx.fill();
+    }
+  } else if (pat === 'grid') {
+    for (let x = 0; x < W; x += 60) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 60) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+  } else if (pat === 'diag') {
+    for (let i = -H; i < W+H; i += 48) {
+      ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i+H, H); ctx.stroke();
+    }
+  } else if (pat === 'hexagon') {
+    const r = 30, hh = r * Math.sqrt(3);
+    for (let row = 0; row * hh < H + r; row++) {
+      for (let col = 0; col * r * 1.5 < W + r; col++) {
+        const x = col * r * 1.5 + (row%2 ? r*0.75 : 0);
+        const y = row * hh * 0.5;
+        ctx.beginPath();
+        for (let a = 0; a < 6; a++) {
+          const ax = x + r * Math.cos(Math.PI/180*(60*a-30));
+          const ay = y + r * Math.sin(Math.PI/180*(60*a-30));
+          a===0 ? ctx.moveTo(ax,ay) : ctx.lineTo(ax,ay);
+        }
+        ctx.closePath(); ctx.stroke();
+      }
+    }
+  } else if (pat === 'waves') {
+    for (let y = 20; y < H; y += 40) {
+      ctx.beginPath(); ctx.moveTo(0, y);
+      for (let x = 0; x < W; x += 10) ctx.lineTo(x, y + Math.sin(x/40)*12);
+      ctx.stroke();
+    }
+  } else if (pat === 'circuit') {
+    const g = 60;
+    for (let x = g; x < W-g; x += g) for (let y = g; y < H-g; y += g) {
+      ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI*2); ctx.fill();
+      if (Math.random() > 0.5) { ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+g,y); ctx.stroke(); }
+      if (Math.random() > 0.5) { ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+g); ctx.stroke(); }
+    }
+  } else if (pat === 'halftone') {
+    for (let row = 0; row < H; row += 24) for (let col = 0; col < W; col += 24) {
+      const dist = Math.hypot(col-W/2, row-H/2) / Math.hypot(W/2, H/2);
+      const r = 2 + dist * 6;
+      ctx.beginPath(); ctx.arc(col, row, r, 0, Math.PI*2); ctx.fill();
+    }
+  } else if (pat === 'cross') {
+    for (let x = 30; x < W; x += 50) for (let y = 30; y < H; y += 50) {
+      ctx.beginPath(); ctx.moveTo(x-6,y); ctx.lineTo(x+6,y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x,y-6); ctx.lineTo(x,y+6); ctx.stroke();
+    }
+  } else if (pat === 'topography') {
+    for (let i = 0; i < 12; i++) {
+      const t = i / 12;
+      ctx.beginPath();
+      ctx.moveTo(0, H * t + Math.sin(t * Math.PI) * 60);
+      for (let x = 0; x < W; x += 8) {
+        ctx.lineTo(x, H * t + Math.sin((x / W + t) * Math.PI * 3) * 40);
+      }
+      ctx.stroke();
+    }
+  } else if (pat === 'noise') {
+    for (let i = 0; i < 2000; i++) {
+      const x = Math.random() * W, y = Math.random() * H;
+      ctx.beginPath(); ctx.arc(x, y, 1, 0, Math.PI*2); ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+// ─── PHONE MOCKUP FOR INFOGRAPHIC RIGHT SIDE ─────────────────────────────────
+function drawInfPhoneMockup(ctx, W, H, accentColor, darkText) {
+  const phoneH = H * 0.72;
+  const phoneW = phoneH * 0.462;
+  const phoneX = W - phoneW - W * 0.04;
+  const phoneY = (H - phoneH) / 2;
+  const cr = phoneW * 0.12;
+
+  ctx.save();
+  // Glow behind
+  const glow = ctx.createRadialGradient(phoneX+phoneW/2, phoneY+phoneH/2, 0, phoneX+phoneW/2, phoneY+phoneH/2, phoneH*0.6);
+  const {r,g,b} = hexToRgb(accentColor);
+  glow.addColorStop(0, `rgba(${r},${g},${b},0.18)`);
+  glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow; ctx.fillRect(phoneX-100, phoneY-100, phoneW+200, phoneH+200);
+
+  // Shadow
+  ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 20;
+  ctx.beginPath(); ctx.roundRect(phoneX, phoneY, phoneW, phoneH, cr);
+  ctx.fillStyle = '#111'; ctx.fill();
+  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+
+  // Frame gradient
+  const fg = ctx.createLinearGradient(phoneX, phoneY, phoneX+phoneW, phoneY+phoneH);
+  fg.addColorStop(0, '#2a2a2a'); fg.addColorStop(1, '#1a1a1a');
+  ctx.beginPath(); ctx.roundRect(phoneX, phoneY, phoneW, phoneH, cr);
+  ctx.fillStyle = fg; ctx.fill();
+
+  // Frame border
+  ctx.beginPath(); ctx.roundRect(phoneX, phoneY, phoneW, phoneH, cr);
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 2; ctx.stroke();
+
+  // Screen area
+  const sideW = phoneW * 0.045;
+  const sx = phoneX + sideW, sy = phoneY + phoneH*0.015;
+  const sw = phoneW - sideW*2, sh = phoneH - phoneH*0.03;
+  const scr = cr * 0.8;
+  ctx.beginPath(); ctx.roundRect(sx, sy, sw, sh, scr);
+  ctx.fillStyle = '#0a0a0a'; ctx.fill();
+
+  // Screen gradient overlay (like an app screen)
+  const sg = ctx.createLinearGradient(sx, sy, sx, sy+sh);
+  const acc = accentColor;
+  sg.addColorStop(0, acc + '33'); sg.addColorStop(0.4, '#00000088'); sg.addColorStop(1, '#000000cc');
+  ctx.beginPath(); ctx.roundRect(sx, sy, sw, sh, scr);
+  ctx.fillStyle = sg; ctx.fill();
+
+  // Dynamic Island
+  const isW = sw * 0.28, isH = phoneH * 0.032, isX = sx + (sw-isW)/2, isY = sy + sh*0.015;
+  ctx.beginPath(); ctx.roundRect(isX, isY, isW, isH, isH/2);
+  ctx.fillStyle = '#000'; ctx.fill();
+
+  // Screen scan lines
+  ctx.save(); ctx.globalAlpha = 0.03;
+  for (let ly = sy; ly < sy+sh; ly += 4) {
+    ctx.fillStyle = '#fff'; ctx.fillRect(sx, ly, sw, 1.5);
+  }
+  ctx.restore();
+
+  // Accent bottom bar
+  ctx.beginPath(); ctx.roundRect(sx + sw*0.3, sy + sh*0.93, sw*0.4, sh*0.008, 4);
+  ctx.fillStyle = accentColor + 'aa'; ctx.fill();
+
+  ctx.restore();
+}
+
 // ─── INFOGRAPHIC RENDERER ─────────────────────────────────────────────────────
-function drawInfographic(canvas, d, style, handle, isHook, isCTA, circleImg) {
+function drawInfographic(canvas, d, style, handle, isHook, isCTA, circleImg, opts) {
   const ctx=canvas.getContext("2d");
   const W=1600, H=900;
   const {c1,c2,darkText}=style;
+  const align   = (opts && opts.align)   || infContentAlign || 'left';
+  const pattern = (opts && opts.pattern) || infBgPattern    || 'none';
+  const showMkp = (opts && opts.mockup != null) ? opts.mockup : infShowMockup;
 
   // Colour system
   const TEXT     = darkText?"#0f172a":"#ffffff";
@@ -1839,68 +2099,38 @@ function drawInfographic(canvas, d, style, handle, isHook, isCTA, circleImg) {
   // ── Premium background ──
   drawPremiumBg(ctx, W, H, c1, c2, darkText);
 
-  // ── Right decorative zone ──
-  const CX = W - 240, CY = H/2, CR = 400;
-  const TEXT_MAX_X = Math.round(W * 0.57);
+  // ── Background pattern overlay ──
+  drawInfPattern(ctx, W, H, pattern, darkText, c1);
 
-  // Outer ring glow
-  ctx.save();
-  ctx.shadowColor = darkText?"rgba(0,0,0,0.2)":rgba(c1,0.6);
-  ctx.shadowBlur = 40;
-  ctx.strokeStyle = darkText?"rgba(0,0,0,0.15)":"rgba(255,255,255,0.15)";
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.arc(CX, CY, CR+18, 0, Math.PI*2); ctx.stroke();
-  ctx.restore();
+  // ── Determine content zone based on alignment ──
+  // Right side: phone mockup (if enabled) or subtle decoration
+  const rightZoneW = showMkp ? W * 0.33 : 0;
+  const contentW   = W - rightZoneW;
 
-  if(circleImg){
-    // Clipped image with vignette
-    ctx.save();
-    ctx.beginPath(); ctx.arc(CX, CY, CR, 0, Math.PI*2); ctx.clip();
-    const bx=CX-CR, by=CY-CR, bs=CR*2;
-    const ir=circleImg.naturalWidth/circleImg.naturalHeight;
-    let sw=bs,sh=bs;
-    if(ir>1){sh=bs;sw=sh*ir;}else{sw=bs;sh=sw/ir;}
-    const ox=bx+(bs-sw)/2, oy=by+(bs-sh)/2;
-    ctx.drawImage(circleImg,ox,oy,sw,sh);
-    // Vignette overlay on image
-    const vig=ctx.createRadialGradient(CX,CY,CR*0.4,CX,CY,CR);
-    vig.addColorStop(0,"rgba(0,0,0,0)");
-    vig.addColorStop(1,"rgba(0,0,0,0.45)");
-    ctx.fillStyle=vig; ctx.fillRect(bx,by,bs,bs);
-    ctx.restore();
-    // Sharp ring border
-    ctx.save();
-    ctx.strokeStyle="rgba(255,255,255,0.18)"; ctx.lineWidth=3;
-    ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2); ctx.stroke();
-    ctx.restore();
-  } else {
-    // Decorative abstract circle — concentric arcs
-    ctx.save();
-    const alpha = darkText?0.07:0.12;
-    // Fill
-    ctx.fillStyle=darkText?`rgba(0,0,0,${alpha})`:`rgba(255,255,255,${alpha})`;
-    ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2); ctx.fill();
-    // Dashed arc rings
-    [CR*0.65, CR*0.82].forEach(r=>{
-      ctx.setLineDash([12,20]);
-      ctx.strokeStyle=darkText?"rgba(0,0,0,0.12)":"rgba(255,255,255,0.14)";
-      ctx.lineWidth=1.5;
-      ctx.beginPath(); ctx.arc(CX,CY,r,0,Math.PI*2); ctx.stroke();
-    });
-    ctx.setLineDash([]);
-    // Cross-hair lines
-    ctx.strokeStyle=darkText?"rgba(0,0,0,0.08)":"rgba(255,255,255,0.1)";
-    ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(CX-CR*0.5,CY); ctx.lineTo(CX+CR*0.5,CY); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(CX,CY-CR*0.5); ctx.lineTo(CX,CY+CR*0.5); ctx.stroke();
-    ctx.restore();
+  let pX, TEXT_MAX_X;
+  if (align === 'center') {
+    const margin = showMkp ? W*0.04 : W*0.06;
+    pX = Math.round(margin);
+    TEXT_MAX_X = Math.round(contentW - margin);
+  } else if (align === 'right') {
+    const margin = W * 0.05;
+    pX = Math.round(contentW * 0.28);
+    TEXT_MAX_X = Math.round(contentW - margin);
+  } else { // left (default)
+    pX = Math.round(W * 0.04);
+    TEXT_MAX_X = Math.round(contentW * 0.94);
   }
 
-  // ── Gradient fade on left edge of circle zone (blends content into bg) ──
-  const fade=ctx.createLinearGradient(TEXT_MAX_X-80,0,TEXT_MAX_X+80,0);
-  fade.addColorStop(0,"rgba(0,0,0,0)");
-  fade.addColorStop(1,darkText?c1+"44":"rgba(0,0,0,0.15)");
-  ctx.fillStyle=fade; ctx.fillRect(TEXT_MAX_X-80,0,160,H);
+  // ── Phone mockup on right side ──
+  if (showMkp) {
+    drawInfPhoneMockup(ctx, W, H, c1, darkText);
+    // Gradient fade between content and phone
+    const fadeX = contentW - 60;
+    const fade = ctx.createLinearGradient(fadeX, 0, fadeX + 120, 0);
+    fade.addColorStop(0, 'rgba(0,0,0,0)');
+    fade.addColorStop(1, darkText ? c1+'55' : 'rgba(0,0,0,0.2)');
+    ctx.fillStyle = fade; ctx.fillRect(fadeX, 0, 120, H);
+  }
 
   // ── Top bar ──
   const topBarGrad=ctx.createLinearGradient(0,0,0,68);
@@ -1955,7 +2185,7 @@ function drawInfographic(canvas, d, style, handle, isHook, isCTA, circleImg) {
   ctx.textBaseline="alphabetic";
 
   // ── Content ──
-  const cY=80, cH=H-80-68, pX=64;
+  const cY=80, cH=H-80-68;
   switch(d.layout){
     case "stat":       _stat(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c2,darkText,W,cY,cH,pX,TEXT_MAX_X); break;
     case "list":       _list(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c2,darkText,W,cY,cH,pX,TEXT_MAX_X); break;
@@ -2058,64 +2288,107 @@ function _stat(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c
 }
 
 function _list(ctx,d,TEXT,TEXT_MED,TEXT_LOW,CARD_BG,CHART_BG,ACCENT,ACCENT2,c1,c2,darkText,W,cY,cH,pX,TEXT_MAX_X){
-  TEXT_MAX_X=TEXT_MAX_X||Math.round(W*0.57);
-  const pts=(d.points||[]).slice(0,4);
+  TEXT_MAX_X=TEXT_MAX_X||Math.round(W*0.94);
+  // Support up to 8 items dynamically
+  const pts=(d.points||[]).slice(0,8);
+  const count = pts.length || 1;
 
+  // ── Headline ──
+  let headlineBottom = cY;
   if(d.headline){
-    const hs=d.headline.length>40?34:d.headline.length>25?44:54;
+    const hs = d.headline.length>44 ? 30 : d.headline.length>30 ? 38 : count > 5 ? 36 : 46;
     ctx.font=`700 ${hs}px 'DM Sans',sans-serif`;
     ctx.fillStyle=TEXT; ctx.textBaseline="alphabetic";
-    wrapText(ctx,d.headline,pX,cY+hs+16,TEXT_MAX_X-pX,hs*1.28,cY+hs*2.9);
+    headlineBottom = wrapText(ctx,d.headline,pX,cY+hs+12,TEXT_MAX_X-pX,hs*1.25,cY+hs*2.8);
   }
 
-  const top=cY+155, availH=cH-162;
-  const itemH=Math.floor(availH/Math.max(pts.length,1));
+  // ── Auto-calculate item dimensions ──
+  const headH   = d.headline ? (headlineBottom - cY + 16) : 0;
+  const listTop  = cY + headH;
+  const listH    = cH - headH - (d.subtext ? 28 : 0);
+  const gap      = count > 5 ? 8 : 12;
+  const itemH    = Math.floor((listH - gap * (count-1)) / count);
 
-  pts.forEach((pt,i)=>{
-    const iy=top+i*itemH, ih=itemH-14;
+  // Font sizes scale with item height
+  const numFS    = Math.max(18, Math.min(44, Math.floor(itemH * 0.38)));
+  const textFS   = Math.max(16, Math.min(36, Math.floor(itemH * 0.28)));
+  const iconSize = Math.max(16, Math.min(32, Math.floor(itemH * 0.26)));
 
-    // Card bg with glass effect
+  pts.forEach((pt, i) => {
+    const iy = listTop + i * (itemH + gap);
+    const ih = itemH;
+    const midY = iy + ih / 2;  // true vertical center of item card
+
+    // ── Card background ──
     ctx.save();
-    ctx.fillStyle=CARD_BG;
-    ctx.beginPath(); ctx.roundRect(pX,iy,TEXT_MAX_X-pX,ih,10); ctx.fill();
-    // Card border
-    ctx.strokeStyle=ACCENT+"22"; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.roundRect(pX,iy,TEXT_MAX_X-pX,ih,10); ctx.stroke();
+    ctx.fillStyle = CARD_BG;
+    ctx.beginPath(); ctx.roundRect(pX, iy, TEXT_MAX_X - pX, ih, 10); ctx.fill();
+    ctx.strokeStyle = ACCENT + "22"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.roundRect(pX, iy, TEXT_MAX_X - pX, ih, 10); ctx.stroke();
     ctx.restore();
 
-    // Accent left bar — gradient
-    const barGrad=ctx.createLinearGradient(pX,iy,pX,iy+ih);
-    barGrad.addColorStop(0,ACCENT);
-    barGrad.addColorStop(1,ACCENT+"66");
-    ctx.fillStyle=barGrad;
-    ctx.beginPath(); ctx.roundRect(pX,iy,5,ih,{upperLeft:10,lowerLeft:10,upperRight:0,lowerRight:0}); ctx.fill();
+    // ── Accent left bar ──
+    const barGrad = ctx.createLinearGradient(pX, iy, pX, iy + ih);
+    barGrad.addColorStop(0, ACCENT);
+    barGrad.addColorStop(1, ACCENT + "55");
+    ctx.fillStyle = barGrad;
+    ctx.beginPath(); ctx.roundRect(pX, iy, 5, ih, {upperLeft:10,lowerLeft:10,upperRight:0,lowerRight:0}); ctx.fill();
 
-    // Number badge
-    const numFS=Math.min(50,Math.floor(ih*0.4));
+    // ── Number badge — vertically centered ──
+    const numX = pX + 38;
     ctx.save();
-    ctx.shadowColor=ACCENT; ctx.shadowBlur=15;
-    ctx.font=`700 ${numFS}px 'Bebas Neue',sans-serif`;
-    ctx.fillStyle=ACCENT; ctx.textBaseline="middle"; ctx.textAlign="center";
-    ctx.fillText(String(i+1).padStart(2,"0"), pX+54, iy+ih/2);
+    ctx.shadowColor = ACCENT; ctx.shadowBlur = 12;
+    ctx.font = `700 ${numFS}px 'Bebas Neue',sans-serif`;
+    ctx.fillStyle = ACCENT;
+    ctx.textBaseline = "middle"; ctx.textAlign = "center";
+    ctx.fillText(String(i+1).padStart(2,"0"), numX, midY);
     ctx.restore();
-    ctx.textAlign="left";
+    ctx.textAlign = "left";
 
-    // Separator dot
-    ctx.fillStyle=ACCENT+"44";
-    ctx.beginPath(); ctx.arc(pX+90,iy+ih/2,3,0,Math.PI*2); ctx.fill();
+    // ── SVG Icon — vertically centered ──
+    const iconX = pX + 80;
+    const iconPath = infGetIconPath(i);
+    drawSVGIcon(ctx, iconPath, iconX, midY, iconSize, ACCENT + "cc");
 
-    // Point text
-    const textFS=Math.min(40,Math.floor(ih*0.28));
-    ctx.font=`400 ${textFS}px 'DM Sans',sans-serif`;
-    ctx.fillStyle=TEXT;
-    wrapText(ctx,pt,pX+104,iy+ih/2-(ih>110?textFS*0.45:textFS*0.3),TEXT_MAX_X-pX-120,textFS*1.32,iy+ih);
-    ctx.textBaseline="alphabetic";
+    // ── Separator dot ──
+    ctx.fillStyle = ACCENT + "44";
+    ctx.beginPath(); ctx.arc(pX + 100, midY, 2.5, 0, Math.PI*2); ctx.fill();
+
+    // ── Item text — vertically centered ──
+    const textX = pX + 112;
+    const textMaxW = TEXT_MAX_X - pX - 128;
+
+    // Word-wrap and measure to center vertically
+    ctx.font = `400 ${textFS}px 'DM Sans',sans-serif`;
+    ctx.fillStyle = TEXT;
+    const words = pt.split(' ');
+    const lines = []; let line = '';
+    for (const w of words) {
+      const test = line ? line + ' ' + w : w;
+      if (ctx.measureText(test).width > textMaxW && line) { lines.push(line); line = w; }
+      else line = test;
+    }
+    if (line) lines.push(line);
+
+    // Cap lines to 2 if item is small
+    const maxLines = ih < 80 ? 1 : 2;
+    const renderLines = lines.slice(0, maxLines);
+    const lineH = textFS * 1.28;
+    const totalTH = renderLines.length * lineH;
+    // Center the text block vertically within the card
+    const textStartY = midY - totalTH / 2 + lineH * 0.72;
+
+    ctx.textBaseline = "alphabetic";
+    renderLines.forEach((ln, li) => {
+      ctx.fillText(ln, textX, textStartY + li * lineH);
+    });
   });
 
   if(d.subtext){
-    ctx.font="400 15px 'DM Mono',monospace";
+    const sty = listTop + count * (itemH + gap) + 6;
+    ctx.font="400 14px 'DM Mono',monospace";
     ctx.fillStyle=TEXT_LOW; ctx.textBaseline="alphabetic";
-    ctx.fillText(d.subtext.toUpperCase(),pX,top+pts.length*itemH+22);
+    ctx.fillText(d.subtext.toUpperCase(), pX, sty);
   }
 }
 
@@ -2428,7 +2701,8 @@ async function generateGraphic(btn, index) {
     // Draw infographic canvas
     const canvas = document.createElement("canvas");
     canvas.width = 1600; canvas.height = 900;
-    drawInfographic(canvas, d, cardStyle, handle, isHook, isCTA, null);
+    const tweetInfOpts = { align: infContentAlign, pattern: infBgPattern, mockup: false };
+    drawInfographic(canvas, d, cardStyle, handle, isHook, isCTA, null, tweetInfOpts);
 
     loading.classList.remove("visible");
     wrap.style.display = "block"; wrap.className = "ai-graphic-wrap";
@@ -5063,7 +5337,8 @@ async function infGenerate() {
     const handle=document.getElementById('inf-xHandle').value.trim();
     const canvas=document.getElementById('infCanvas');
     canvas.width=1600; canvas.height=900;
-    drawInfographic(canvas,data,style,handle,false,false,null);
+    const infOpts = { align: infContentAlign, pattern: infBgPattern, mockup: infShowMockup };
+    drawInfographic(canvas,data,style,handle,false,false,null,infOpts);
     // Draw watermark on top
     gfxWatermark(canvas.getContext('2d'),1600,900);
     document.getElementById('infPreviewSec').style.display='block';
@@ -5080,7 +5355,8 @@ function infDownloadFinal() {
   if(!window._infLastData) return;
   const {data,style,handle}=window._infLastData;
   const out=document.createElement('canvas'); out.width=1600; out.height=900;
-  drawInfographic(out,data,style,handle,false,false,null); // no watermark
+  const infOpts = { align: infContentAlign, pattern: infBgPattern, mockup: infShowMockup };
+  drawInfographic(out,data,style,handle,false,false,null,infOpts); // no watermark
   const a=document.createElement('a'); a.download='threadcraft-infographic.png';
   a.href=out.toDataURL('image/png'); a.click();
 }
