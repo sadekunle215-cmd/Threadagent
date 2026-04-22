@@ -3940,6 +3940,70 @@ async function msRenderVideo() {
 
   let framesRendered = 0;
 
+  // ── Transition helpers ──
+  // 5 distinct enter/exit transitions that cycle per scene so each cut feels different
+  const TRANSITIONS = [
+    // 0 — Fade to black (classic)
+    {
+      enter(ctx, W, H, p) {
+        ctx.save(); ctx.globalAlpha = 1 - p;
+        ctx.fillStyle = "#000"; ctx.fillRect(0,0,W,H); ctx.restore();
+      },
+      exit(ctx, W, H, p) {
+        ctx.save(); ctx.globalAlpha = p;
+        ctx.fillStyle = "#000"; ctx.fillRect(0,0,W,H); ctx.restore();
+      }
+    },
+    // 1 — Wipe from left (black curtain slides in/out left→right)
+    {
+      enter(ctx, W, H, p) {
+        const x = W * (1 - p);
+        ctx.save(); ctx.fillStyle="#000"; ctx.fillRect(0,0,x,H); ctx.restore();
+      },
+      exit(ctx, W, H, p) {
+        const x = W * p;
+        ctx.save(); ctx.fillStyle="#000"; ctx.fillRect(0,0,x,H); ctx.restore();
+      }
+    },
+    // 2 — Wipe from right (curtain slides right→left)
+    {
+      enter(ctx, W, H, p) {
+        const x = W * p;
+        ctx.save(); ctx.fillStyle="#000"; ctx.fillRect(W-x,0,x,H); ctx.restore();
+      },
+      exit(ctx, W, H, p) {
+        const x = W * (1 - p);
+        ctx.save(); ctx.fillStyle="#000"; ctx.fillRect(W-x,0,x,H); ctx.restore();
+      }
+    },
+    // 3 — Flash white (hard hit to white then snap in)
+    {
+      enter(ctx, W, H, p) {
+        if (p < 0.5) {
+          ctx.save(); ctx.globalAlpha = 1 - p*2;
+          ctx.fillStyle="#fff"; ctx.fillRect(0,0,W,H); ctx.restore();
+        }
+      },
+      exit(ctx, W, H, p) {
+        if (p > 0.5) {
+          ctx.save(); ctx.globalAlpha = (p - 0.5)*2;
+          ctx.fillStyle="#fff"; ctx.fillRect(0,0,W,H); ctx.restore();
+        }
+      }
+    },
+    // 4 — Slide up (frame pushed up by black panel rising from bottom)
+    {
+      enter(ctx, W, H, p) {
+        const y = H * (1 - p);
+        ctx.save(); ctx.fillStyle="#000"; ctx.fillRect(0,0,W,y); ctx.restore();
+      },
+      exit(ctx, W, H, p) {
+        const y = H * p;
+        ctx.save(); ctx.fillStyle="#000"; ctx.fillRect(0,H-y,W,y); ctx.restore();
+      }
+    },
+  ];
+
   // ── Render each scene frame-by-frame, yielding to keep UI alive ──
   for (let si = 0; si < scenes.length; si++) {
     const raw     = scenes[si];
@@ -3949,21 +4013,27 @@ async function msRenderVideo() {
     const frames  = Math.round(sceneDurs[si] * fps);
     const msPerFrame = 1000 / fps;
 
+    // Pick a different transition for every scene boundary (cycles through all 5)
+    const trIn  = TRANSITIONS[si % TRANSITIONS.length];
+    const trOut = TRANSITIONS[(si + 1) % TRANSITIONS.length];
+    const TRANS_FRAC = 0.10; // 10% of scene for enter/exit
+
     for (let f = 0; f < frames; f++) {
-      const t       = f / frames;
-      const fadeIn  = t < 0.08 ? easeIn(t/0.08) : 1;
-      const fadeOut = t > 0.92 ? easeIn((1-t)/0.08) : 1;
-      const fade    = Math.min(fadeIn, fadeOut);
+      const t = f / frames;
 
       renderFn(ctx, W, H, t, pal, scene);
 
-      if (fade < 1) {
-        ctx.save();
-        ctx.globalAlpha = 1 - fade;
-        ctx.fillStyle = "#000";
-        ctx.fillRect(0, 0, W, H);
-        ctx.restore();
+      // Enter transition (start of scene)
+      if (t < TRANS_FRAC) {
+        const p = easeIn(t / TRANS_FRAC); // 0→1 = fully revealed
+        trIn.enter(ctx, W, H, p);
       }
+      // Exit transition (end of scene)
+      else if (t > 1 - TRANS_FRAC) {
+        const p = easeIn((t - (1 - TRANS_FRAC)) / TRANS_FRAC); // 0→1 = fully hidden
+        trOut.exit(ctx, W, H, p);
+      }
+
       drawHUD(ctx, W, H, pal, si+1, scenes.length, t);
 
       framesRendered++;
