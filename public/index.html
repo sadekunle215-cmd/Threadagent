@@ -14,7 +14,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script type="text/javascript" src="//acscdn.com/script/aclib.js"></script>
-  <script src="https://js.paystack.co/v2/inline.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -464,6 +463,16 @@
     .btn-pay-topup{width:100%;background:linear-gradient(135deg,var(--red2),var(--red3));color:#fff;border:none;border-radius:12px;font-family:var(--display);font-size:18px;letter-spacing:3px;padding:16px;cursor:pointer;transition:opacity .2s;margin-top:4px}
     .btn-pay-topup:hover{opacity:.88}
     .btn-pay-topup:disabled{opacity:.4;cursor:not-allowed}
+    .crypto-amount-row{display:flex;align-items:baseline;justify-content:center;gap:10px;margin-bottom:18px}
+    .crypto-ngn{font-family:var(--display);font-size:34px;letter-spacing:1px;color:var(--text)}
+    .crypto-eq{font-family:var(--mono);font-size:13px;color:var(--red);font-weight:500}
+    .crypto-qr-wrap{display:flex;justify-content:center;padding:16px;background:#fff;border:1px solid var(--border);border-radius:16px;margin-bottom:16px}
+    .crypto-qr-wrap img{display:block;width:180px;height:180px}
+    .crypto-status{display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--muted2);margin-top:14px}
+    .crypto-status.paid{color:var(--grn)}
+    .crypto-status.paid .fetch-dot{animation:none;background:var(--grn)}
+    .crypto-status.failed{color:#b91c1c}
+    .crypto-status.failed .fetch-dot{animation:none;background:#b91c1c}
     .btn-cancel-topup{width:100%;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:12px;cursor:pointer;margin-top:8px;transition:all .2s}
     .btn-cancel-topup:hover{color:var(--text);border-color:var(--muted2)}
 
@@ -770,7 +779,7 @@
         <div class="step-num">2</div>
         <div class="step-body">
           <div class="step-title">Top Up Your Wallet</div>
-          <div class="step-desc">Fund your wallet via Paystack — starting from ₦500. Pay only for what you create. No subscriptions, no commitments.</div>
+          <div class="step-desc">Fund your wallet with SOL or USDT — starting from ₦500. Pay only for what you create. No subscriptions, no commitments.</div>
         </div>
       </div>
       <div class="step-item">
@@ -874,13 +883,26 @@
     <div class="topup-handle"></div>
     <div class="topup-title">Top Up Wallet</div>
     <div class="topup-sub">Select an amount — funds are added instantly after payment.</div>
-    <div class="topup-amounts">
-      <button class="topup-amt" onclick="selectTopup(500, this)">&#8358;500</button>
-      <button class="topup-amt" onclick="selectTopup(1000, this)">&#8358;1,000</button>
-      <button class="topup-amt" onclick="selectTopup(2000, this)">&#8358;2,000</button>
-      <button class="topup-amt" onclick="selectTopup(5000, this)">&#8358;5,000</button>
+    <div id="topupAmountView">
+      <div class="topup-amounts">
+        <button class="topup-amt" onclick="selectTopup(500, this)">&#8358;500</button>
+        <button class="topup-amt" onclick="selectTopup(1000, this)">&#8358;1,000</button>
+        <button class="topup-amt" onclick="selectTopup(2000, this)">&#8358;2,000</button>
+        <button class="topup-amt" onclick="selectTopup(5000, this)">&#8358;5,000</button>
+      </div>
+      <button class="btn-pay-topup" id="btnPayTopup" onclick="doTopup()" disabled>Select an amount</button>
     </div>
-    <button class="btn-pay-topup" id="btnPayTopup" onclick="doTopup()" disabled>Select an amount</button>
+
+    <div id="topupCryptoView" style="display:none;">
+      <div class="crypto-amount-row">
+        <span class="crypto-ngn">&#8358;<span id="cryptoNgnVal">0</span></span>
+        <span class="crypto-eq">&#8776; <span id="cryptoSolVal">0</span> SOL</span>
+      </div>
+      <div class="crypto-qr-wrap"><img id="cryptoQrImg" src="" alt="Payment QR" width="180" height="180"></div>
+      <a id="cryptoOpenLink" class="btn-pay-topup" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box;">Open Payment Page</a>
+      <div class="crypto-status" id="cryptoStatus"><span class="fetch-dot"></span><span id="cryptoStatusText">Waiting for payment&hellip;</span></div>
+    </div>
+
     <button class="btn-cancel-topup" onclick="closeTopup()">cancel</button>
   </div>
 </div>
@@ -4596,10 +4618,16 @@ function showBalanceToast(msg, success = false) {
   setTimeout(() => t.classList.remove("visible"), 3500);
 }
 
-// ── Top-up ──
+// ── Top-up (ChatFi Pay — SOL / USDT) ──
+const CHATFI_API_KEY = "cfp_woxJG9lPse3JhDgY3JGkcl326jDA0mqU";
+const CHATFI_BASE = "https://chatfipay-z9xh.vercel.app/api";
+
 let selectedTopup = 0;
+let cryptoPollTimer = null;
+let cryptoPaymentId = null;
 
 function openTopup() { document.getElementById("topupModal").classList.add("visible"); }
+
 function closeTopup() {
   document.getElementById("topupModal").classList.remove("visible");
   selectedTopup = 0;
@@ -4607,6 +4635,10 @@ function closeTopup() {
   const btn = document.getElementById("btnPayTopup");
   btn.disabled = true;
   btn.textContent = "Select an amount";
+  if (cryptoPollTimer) { clearInterval(cryptoPollTimer); cryptoPollTimer = null; }
+  cryptoPaymentId = null;
+  document.getElementById("topupCryptoView").style.display = "none";
+  document.getElementById("topupAmountView").style.display = "block";
 }
 
 function selectTopup(amount, btn) {
@@ -4618,26 +4650,117 @@ function selectTopup(amount, btn) {
   payBtn.textContent = `Pay \u20A6${amount.toLocaleString()} \u2192`;
 }
 
-function doTopup() {
+async function getSolNgnRate() {
+  const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=ngn");
+  const data = await res.json();
+  const rate = data?.solana?.ngn;
+  if (!rate) throw new Error("Could not fetch SOL/NGN rate");
+  return rate;
+}
+
+async function doTopup() {
   if (!selectedTopup || !currentUser) return;
-  if (typeof PaystackPop === "undefined") { showBalanceToast("Payment system not loaded — please refresh."); return; }
   const payBtn = document.getElementById("btnPayTopup");
-  payBtn.disabled = true; payBtn.textContent = "Opening payment...";
+  payBtn.disabled = true;
+  payBtn.textContent = "Fetching rate...";
+
   try {
-    const popup = new PaystackPop();
-    popup.newTransaction({
-      key: "pk_live_6c1cdedbdf2881240c8c6bebe10d846d8019f6e4",
-      email: currentUser.email, amount: selectedTopup * 100, currency: "NGN",
-      ref: "TC-TOPUP-" + Date.now(),
-      onSuccess: async function(tx) {
-        payBtn.textContent = "Confirming...";
-        await db.collection("users").doc(currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(selectedTopup) });
-        await db.collection("users").doc(currentUser.uid).collection("transactions").add({ amount: selectedTopup, description: "Wallet top-up", ref: tx.reference, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-        closeTopup(); showBalanceToast("\u20A6" + selectedTopup.toLocaleString() + " added!", true);
-      },
-      onCancel: function() { payBtn.disabled = false; payBtn.textContent = "Pay \u20A6" + selectedTopup.toLocaleString() + " \u2192"; }
+    const rate = await getSolNgnRate();
+    const solAmount = Number((selectedTopup / rate).toFixed(6));
+
+    payBtn.textContent = "Creating payment...";
+
+    const res = await fetch(`${CHATFI_BASE}/payment`, {
+      method: "POST",
+      headers: { "x-api-key": CHATFI_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: solAmount,
+        label: "ThreadCraft Top-up",
+        memo: `\u20A6${selectedTopup.toLocaleString()} \u00b7 ${currentUser.email}`,
+      }),
     });
-  } catch(e) { payBtn.disabled = false; payBtn.textContent = "Pay \u20A6" + selectedTopup.toLocaleString() + " \u2192"; showBalanceToast("Payment failed — check your connection."); }
+
+    if (!res.ok) throw new Error(`Server responded ${res.status}`);
+    const data = await res.json();
+    if (!data.success || !data.link) throw new Error(data.error || "No payment link returned");
+
+    showCryptoView(data, solAmount);
+  } catch (e) {
+    payBtn.disabled = false;
+    payBtn.textContent = "Pay \u20A6" + selectedTopup.toLocaleString() + " \u2192";
+    showBalanceToast("Couldn't start payment — check your connection and try again.");
+  }
+}
+
+function showCryptoView(data, solAmount) {
+  document.getElementById("topupAmountView").style.display = "none";
+  document.getElementById("topupCryptoView").style.display = "block";
+
+  document.getElementById("cryptoNgnVal").textContent = selectedTopup.toLocaleString();
+  document.getElementById("cryptoSolVal").textContent = solAmount;
+
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(data.link)}`;
+  document.getElementById("cryptoQrImg").src = qrUrl;
+  document.getElementById("cryptoOpenLink").href = data.link;
+
+  const statusEl = document.getElementById("cryptoStatus");
+  statusEl.className = "crypto-status";
+  document.getElementById("cryptoStatusText").textContent = "Waiting for payment\u2026";
+
+  cryptoPaymentId = data.id;
+  startCryptoPolling(data.id);
+}
+
+function startCryptoPolling(id) {
+  let attempts = 0;
+  const maxAttempts = 525; // ~35 min at 4s — outlasts the 30 min payment expiry
+  if (cryptoPollTimer) clearInterval(cryptoPollTimer);
+
+  cryptoPollTimer = setInterval(async () => {
+    attempts++;
+    if (attempts > maxAttempts) {
+      clearInterval(cryptoPollTimer);
+      const statusEl = document.getElementById("cryptoStatus");
+      statusEl.className = "crypto-status failed";
+      document.getElementById("cryptoStatusText").textContent = "Payment link expired";
+      return;
+    }
+    try {
+      const res = await fetch(`${CHATFI_BASE}/payment?id=${id}`, {
+        headers: { "x-api-key": CHATFI_API_KEY },
+      });
+      const data = await res.json();
+      if (data.status === "completed") {
+        clearInterval(cryptoPollTimer);
+        cryptoPollTimer = null;
+        await creditCryptoTopup(data);
+      }
+    } catch (e) {
+      // silent — keep polling
+    }
+  }, 4000);
+}
+
+async function creditCryptoTopup(payment) {
+  const statusEl = document.getElementById("cryptoStatus");
+  statusEl.className = "crypto-status paid";
+  document.getElementById("cryptoStatusText").textContent = "Payment confirmed!";
+
+  await db.collection("users").doc(currentUser.uid).update({
+    balance: firebase.firestore.FieldValue.increment(selectedTopup),
+  });
+  await db.collection("users").doc(currentUser.uid).collection("transactions").add({
+    amount: selectedTopup,
+    description: "Wallet top-up (crypto)",
+    ref: payment.id,
+    txSignature: payment.txSignature || null,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+
+  setTimeout(() => {
+    closeTopup();
+    showBalanceToast("\u20A6" + selectedTopup.toLocaleString() + " added!", true);
+  }, 1200);
 }
 
 // ══════════════════════════════════════════════════════
