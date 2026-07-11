@@ -4688,7 +4688,7 @@ async function doTopup() {
   } catch (e) {
     payBtn.disabled = false;
     payBtn.textContent = "Pay \u20A6" + selectedTopup.toLocaleString() + " \u2192";
-    showBalanceToast("Couldn't start payment — check your connection and try again.");
+    showBalanceToast("Payment error: " + (e && e.message ? e.message : "unknown"));
   }
 }
 
