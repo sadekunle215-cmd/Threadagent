@@ -779,7 +779,7 @@
         <div class="step-num">2</div>
         <div class="step-body">
           <div class="step-title">Top Up Your Wallet</div>
-          <div class="step-desc">Fund your wallet with SOL or USDT — starting from ₦500. Pay only for what you create. No subscriptions, no commitments.</div>
+          <div class="step-desc">Fund your wallet with USDC — starting from ₦500. Pay only for what you create. No subscriptions, no commitments.</div>
         </div>
       </div>
       <div class="step-item">
@@ -896,8 +896,9 @@
     <div id="topupCryptoView" style="display:none;">
       <div class="crypto-amount-row">
         <span class="crypto-ngn">&#8358;<span id="cryptoNgnVal">0</span></span>
-        <span class="crypto-eq">&#8776; <span id="cryptoSolVal">0</span> SOL</span>
+        <span class="crypto-eq">&#8776; <span id="cryptoUsdcVal">0</span> USDC</span>
       </div>
+      <div class="crypto-fee-note" id="cryptoFeeNote" style="font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;margin:-10px 0 14px;"></div>
       <div class="crypto-qr-wrap"><img id="cryptoQrImg" src="" alt="Payment QR" width="180" height="180"></div>
       <a id="cryptoOpenLink" class="btn-pay-topup" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box;">Open Payment Page</a>
       <div class="crypto-status" id="cryptoStatus"><span class="fetch-dot"></span><span id="cryptoStatusText">Waiting for payment&hellip;</span></div>
@@ -4618,9 +4619,10 @@ function showBalanceToast(msg, success = false) {
   setTimeout(() => t.classList.remove("visible"), 3500);
 }
 
-// ── Top-up (ChatFi Pay — SOL / USDT) ──
+// ── Top-up (ChatFi Pay — USDC) ──
 const CHATFI_API_KEY = "cfp_nGRV2RoShVZSsUhd10us2cAXTEcdRfxK";
 const CHATFI_BASE = "https://pay.chatfi.pro/api";
+const CHATFI_TOKEN = "USDC";
 
 let selectedTopup = 0;
 let cryptoPollTimer = null;
@@ -4650,11 +4652,11 @@ function selectTopup(amount, btn) {
   payBtn.textContent = `Pay \u20A6${amount.toLocaleString()} \u2192`;
 }
 
-async function getSolNgnRate() {
-  const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=ngn");
+async function getUsdNgnRate() {
+  const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=usd-coin&vs_currencies=ngn");
   const data = await res.json();
-  const rate = data?.solana?.ngn;
-  if (!rate) throw new Error("Could not fetch SOL/NGN rate");
+  const rate = data?.["usd-coin"]?.ngn;
+  if (!rate) throw new Error("Could not fetch USDC/NGN rate");
   return rate;
 }
 
@@ -4665,8 +4667,8 @@ async function doTopup() {
   payBtn.textContent = "Fetching rate...";
 
   try {
-    const rate = await getSolNgnRate();
-    const solAmount = Number((selectedTopup / rate).toFixed(6));
+    const rate = await getUsdNgnRate();
+    const usdcAmount = Number((selectedTopup / rate).toFixed(2));
 
     payBtn.textContent = "Creating payment...";
 
@@ -4674,7 +4676,8 @@ async function doTopup() {
       method: "POST",
       headers: { "x-api-key": CHATFI_API_KEY, "Content-Type": "application/json" },
       body: JSON.stringify({
-        amount: solAmount,
+        amount: usdcAmount,
+        token: CHATFI_TOKEN,
         label: "ThreadCraft Top-up",
         memo: `\u20A6${selectedTopup.toLocaleString()} \u00b7 ${currentUser.email}`,
       }),
@@ -4684,7 +4687,7 @@ async function doTopup() {
     const data = await res.json();
     if (!data.success || !data.link) throw new Error(data.error || "No payment link returned");
 
-    showCryptoView(data, solAmount);
+    showCryptoView(data, usdcAmount);
   } catch (e) {
     payBtn.disabled = false;
     payBtn.textContent = "Pay \u20A6" + selectedTopup.toLocaleString() + " \u2192";
@@ -4692,12 +4695,20 @@ async function doTopup() {
   }
 }
 
-function showCryptoView(data, solAmount) {
+function showCryptoView(data, usdcAmount) {
   document.getElementById("topupAmountView").style.display = "none";
   document.getElementById("topupCryptoView").style.display = "block";
 
   document.getElementById("cryptoNgnVal").textContent = selectedTopup.toLocaleString();
-  document.getElementById("cryptoSolVal").textContent = solAmount;
+  // data.amount is the total to pay, including ChatFi's flat network-fee surcharge on USDC/USDT links
+  const totalUsdc = data.amount || usdcAmount;
+  document.getElementById("cryptoUsdcVal").textContent = totalUsdc;
+  const feeNote = document.getElementById("cryptoFeeNote");
+  if (feeNote) {
+    feeNote.textContent = data.feeUsdc
+      ? `Includes ${data.feeUsdc} USDC network fee`
+      : "";
+  }
 
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(data.link)}`;
   document.getElementById("cryptoQrImg").src = qrUrl;
