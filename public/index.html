@@ -902,6 +902,7 @@
       <div class="crypto-qr-wrap"><img id="cryptoQrImg" src="" alt="Payment QR" width="180" height="180"></div>
       <a id="cryptoOpenLink" class="btn-pay-topup" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box;">Open Payment Page</a>
       <div class="crypto-status" id="cryptoStatus"><span class="fetch-dot"></span><span id="cryptoStatusText">Waiting for payment&hellip;</span></div>
+      <button class="btn-cancel-topup" onclick="manualCheckPayment()" style="margin-top:10px;">I've sent it — check now</button>
     </div>
 
     <button class="btn-cancel-topup" onclick="closeTopup()">cancel</button>
@@ -4440,6 +4441,7 @@ auth.onAuthStateChanged(async user => {
     const hee = document.getElementById("homeEmail"); if(hee) hee.textContent=user.email;
     listenBalance(user.uid);
     loadTransactions(user.uid);
+    resumePendingCryptoPayment();
     // Restore last visited page after refresh — skip if no saved page
     const lastPage = sessionStorage.getItem("tcLastPage");
     if (lastPage && document.getElementById(lastPage)) {
@@ -4627,6 +4629,7 @@ const CHATFI_TOKEN = "USDC";
 let selectedTopup = 0;
 let cryptoPollTimer = null;
 let cryptoPaymentId = null;
+let cryptoPayWindow = null;
 
 function openTopup() { document.getElementById("topupModal").classList.add("visible"); }
 
@@ -4712,65 +4715,169 @@ function showCryptoView(data, usdcAmount) {
 
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(data.link)}`;
   document.getElementById("cryptoQrImg").src = qrUrl;
-  document.getElementById("cryptoOpenLink").href = data.link;
+  const openLink = document.getElementById("cryptoOpenLink");
+  openLink.href = data.link;
+  openLink.onclick = function (e) {
+    e.preventDefault();
+    cryptoPayWindow = window.open(data.link, "_blank");
+  };
 
   const statusEl = document.getElementById("cryptoStatus");
   statusEl.className = "crypto-status";
   document.getElementById("cryptoStatusText").textContent = "Waiting for payment\u2026";
 
   cryptoPaymentId = data.id;
+  if (currentUser) savePendingPayment(currentUser.uid, data.id, selectedTopup);
   startCryptoPolling(data.id);
+}
+
+// ── Pending-payment persistence (survives tab reload/kill/background-throttling) ──
+function pendingPaymentKey(uid) { return `tc_pending_payment_${uid}`; }
+
+function savePendingPayment(uid, id, ngnAmount) {
+  try {
+    localStorage.setItem(pendingPaymentKey(uid), JSON.stringify({ id, ngnAmount, ts: Date.now() }));
+  } catch (e) {}
+}
+
+function clearPendingPayment(uid) {
+  try { localStorage.removeItem(pendingPaymentKey(uid)); } catch (e) {}
+}
+
+async function fetchPaymentStatus(id) {
+  try {
+    const res = await fetch(`${CHATFI_BASE}/payment?id=${id}`, {
+      headers: { "x-api-key": CHATFI_API_KEY },
+    });
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+function closeCryptoPayWindow() {
+  try { if (cryptoPayWindow && !cryptoPayWindow.closed) cryptoPayWindow.close(); } catch (e) {}
+  cryptoPayWindow = null;
+  try { window.focus(); } catch (e) {}
+}
+
+// Called once on login/app load — picks up a payment that was in flight when the
+// tab was closed, reloaded, or killed in the background before it could be credited.
+async function resumePendingCryptoPayment() {
+  if (!currentUser) return;
+  let pending;
+  try { pending = JSON.parse(localStorage.getItem(pendingPaymentKey(currentUser.uid))); } catch (e) { pending = null; }
+  if (!pending || !pending.id) return;
+
+  // ChatFi payment links expire after ~30 min — don't bother checking stale ones
+  if (Date.now() - pending.ts > 40 * 60 * 1000) { clearPendingPayment(currentUser.uid); return; }
+
+  const data = await fetchPaymentStatus(pending.id);
+  if (data && data.status === "completed") {
+    await creditCryptoTopup(data, pending.ngnAmount);
+  } else if (data && data.status === "pending") {
+    // Still open — reopen the tracking UI and resume polling instead of losing it silently
+    selectedTopup = pending.ngnAmount;
+    cryptoPaymentId = pending.id;
+    openTopup();
+    document.getElementById("topupAmountView").style.display = "none";
+    document.getElementById("topupCryptoView").style.display = "block";
+    document.getElementById("cryptoNgnVal").textContent = pending.ngnAmount.toLocaleString();
+    startCryptoPolling(pending.id);
+  }
+  // if fetch failed (offline etc.), leave the record — we'll retry on next load
+}
+
+// Re-check immediately when the tab regains focus, rather than waiting on a
+// possibly-throttled background timer.
+document.addEventListener("visibilitychange", async () => {
+  if (document.visibilityState === "visible" && cryptoPaymentId) {
+    const data = await fetchPaymentStatus(cryptoPaymentId);
+    if (data && data.status === "completed") {
+      if (cryptoPollTimer) { clearInterval(cryptoPollTimer); cryptoPollTimer = null; }
+      closeCryptoPayWindow();
+      await creditCryptoTopup(data);
+    }
+  }
+});
+
+async function manualCheckPayment() {
+  if (!cryptoPaymentId) return;
+  document.getElementById("cryptoStatusText").textContent = "Checking\u2026";
+  const data = await fetchPaymentStatus(cryptoPaymentId);
+  if (data && data.status === "completed") {
+    if (cryptoPollTimer) { clearInterval(cryptoPollTimer); cryptoPollTimer = null; }
+    closeCryptoPayWindow();
+    await creditCryptoTopup(data);
+  } else {
+    document.getElementById("cryptoStatusText").textContent = "Waiting for payment\u2026";
+  }
 }
 
 function startCryptoPolling(id) {
   let attempts = 0;
-  const maxAttempts = 525; // ~35 min at 4s — outlasts the 30 min payment expiry
+  const maxAttempts = 840; // ~35 min at 2.5s — outlasts the 30 min payment expiry
   if (cryptoPollTimer) clearInterval(cryptoPollTimer);
 
   cryptoPollTimer = setInterval(async () => {
     attempts++;
     if (attempts > maxAttempts) {
       clearInterval(cryptoPollTimer);
+      if (currentUser) clearPendingPayment(currentUser.uid);
       const statusEl = document.getElementById("cryptoStatus");
       statusEl.className = "crypto-status failed";
       document.getElementById("cryptoStatusText").textContent = "Payment link expired";
       return;
     }
     try {
-      const res = await fetch(`${CHATFI_BASE}/payment?id=${id}`, {
-        headers: { "x-api-key": CHATFI_API_KEY },
-      });
-      const data = await res.json();
-      if (data.status === "completed") {
+      const data = await fetchPaymentStatus(id);
+      if (data && data.status === "completed") {
         clearInterval(cryptoPollTimer);
         cryptoPollTimer = null;
+        closeCryptoPayWindow();
         await creditCryptoTopup(data);
       }
     } catch (e) {
       // silent — keep polling
     }
-  }, 4000);
+  }, 2500);
 }
 
-async function creditCryptoTopup(payment) {
+async function creditCryptoTopup(payment, ngnAmountOverride) {
+  if (!currentUser) return;
+  const ngnAmount = ngnAmountOverride || selectedTopup;
+
+  // Guard against crediting the same payment twice (e.g. the interval and a
+  // resumed/manual check both catching "completed" around the same time).
+  const already = await db.collection("users").doc(currentUser.uid)
+    .collection("transactions").where("ref", "==", payment.id).limit(1).get();
+  if (!already.empty) {
+    clearPendingPayment(currentUser.uid);
+    closeTopup();
+    return;
+  }
+
   const statusEl = document.getElementById("cryptoStatus");
-  statusEl.className = "crypto-status paid";
-  document.getElementById("cryptoStatusText").textContent = "Payment confirmed!";
+  if (statusEl) statusEl.className = "crypto-status paid";
+  const statusText = document.getElementById("cryptoStatusText");
+  if (statusText) statusText.textContent = "Payment confirmed!";
 
   await db.collection("users").doc(currentUser.uid).update({
-    balance: firebase.firestore.FieldValue.increment(selectedTopup),
+    balance: firebase.firestore.FieldValue.increment(ngnAmount),
   });
   await db.collection("users").doc(currentUser.uid).collection("transactions").add({
-    amount: selectedTopup,
+    amount: ngnAmount,
     description: "Wallet top-up (crypto)",
     ref: payment.id,
     txSignature: payment.txSignature || null,
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
   });
 
+  clearPendingPayment(currentUser.uid);
+
   setTimeout(() => {
     closeTopup();
-    showBalanceToast("\u20A6" + selectedTopup.toLocaleString() + " added!", true);
+    showBalanceToast("\u20A6" + ngnAmount.toLocaleString() + " added!", true);
   }, 1200);
 }
 
