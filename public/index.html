@@ -4624,8 +4624,8 @@ function showBalanceToast(msg, success = false) {
 }
 
 // ── Top-up (ChatFi Pay — USDC, via a small server-side proxy so the ChatFi
-//    key never ships to the browser) ──
-const PROXY_BASE = "https://threadcraft-api.vercel.app/api";
+//    key never ships to the browser) ── same-domain relative path, no CORS needed
+const PROXY_BASE = "/api";
 const CHATFI_TOKEN = "USDC";
 
 let selectedTopup = 0;
