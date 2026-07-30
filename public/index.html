@@ -4621,14 +4621,15 @@ function showBalanceToast(msg, success = false) {
   setTimeout(() => t.classList.remove("visible"), 3500);
 }
 
-// ── Top-up (ChatFi Pay — USDC) ──
-const CHATFI_API_KEY = "cfp_UvH6MfRNir8ohgVJS7HUbElas1UdqDG4";
-const CHATFI_BASE = "https://pay.chatfi.pro/api";
+// ── Top-up (ChatFi Pay — USDC, via a small server-side proxy so the ChatFi
+//    key never ships to the browser) ──
+const PROXY_BASE = "https://threadcraft-api.vercel.app/api";
 const CHATFI_TOKEN = "USDC";
 
 let selectedTopup = 0;
 let cryptoPollTimer = null;
 let cryptoPaymentId = null;
+let cryptoCheckToken = null;
 let cryptoPayWindow = null;
 
 function openTopup() { document.getElementById("topupModal").classList.add("visible"); }
@@ -4642,6 +4643,7 @@ function closeTopup() {
   btn.textContent = "Select an amount";
   if (cryptoPollTimer) { clearInterval(cryptoPollTimer); cryptoPollTimer = null; }
   cryptoPaymentId = null;
+  cryptoCheckToken = null;
   document.getElementById("topupCryptoView").style.display = "none";
   document.getElementById("topupAmountView").style.display = "block";
 }
@@ -4675,20 +4677,28 @@ async function doTopup() {
 
     payBtn.textContent = "Creating payment...";
 
-    const res = await fetch(`${CHATFI_BASE}/payment`, {
+    const idToken = await currentUser.getIdToken();
+    const clientRequestId = (crypto.randomUUID && crypto.randomUUID()) || `${currentUser.uid}-${Date.now()}`;
+    const res = await fetch(`${PROXY_BASE}/createPayment`, {
       method: "POST",
-      headers: { "x-api-key": CHATFI_API_KEY, "Content-Type": "application/json" },
+      headers: {
+        "Authorization": `Bearer ${idToken}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         amount: usdcAmount,
+        ngnAmount: selectedTopup,
         token: CHATFI_TOKEN,
         label: "ThreadCraft Top-up",
         memo: `\u20A6${selectedTopup.toLocaleString()} \u00b7 ${currentUser.email}`,
+        returnOrigin: window.location.origin,
+        clientRequestId,
       }),
     });
 
     if (!res.ok) throw new Error(`Server responded ${res.status}`);
     const data = await res.json();
-    if (!data.success || !data.link) throw new Error(data.error || "No payment link returned");
+    if (!data.id || !data.link || !data.checkToken) throw new Error(data.error || "No payment link returned");
 
     showCryptoView(data, usdcAmount);
   } catch (e) {
@@ -4727,16 +4737,17 @@ function showCryptoView(data, usdcAmount) {
   document.getElementById("cryptoStatusText").textContent = "Waiting for payment\u2026";
 
   cryptoPaymentId = data.id;
-  if (currentUser) savePendingPayment(currentUser.uid, data.id, selectedTopup);
-  startCryptoPolling(data.id);
+  cryptoCheckToken = data.checkToken;
+  if (currentUser) savePendingPayment(currentUser.uid, data.id, data.checkToken, selectedTopup);
+  startCryptoPolling(data.id, data.checkToken);
 }
 
 // ── Pending-payment persistence (survives tab reload/kill/background-throttling) ──
 function pendingPaymentKey(uid) { return `tc_pending_payment_${uid}`; }
 
-function savePendingPayment(uid, id, ngnAmount) {
+function savePendingPayment(uid, id, checkToken, ngnAmount) {
   try {
-    localStorage.setItem(pendingPaymentKey(uid), JSON.stringify({ id, ngnAmount, ts: Date.now() }));
+    localStorage.setItem(pendingPaymentKey(uid), JSON.stringify({ id, checkToken, ngnAmount, ts: Date.now() }));
   } catch (e) {}
 }
 
@@ -4744,11 +4755,13 @@ function clearPendingPayment(uid) {
   try { localStorage.removeItem(pendingPaymentKey(uid)); } catch (e) {}
 }
 
-async function fetchPaymentStatus(id) {
+// checkToken is safe to use directly against ChatFi from the browser — per
+// their docs it can only ever read this one payment's status. The actual
+// balance credit happens via the webhook server-side; this call is purely
+// for instant UI feedback ("Payment confirmed!") while the user is still here.
+async function fetchPaymentStatus(id, checkToken) {
   try {
-    const res = await fetch(`${CHATFI_BASE}/payment?id=${id}`, {
-      headers: { "x-api-key": CHATFI_API_KEY },
-    });
+    const res = await fetch(`https://pay.chatfi.pro/api/payment?id=${id}&checkToken=${checkToken}`);
     return await res.json();
   } catch (e) {
     return null;
@@ -4762,28 +4775,32 @@ function closeCryptoPayWindow() {
 }
 
 // Called once on login/app load — picks up a payment that was in flight when the
-// tab was closed, reloaded, or killed in the background before it could be credited.
+// tab was closed, reloaded, or killed in the background. Crediting itself is
+// already handled by the webhook server-side; this just catches the UI up.
 async function resumePendingCryptoPayment() {
   if (!currentUser) return;
   let pending;
   try { pending = JSON.parse(localStorage.getItem(pendingPaymentKey(currentUser.uid))); } catch (e) { pending = null; }
   if (!pending || !pending.id) return;
 
-  // ChatFi payment links expire after ~30 min — don't bother checking stale ones
-  if (Date.now() - pending.ts > 40 * 60 * 1000) { clearPendingPayment(currentUser.uid); return; }
+  // ChatFi payment links expire after ~24h by default — don't bother checking stale ones
+  if (Date.now() - pending.ts > 25 * 60 * 60 * 1000) { clearPendingPayment(currentUser.uid); return; }
 
-  const data = await fetchPaymentStatus(pending.id);
+  const data = await fetchPaymentStatus(pending.id, pending.checkToken);
   if (data && data.status === "completed") {
-    await creditCryptoTopup(data, pending.ngnAmount);
+    creditCryptoTopup(data, pending.ngnAmount);
   } else if (data && data.status === "pending") {
     // Still open — reopen the tracking UI and resume polling instead of losing it silently
     selectedTopup = pending.ngnAmount;
     cryptoPaymentId = pending.id;
+    cryptoCheckToken = pending.checkToken;
     openTopup();
     document.getElementById("topupAmountView").style.display = "none";
     document.getElementById("topupCryptoView").style.display = "block";
     document.getElementById("cryptoNgnVal").textContent = pending.ngnAmount.toLocaleString();
-    startCryptoPolling(pending.id);
+    startCryptoPolling(pending.id, pending.checkToken);
+  } else if (data && data.status === "expired") {
+    clearPendingPayment(currentUser.uid);
   }
   // if fetch failed (offline etc.), leave the record — we'll retry on next load
 }
@@ -4792,31 +4809,40 @@ async function resumePendingCryptoPayment() {
 // possibly-throttled background timer.
 document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "visible" && cryptoPaymentId) {
-    const data = await fetchPaymentStatus(cryptoPaymentId);
+    const data = await fetchPaymentStatus(cryptoPaymentId, cryptoCheckToken);
     if (data && data.status === "completed") {
       if (cryptoPollTimer) { clearInterval(cryptoPollTimer); cryptoPollTimer = null; }
       closeCryptoPayWindow();
-      await creditCryptoTopup(data);
+      creditCryptoTopup(data);
     }
+  }
+});
+
+// If ChatFi's redirectUrl brought us back here after payment, do an immediate
+// check rather than waiting on the poll interval.
+window.addEventListener("load", () => {
+  if (new URLSearchParams(window.location.search).get("payment_return") === "1") {
+    history.replaceState({}, "", window.location.pathname);
+    if (currentUser) resumePendingCryptoPayment();
   }
 });
 
 async function manualCheckPayment() {
   if (!cryptoPaymentId) return;
   document.getElementById("cryptoStatusText").textContent = "Checking\u2026";
-  const data = await fetchPaymentStatus(cryptoPaymentId);
+  const data = await fetchPaymentStatus(cryptoPaymentId, cryptoCheckToken);
   if (data && data.status === "completed") {
     if (cryptoPollTimer) { clearInterval(cryptoPollTimer); cryptoPollTimer = null; }
     closeCryptoPayWindow();
-    await creditCryptoTopup(data);
+    creditCryptoTopup(data);
   } else {
     document.getElementById("cryptoStatusText").textContent = "Waiting for payment\u2026";
   }
 }
 
-function startCryptoPolling(id) {
+function startCryptoPolling(id, checkToken) {
   let attempts = 0;
-  const maxAttempts = 840; // ~35 min at 2.5s — outlasts the 30 min payment expiry
+  const maxAttempts = 840; // ~35 min at 2.5s
   if (cryptoPollTimer) clearInterval(cryptoPollTimer);
 
   cryptoPollTimer = setInterval(async () => {
@@ -4830,12 +4856,19 @@ function startCryptoPolling(id) {
       return;
     }
     try {
-      const data = await fetchPaymentStatus(id);
+      const data = await fetchPaymentStatus(id, checkToken);
       if (data && data.status === "completed") {
         clearInterval(cryptoPollTimer);
         cryptoPollTimer = null;
         closeCryptoPayWindow();
-        await creditCryptoTopup(data);
+        creditCryptoTopup(data);
+      } else if (data && data.status === "expired") {
+        clearInterval(cryptoPollTimer);
+        cryptoPollTimer = null;
+        if (currentUser) clearPendingPayment(currentUser.uid);
+        const statusEl = document.getElementById("cryptoStatus");
+        statusEl.className = "crypto-status failed";
+        document.getElementById("cryptoStatusText").textContent = "Payment link expired";
       }
     } catch (e) {
       // silent — keep polling
@@ -4843,35 +4876,17 @@ function startCryptoPolling(id) {
   }, 2500);
 }
 
-async function creditCryptoTopup(payment, ngnAmountOverride) {
+// The webhook (server-side) already credited the balance in Firestore before
+// this ever returns "completed" — this just reflects that in the UI.
+// listenBalance() picks up the new balance in real time from Firestore.
+function creditCryptoTopup(payment, ngnAmountOverride) {
   if (!currentUser) return;
   const ngnAmount = ngnAmountOverride || selectedTopup;
-
-  // Guard against crediting the same payment twice (e.g. the interval and a
-  // resumed/manual check both catching "completed" around the same time).
-  const already = await db.collection("users").doc(currentUser.uid)
-    .collection("transactions").where("ref", "==", payment.id).limit(1).get();
-  if (!already.empty) {
-    clearPendingPayment(currentUser.uid);
-    closeTopup();
-    return;
-  }
 
   const statusEl = document.getElementById("cryptoStatus");
   if (statusEl) statusEl.className = "crypto-status paid";
   const statusText = document.getElementById("cryptoStatusText");
   if (statusText) statusText.textContent = "Payment confirmed!";
-
-  await db.collection("users").doc(currentUser.uid).update({
-    balance: firebase.firestore.FieldValue.increment(ngnAmount),
-  });
-  await db.collection("users").doc(currentUser.uid).collection("transactions").add({
-    amount: ngnAmount,
-    description: "Wallet top-up (crypto)",
-    ref: payment.id,
-    txSignature: payment.txSignature || null,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-  });
 
   clearPendingPayment(currentUser.uid);
 
