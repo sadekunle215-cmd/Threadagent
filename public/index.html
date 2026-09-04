@@ -729,6 +729,14 @@
     </div>
   </div>
 
+  <div class="ad-banner-wrap" style="min-height:100px;display:flex;justify-content:center;align-items:center;margin:20px 0;">
+    <script type="text/javascript">
+        aclib.runBanner({
+            zoneId: '12104306',
+        });
+    </script>
+  </div>
+
   <!-- Features -->
   <div class="land-section">
     <div class="land-section-label">What You Get</div>
@@ -4790,7 +4798,7 @@ async function resumePendingCryptoPayment() {
 
   const data = await fetchPaymentStatus(pending.id, pending.checkToken);
   if (data && data.status === "completed") {
-    creditCryptoTopup(data, pending.ngnAmount);
+    creditCryptoTopup(data, pending.ngnAmount, pending.checkToken);
   } else if (data && data.status === "pending") {
     // Still open — reopen the tracking UI and resume polling instead of losing it silently
     selectedTopup = pending.ngnAmount;
@@ -4823,9 +4831,30 @@ document.addEventListener("visibilitychange", async () => {
 // If ChatFi's redirectUrl brought us back here after payment, do an immediate
 // check rather than waiting on the poll interval.
 window.addEventListener("load", () => {
-  if (new URLSearchParams(window.location.search).get("payment_return") === "1") {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("payment_return") === "1") {
     history.replaceState({}, "", window.location.pathname);
     if (currentUser) resumePendingCryptoPayment();
+  }
+  // Manual recovery path for a payment whose localStorage pointer was lost
+  // (e.g. a prior failed confirm attempt cleared it). Visit once with
+  // ?recover_id=...&recover_token=...&recover_ngn=... to force a re-check.
+  const recoverId = params.get("recover_id");
+  const recoverToken = params.get("recover_token");
+  const recoverNgn = Number(params.get("recover_ngn"));
+  if (recoverId && recoverToken && recoverNgn > 0) {
+    history.replaceState({}, "", window.location.pathname);
+    const tryRecover = () => {
+      if (!currentUser) { setTimeout(tryRecover, 500); return; }
+      fetchPaymentStatus(recoverId, recoverToken).then((data) => {
+        if (data && data.status === "completed") {
+          creditCryptoTopup(data, recoverNgn, recoverToken);
+        } else {
+          alert("Recovery check: status is " + (data ? data.status : "unknown — request may have failed"));
+        }
+      });
+    };
+    tryRecover();
   }
 });
 
@@ -4881,9 +4910,40 @@ function startCryptoPolling(id, checkToken) {
 // The webhook (server-side) already credited the balance in Firestore before
 // this ever returns "completed" — this just reflects that in the UI.
 // listenBalance() picks up the new balance in real time from Firestore.
-function creditCryptoTopup(payment, ngnAmountOverride) {
+async function creditCryptoTopup(payment, ngnAmountOverride, checkTokenOverride) {
   if (!currentUser) return;
   const ngnAmount = ngnAmountOverride || selectedTopup;
+  const checkToken = checkTokenOverride || cryptoCheckToken;
+
+  // The webhook SHOULD have already credited this, but it hasn't proven
+  // reliable — so actively confirm+credit here too. This call is idempotent
+  // server-side (keyed by payment id), so it's safe even if the webhook
+  // also fires for the same payment.
+  let confirmed = false;
+  try {
+    const idToken = await currentUser.getIdToken();
+    const res = await fetch(`${PROXY_BASE}/confirmPayment`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${idToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id: payment.id, checkToken }),
+    });
+    const data = await res.json();
+    confirmed = res.ok && data.status === "completed";
+    if (!confirmed) console.error("confirmPayment did not confirm:", res.status, data);
+  } catch (e) {
+    console.error("confirmPayment call failed:", e);
+  }
+
+  if (!confirmed) {
+    // Don't clear the pending record or claim success — leave it so the
+    // next resume/poll/manual-check attempt can retry.
+    const statusText = document.getElementById("cryptoStatusText");
+    if (statusText) statusText.textContent = "Still confirming\u2026 we'll keep checking.";
+    return;
+  }
 
   const statusEl = document.getElementById("cryptoStatus");
   if (statusEl) statusEl.className = "crypto-status paid";
