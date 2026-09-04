@@ -1,4 +1,7 @@
 {
+  "redirects": [
+    { "source": "/ads.txt", "destination": "https://srv.adstxtmanager.com/19390/threadcraft.pro", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/:path*", "destination": "/public/:path*" }
